@@ -1,10 +1,12 @@
 """
 Feature engineering from raw MLB API game JSON.
-Computes Pitcher's Tendency based on the last 5 pitches.
+Computes Pitcher's Tendency (last 5 pitches) and build_pitch_features
+(count one-hot, is_leverage, previous pitch in AB).
 """
 
 from collections import Counter
-from typing import Any
+
+import pandas as pd
 
 
 # Common pitch type groupings for tendency summary
@@ -72,6 +74,109 @@ def _extract_pitches_in_order(game_json: dict) -> list[dict]:
     return pitches
 
 
+def _extract_pitches_with_context(play_data: dict) -> list[dict]:
+    """
+    Extract pitch-level rows with score at time of pitch and index within at-bat.
+    play_data: raw game JSON from MLB API (e.g. statsapi.get('game', {'gamePk': pk})).
+    """
+    all_plays = play_data.get("liveData", {}).get("plays", {}).get("allPlays", [])
+    pitches = []
+    home_score, away_score = 0, 0
+
+    for play in all_plays:
+        if "playEvents" not in play:
+            result = play.get("result", {})
+            home_score = result.get("homeScore", home_score)
+            away_score = result.get("awayScore", away_score)
+            continue
+
+        matchup = play.get("matchup", {})
+        batter = (matchup.get("batter") or {}).get("fullName", "")
+        pitcher = (matchup.get("pitcher") or {}).get("fullName", "")
+        about = play.get("about", {})
+        inning = about.get("inning") or 0
+        half = about.get("halfInning", "")
+
+        pitch_events = [e for e in play["playEvents"] if e.get("isPitch")]
+        prev_pitch_type_in_ab = None
+
+        for event in pitch_events:
+            details = event.get("details", {})
+            type_info = details.get("type", {})
+            code = type_info.get("code")
+            pitch_data = event.get("pitchData", {})
+            count = event.get("count", {})
+
+            pitch = {
+                "batter": batter,
+                "pitcher": pitcher,
+                "pitch_type": code,
+                "call": details.get("description"),
+                "velocity": pitch_data.get("startSpeed"),
+                "spin_rate": (pitch_data.get("breaks") or {}).get("spinRate"),
+                "inning": inning,
+                "half_inning": half,
+                "balls": count.get("balls"),
+                "strikes": count.get("strikes"),
+                "outs": count.get("outs"),
+                "score_home": home_score,
+                "score_away": away_score,
+                "prev_pitch_type_in_ab": prev_pitch_type_in_ab,
+            }
+            pitches.append(pitch)
+            prev_pitch_type_in_ab = (code or "UN").upper() if code else "UN"
+
+        result = play.get("result", {})
+        home_score = result.get("homeScore", home_score)
+        away_score = result.get("awayScore", away_score)
+
+    return pitches
+
+
+# All (balls, strikes) count combinations for one-hot encoding
+COUNT_LABELS = [
+    "0-0", "0-1", "0-2", "1-0", "1-1", "1-2", "2-0", "2-1", "2-2",
+    "3-0", "3-1", "3-2",
+]
+
+
+def build_pitch_features(play_data: dict) -> pd.DataFrame:
+    """
+    Build a pitch-level DataFrame from raw MLB API game JSON (play_data).
+
+    Returns a DataFrame with:
+    - Base pitch fields (batter, pitcher, pitch_type, velocity, inning, etc.)
+    - One-hot encoding for current count (columns count_0_0, count_0_1, ... count_3_2)
+    - is_leverage: 1 if inning > 7 and |home_score - away_score| <= 2, else 0
+    - prev_pitch_type_in_ab: pitcher's previous pitch type in this at-bat (None on first pitch)
+    """
+    rows = _extract_pitches_with_context(play_data)
+    if not rows:
+        return pd.DataFrame()
+
+    df = pd.DataFrame(rows)
+
+    # Count string and one-hot
+    df["balls"] = df["balls"].fillna(0).astype(int).clip(0, 3)
+    df["strikes"] = df["strikes"].fillna(0).astype(int).clip(0, 2)
+    df["count_str"] = df["balls"].astype(str) + "-" + df["strikes"].astype(str)
+
+    for label in COUNT_LABELS:
+        df[f"count_{label.replace('-', '_')}"] = (df["count_str"] == label).astype(int)
+
+    # Leverage: inning > 7 and score diff <= 2
+    score_home = df["score_home"].fillna(0).astype(int)
+    score_away = df["score_away"].fillna(0).astype(int)
+    df["score_diff"] = (score_home - score_away).abs()
+    inning = df["inning"].fillna(0).astype(int)
+    df["is_leverage"] = ((inning > 7) & (df["score_diff"] <= 2)).astype(int)
+
+    # Drop helper columns used only for feature construction
+    df = df.drop(columns=["count_str", "score_diff"], errors="ignore")
+
+    return df
+
+
 def add_pitcher_tendency(game_json: dict) -> list[dict]:
     """
     Take raw game JSON from the MLB API and return a list of pitch dicts
@@ -136,20 +241,13 @@ def add_pitcher_tendency(game_json: dict) -> list[dict]:
 
 if __name__ == "__main__":
     import statsapi
-    import pandas as pd
 
     game_pk = 487637  # Game 7, 2016 World Series (same as mlb_test.py)
     print("Fetching game JSON...")
-    game_data = statsapi.get("game", {"gamePk": game_pk})
-    pitches_with_tendency = add_pitcher_tendency(game_data)
-    df = pd.DataFrame(pitches_with_tendency)
-    print(f"Loaded {len(df)} pitches with Pitcher's Tendency features.")
-    tendency_cols = [
-        "pitcher_tendency_primary",
-        "pitcher_tendency_primary_pct",
-        "pitcher_tendency_fastball_pct",
-        "pitcher_tendency_breaking_pct",
-        "pitcher_tendency_offspeed_pct",
-        "pitcher_tendency_pitches_used",
-    ]
-    print(df[["pitcher", "pitch_type"] + tendency_cols].head(12).to_string())
+    play_data = statsapi.get("game", {"gamePk": game_pk})
+    df = build_pitch_features(play_data)
+    print(f"build_pitch_features: {len(df)} pitches")
+    count_cols = [c for c in df.columns if c.startswith("count_")]
+    print("Count one-hot columns:", count_cols)
+    print("is_leverage sum:", df["is_leverage"].sum())
+    print(df[["inning", "balls", "strikes", "prev_pitch_type_in_ab", "is_leverage"] + count_cols].head(10).to_string())
