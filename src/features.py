@@ -76,7 +76,7 @@ def _extract_pitches_in_order(game_json: dict) -> list[dict]:
 
 def _extract_pitches_with_context(play_data: dict) -> list[dict]:
     """
-    Extract pitch-level rows with score at time of pitch and index within at-bat.
+    Extract pitch-level rows with score at time of pitch and previous pitch in AB.
     play_data: raw game JSON from MLB API (e.g. statsapi.get('game', {'gamePk': pk})).
     """
     all_plays = play_data.get("liveData", {}).get("plays", {}).get("allPlays", [])
@@ -241,13 +241,20 @@ def add_pitcher_tendency(game_json: dict) -> list[dict]:
 
 if __name__ == "__main__":
     import statsapi
+    import pandas as pd
 
     game_pk = 487637  # Game 7, 2016 World Series (same as mlb_test.py)
     print("Fetching game JSON...")
-    play_data = statsapi.get("game", {"gamePk": game_pk})
-    df = build_pitch_features(play_data)
-    print(f"build_pitch_features: {len(df)} pitches")
-    count_cols = [c for c in df.columns if c.startswith("count_")]
-    print("Count one-hot columns:", count_cols)
-    print("is_leverage sum:", df["is_leverage"].sum())
-    print(df[["inning", "balls", "strikes", "prev_pitch_type_in_ab", "is_leverage"] + count_cols].head(10).to_string())
+    game_data = statsapi.get("game", {"gamePk": game_pk})
+    pitches_with_tendency = add_pitcher_tendency(game_data)
+    df = pd.DataFrame(pitches_with_tendency)
+    print(f"Loaded {len(df)} pitches with Pitcher's Tendency features.")
+    tendency_cols = [
+        "pitcher_tendency_primary",
+        "pitcher_tendency_primary_pct",
+        "pitcher_tendency_fastball_pct",
+        "pitcher_tendency_breaking_pct",
+        "pitcher_tendency_offspeed_pct",
+        "pitcher_tendency_pitches_used",
+    ]
+    print(df[["pitcher", "pitch_type"] + tendency_cols].head(12).to_string())

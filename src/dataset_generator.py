@@ -1,18 +1,14 @@
 """
 Pull pitch data for all games from the last week and build a feature dataset.
-Run with: uv run python -m src.dataset_generator
-  or:     uv run python src/dataset_generator.py  (from project root)
-"""
-import sys
-from pathlib import Path
 
-# Ensure project root is on path when running as script
-_root = Path(__file__).resolve().parent.parent
-if _root not in [Path(p) for p in sys.path]:
-    sys.path.insert(0, str(_root))
+Run with uv (from project root):
+  uv run python -m src.dataset_generator
+"""
 
 from datetime import datetime, timedelta
+import os
 
+import pandas as pd
 import statsapi
 
 from src.features import build_pitch_features
@@ -65,9 +61,6 @@ def build_last_week_dataset(
         print("No pitch data collected.")
         return ""
 
-    import os
-    import pandas as pd
-
     os.makedirs(output_dir, exist_ok=True)
     combined = pd.concat(all_dfs, ignore_index=True)
     path = os.path.join(output_dir, f"pitch_features_{start_date}_to_{end_date}.csv")
@@ -77,4 +70,14 @@ def build_last_week_dataset(
 
 
 if __name__ == "__main__":
-    build_last_week_dataset()
+    import argparse
+    p = argparse.ArgumentParser(description="Build pitch-feature dataset from MLB API.")
+    p.add_argument("--start", type=str, default=None, help="Start date YYYY-MM-DD (default: 7 days ago)")
+    p.add_argument("--end", type=str, default=None, help="End date YYYY-MM-DD (default: today)")
+    p.add_argument("--out", type=str, default="data", help="Output directory (default: data)")
+    args = p.parse_args()
+    build_last_week_dataset(
+        start_date=args.start,
+        end_date=args.end,
+        output_dir=args.out,
+    )
