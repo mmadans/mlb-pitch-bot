@@ -74,7 +74,7 @@ def _extract_pitches_in_order(game_json: dict) -> list[dict]:
     return pitches
 
 
-def _extract_pitches_with_context(play_data: dict) -> list[dict]:
+def extract_pitches_with_context(play_data: dict) -> list[dict]:
     """
     Extract pitch-level rows with score at time of pitch and previous pitch in AB.
     play_data: raw game JSON from MLB API (e.g. statsapi.get('game', {'gamePk': pk})).
@@ -140,22 +140,13 @@ COUNT_LABELS = [
 ]
 
 
-def build_pitch_features(play_data: dict) -> pd.DataFrame:
+def add_contextual_features(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Build a pitch-level DataFrame from raw MLB API game JSON (play_data).
+    Adds contextual features to the pitch DataFrame.
 
-    Returns a DataFrame with:
-    - Base pitch fields (batter, pitcher, pitch_type, velocity, inning, etc.)
     - One-hot encoding for current count (columns count_0_0, count_0_1, ... count_3_2)
     - is_leverage: 1 if inning > 7 and |home_score - away_score| <= 2, else 0
-    - prev_pitch_type_in_ab: pitcher's previous pitch type in this at-bat (None on first pitch)
     """
-    rows = _extract_pitches_with_context(play_data)
-    if not rows:
-        return pd.DataFrame()
-
-    df = pd.DataFrame(rows)
-
     # Count string and one-hot
     df["balls"] = df["balls"].fillna(0).astype(int).clip(0, 3)
     df["strikes"] = df["strikes"].fillna(0).astype(int).clip(0, 2)
@@ -177,84 +168,60 @@ def build_pitch_features(play_data: dict) -> pd.DataFrame:
     return df
 
 
-def add_pitcher_tendency(game_json: dict) -> list[dict]:
+def add_global_pitcher_tendencies(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Take raw game JSON from the MLB API and return a list of pitch dicts
-    with Pitcher's Tendency features based on the last 5 pitches by that pitcher.
+    Adds pitcher tendency features based on the entire dataset.
 
-    Each pitch gets:
-    - pitcher_tendency_primary: most common pitch type in last 5 (e.g. "FF", "SL").
-    - pitcher_tendency_primary_pct: fraction of last 5 that were that type (0–1).
-    - pitcher_tendency_fastball_pct: fraction of last 5 that were fastballs.
-    - pitcher_tendency_breaking_pct: fraction of last 5 that were breaking.
-    - pitcher_tendency_offspeed_pct: fraction of last 5 that were offspeed.
-    - pitcher_tendency_pitches_used: number of pitches in the window (1–5).
+    For each pitcher, it calculates:
+    - The percentage of each pitch type they throw.
+    - The total number of pitches they've thrown in the dataset.
 
-    Pitches with fewer than 1 previous pitch from that pitcher have tendency
-    fields set to None or 0.0 as appropriate.
+    Args:
+        df: A DataFrame containing pitch data, including 'pitcher' and 'pitch_type'.
+
+    Returns:
+        The original DataFrame with added tendency columns.
     """
-    pitches = _extract_pitches_in_order(game_json)
-    # Per-pitcher rolling window of last 5 pitch type codes
-    pitcher_history: dict[str, list[str]] = {}
+    # Calculate pitch type counts per pitcher
+    pitch_counts = df.groupby(["pitcher", "pitch_type"]).size().unstack(fill_value=0)
 
-    for p in pitches:
-        pitcher = p["pitcher"]
-        code = p.get("pitch_type") or "UN"
-        code_upper = code.upper() if isinstance(code, str) else "UN"
+    # Calculate total pitches per pitcher
+    total_pitches = pitch_counts.sum(axis=1)
 
-        # Get last 5 for this pitcher (before this pitch)
-        history = pitcher_history.get(pitcher, [])
-        last_5 = history[-5:] if len(history) >= 5 else history
+    # Calculate pitch type percentages
+    pitch_percentages = pitch_counts.div(total_pitches, axis=0)
 
-        # Compute tendency from last 5
-        if not last_5:
-            p["pitcher_tendency_primary"] = None
-            p["pitcher_tendency_primary_pct"] = None
-            p["pitcher_tendency_fastball_pct"] = None
-            p["pitcher_tendency_breaking_pct"] = None
-            p["pitcher_tendency_offspeed_pct"] = None
-            p["pitcher_tendency_pitches_used"] = 0
-        else:
-            counts = Counter(last_5)
-            primary, primary_count = counts.most_common(1)[0]
-            n = len(last_5)
-            p["pitcher_tendency_primary"] = primary
-            p["pitcher_tendency_primary_pct"] = round(primary_count / n, 4)
-            p["pitcher_tendency_fastball_pct"] = round(
-                sum(1 for c in last_5 if _classify_pitch_family(c) == "Fastball") / n, 4
-            )
-            p["pitcher_tendency_breaking_pct"] = round(
-                sum(1 for c in last_5 if _classify_pitch_family(c) == "Breaking") / n, 4
-            )
-            p["pitcher_tendency_offspeed_pct"] = round(
-                sum(1 for c in last_5 if _classify_pitch_family(c) == "Offspeed") / n, 4
-            )
-            p["pitcher_tendency_pitches_used"] = n
+    # Rename columns to reflect they are percentages
+    pitch_percentages.columns = [
+        f"tendency_{col}_pct" for col in pitch_percentages.columns
+    ]
 
-        # Append this pitch to this pitcher's history (after computing tendency)
-        if pitcher not in pitcher_history:
-            pitcher_history[pitcher] = []
-        pitcher_history[pitcher].append(code_upper)
+    # Add total pitch count as a feature
+    pitch_percentages["tendency_total_pitches"] = total_pitches
 
-    return pitches
+    # Merge the tendency features back into the original DataFrame
+    df = df.merge(pitch_percentages, on="pitcher", how="left")
+
+    return df
 
 
 if __name__ == "__main__":
     import statsapi
     import pandas as pd
 
-    game_pk = 487637  # Game 7, 2016 World Series (same as mlb_test.py)
-    print("Fetching game JSON...")
-    game_data = statsapi.get("game", {"gamePk": game_pk})
-    pitches_with_tendency = add_pitcher_tendency(game_data)
-    df = pd.DataFrame(pitches_with_tendency)
-    print(f"Loaded {len(df)} pitches with Pitcher's Tendency features.")
-    tendency_cols = [
-        "pitcher_tendency_primary",
-        "pitcher_tendency_primary_pct",
-        "pitcher_tendency_fastball_pct",
-        "pitcher_tendency_breaking_pct",
-        "pitcher_tendency_offspeed_pct",
-        "pitcher_tendency_pitches_used",
-    ]
-    print(df[["pitcher", "pitch_type"] + tendency_cols].head(12).to_string())
+    # Create a dummy dataframe to test the global tendency function
+    dummy_data = {
+        "pitcher": ["A", "A", "A", "B", "B", "B", "B"],
+        "pitch_type": ["FF", "FF", "SL", "FF", "SL", "CU", "FF"],
+        "batter": ["X", "Y", "X", "Y", "X", "Y", "X"],
+    }
+    dummy_df = pd.DataFrame(dummy_data)
+    print("Original DataFrame:")
+    print(dummy_df)
+
+    tendency_df = add_global_pitcher_tendencies(dummy_df)
+    print("\nDataFrame with Global Tendencies:")
+    print(tendency_df.to_string())
+
+    # Example: Pitcher A threw 3 pitches, 2 FF (66.7%) and 1 SL (33.3%)
+    # Example: Pitcher B threw 4 pitches, 2 FF (50%), 1 SL (25%), 1 CU (25%)

@@ -11,7 +11,11 @@ import os
 import pandas as pd
 import statsapi
 
-from src.features import build_pitch_features
+from src.features import (
+    add_contextual_features,
+    add_global_pitcher_tendencies,
+    extract_pitches_with_context,
+)
 
 
 def get_last_week_dates() -> tuple[str, str]:
@@ -21,16 +25,48 @@ def get_last_week_dates() -> tuple[str, str]:
     return start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")
 
 
+def _extract_all_pitches_from_games(games: list[dict]) -> pd.DataFrame:
+    """Extract all pitch events from a list of games into a single DataFrame."""
+    all_dfs = []
+    for i, game in enumerate(games):
+        game_id = game.get("game_id")
+        summary = game.get("summary", f"game {game_id}")
+        print(f"  [{i+1}/{len(games)}] Extracting pitches from {summary}")
+        try:
+            play_data = statsapi.get("game", {"gamePk": game_id})
+            pitch_rows = extract_pitches_with_context(play_data)
+            if pitch_rows:
+                df = pd.DataFrame(pitch_rows)
+                df["game_pk"] = game_id
+                all_dfs.append(df)
+        except Exception as e:
+            print(f"    Skip: {e}")
+
+    if not all_dfs:
+        return pd.DataFrame()
+
+    return pd.concat(all_dfs, ignore_index=True)
+
+
+def add_features(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Orchestrate the addition of all features to the raw pitch data.
+    """
+    print("Adding global pitcher tendencies...")
+    df = add_global_pitcher_tendencies(df)
+    print("Adding contextual features (count, leverage, etc.)...")
+    df = add_contextual_features(df)
+    return df
+
+
 def build_last_week_dataset(
     start_date: str | None = None,
     end_date: str | None = None,
     output_dir: str = "data",
 ) -> str:
     """
-    Fetch all final games in the date range, build pitch features per game,
-    concatenate into one DataFrame, and save to CSV.
-
-    Returns the path to the saved CSV.
+    Fetch all final games in the date range, build pitch features,
+    and save to CSV.
     """
     if start_date is None or end_date is None:
         start_date, end_date = get_last_week_dates()
@@ -43,29 +79,21 @@ def build_last_week_dataset(
         print("No final games in range.")
         return ""
 
-    all_dfs = []
-    for i, game in enumerate(final_games):
-        game_id = game.get("game_id") or game.get("id")
-        summary = game.get("summary", f"game {game_id}")
-        print(f"  [{i+1}/{len(final_games)}] {summary}")
-        try:
-            play_data = statsapi.get("game", {"gamePk": game_id})
-            df = build_pitch_features(play_data)
-            if not df.empty:
-                df["game_pk"] = game_id
-                all_dfs.append(df)
-        except Exception as e:
-            print(f"    Skip: {e}")
+    # 1. Extract all pitches from all games into a single DataFrame
+    all_pitches_df = _extract_all_pitches_from_games(final_games)
 
-    if not all_dfs:
+    if all_pitches_df.empty:
         print("No pitch data collected.")
         return ""
 
+    # 2. Add features
+    features_df = add_features(all_pitches_df)
+
+    # 3. Save to CSV
     os.makedirs(output_dir, exist_ok=True)
-    combined = pd.concat(all_dfs, ignore_index=True)
     path = os.path.join(output_dir, f"pitch_features_{start_date}_to_{end_date}.csv")
-    combined.to_csv(path, index=False)
-    print(f"Saved {len(combined)} pitches to {path}")
+    features_df.to_csv(path, index=False)
+    print(f"Saved {len(features_df)} pitches to {path}")
     return path
 
 
