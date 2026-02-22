@@ -1,0 +1,81 @@
+# ⚾ MLB Pitch Bot
+
+A sophisticated MLB pitch analysis bot that uses machine learning and historical pitcher tendencies to identify "surprising" moments in live games. Instead of just reporting box scores, this bot acts as a tactical analyst, flagging when a pitcher fools a hitter or when a hitter correctly predicts a pitcher's habit.
+
+## 🚀 Core Features
+
+- **Situational Surprisal**: Calculates the "shock value" of a pitch in **bits** (Information Theory) based on count-specific historical tendencies.
+- **Narrative Intelligence**: Automatically categorizes outcomes into engaging tactical stories:
+    - **Frozen! 🥶**: When a pitcher catches a hitter looking for a strikeout with a pitch they statistically didn't expect.
+    - **Fooled him! 🔀**: When a hitter strikes out swinging on a pitch they weren't expecting.
+    - **Sitting on it! 🎯**: When a hitter punishes a high-probability pitch, showing they were "waiting" for the pitcher's tendency.
+- **Live Tracking**: Polls MLB StatsAPI every 30 seconds to catch interesting strikeouts and hard hits (98+ mph) as they happen.
+- **Video Integration**: Automatically fetches and attaches official MLB video highlights to tweets (usually available 2-5 minutes after the play).
+
+## 🛠️ Technology Stack
+
+- **ML Backend**: XGBoost Classifier trained on situational context and pitcher habits.
+- **Data Source**: MLB StatsAPI (via `statsapi`).
+- **Social**: Twitter/X API v2 (via `tweepy`).
+- **Dev Ops**: Managed with `uv` for fast, reproducible Python environments.
+
+## 📦 Setup
+
+1. **Environment Variables**: Create a `.env` file in the root directory:
+   ```env
+   TWITTER_CONSUMER_KEY=your_key
+   TWITTER_CONSUMER_SECRET=your_secret
+   TWITTER_ACCESS_TOKEN=your_token
+   TWITTER_ACCESS_TOKEN_SECRET=your_token_secret
+   ```
+
+2. **Installation**:
+   ```bash
+   uv sync
+   ```
+
+## 🏃‍♂️ Running the Pipeline
+
+The bot operates in four distinct stages:
+
+### 1. Data Collection
+Generate a historical dataset (e.g., from the last 30 days) to train the model.
+```bash
+uv run python -m src.dataset_generator --start 2024-05-01 --end 2024-05-30
+```
+
+### 2. Build Memory (Baseline)
+Pre-calculate pitcher tendencies for fast live lookup.
+```bash
+uv run python -m src.build_baseline_tendencies
+```
+
+### 3. Train the Brain
+Train the XGBoost model to predict pitch probabilities without "leaky" physical features (velocity/spin).
+```bash
+uv run python -m src.train_model
+```
+
+### 4. Start Live Tracking
+Launch the bot to monitor today's games.
+```bash
+uv run python -m src.live_game_tracker
+```
+*(Note: Initial runs default to **Simulation Mode**, printing tweets to the terminal instead of posting them.)*
+
+## 📁 Project Structure
+
+- `src/live_game_tracker.py`: Real-time orchestrator and polling loop.
+- `src/features.py`: The "Feature Engine" that builds situational rows.
+- `src/inference.py`: Model wrapper that calculates **Surprisal (Bits)**.
+- `src/bot.py`: Formatting logic and Twitter API integration.
+- `src/constants.py`: Centralized thresholds and model paths.
+
+## 🔮 Future Roadmap
+
+- **Rolling Game Script**: Adjust tendencies in real-time if a pitcher is "off" their normal habits today.
+- **Batter Tendencies**: Factor in how a batter struggles against specific pitch families.
+- **Enhanced Visuals**: Generate dynamic overlay graphics for "frozen" moments.
+
+---
+*Built for the love of the game and the numbers behind it.* ⚾📈
