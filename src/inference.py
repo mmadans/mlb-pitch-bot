@@ -4,11 +4,12 @@ import joblib
 import numpy as np
 
 class PitchPredictor:
-    def __init__(self, model_path='models/pitch_classifier.pkl', encoder_path='models/encoder.pkl', prev_encoder_path='models/prev_pitch_encoder.pkl'):
+    def __init__(self, model_path='models/pitch_classifier.pkl', encoder_path='models/encoder.pkl', prev_encoder_path='models/prev_pitch_encoder.pkl', feature_cols_path='models/feature_cols.pkl'):
         # Train model saves an XGBClassifier object via joblib
         self.model = joblib.load(model_path)
         self.encoder = joblib.load(encoder_path)
         self.prev_encoder = joblib.load(prev_encoder_path)
+        self.feature_cols = joblib.load(feature_cols_path)
 
     def predict_probabilities(self, features_df):
         # Handle the categorical encoding for previous pitch
@@ -21,9 +22,14 @@ class PitchPredictor:
                 lambda x: self.prev_encoder.transform([x])[0] if x in labels else self.prev_encoder.transform(["NONE"])[0] if "NONE" in labels else 0
             )
 
+        # Ensure all columns the model expects are present
+        for col in self.feature_cols:
+            if col not in features_df.columns:
+                features_df[col] = 0
+
         # XGBClassifier.predict_proba returns probability for each class
         # Ensure we only pass the columns the model was trained on
-        model_input = features_df[self.model.feature_names_in_]
+        model_input = features_df[self.feature_cols]
         probs = self.model.predict_proba(model_input)
         
         # Map probabilities to pitch names

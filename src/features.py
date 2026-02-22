@@ -171,40 +171,49 @@ def add_contextual_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def add_pitcher_count_tendencies(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Adds pitcher tendency features specific to each count (balls and strikes).
+    For each (pitcher, balls, strikes), it calculates the frequency of each pitch type.
+    """
+    # Group by pitcher, balls, strikes, and pitch_type to get counts
+    group_cols = ["pitcher", "balls", "strikes", "pitch_type"]
+    counts = df.groupby(group_cols).size().unstack(fill_value=0)
+    
+    # Calculate percentages per (pitcher, balls, strikes)
+    totals = counts.sum(axis=1)
+    percentages = counts.div(totals, axis=0)
+    
+    # Rename columns to reflect they are count-specific tendencies
+    percentages.columns = [
+        f"tendency_count_{col}_pct" for col in percentages.columns
+    ]
+    
+    # Merge back to original dataframe
+    # Reset index for the join
+    percentages = percentages.reset_index()
+    df = df.merge(percentages, on=["pitcher", "balls", "strikes"], how="left")
+    
+    return df
+
+
 def add_global_pitcher_tendencies(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Adds pitcher tendency features based on the entire dataset.
-
-    For each pitcher, it calculates:
-    - The percentage of each pitch type they throw.
-    - The total number of pitches they've thrown in the dataset.
-
-    Args:
-        df: A DataFrame containing pitch data, including 'pitcher' and 'pitch_type'.
-
-    Returns:
-        The original DataFrame with added tendency columns.
+    Adds global (regardless of count) pitcher tendency features.
     """
     # Calculate pitch type counts per pitcher
     pitch_counts = df.groupby(["pitcher", "pitch_type"]).size().unstack(fill_value=0)
-
-    # Calculate total pitches per pitcher
     total_pitches = pitch_counts.sum(axis=1)
-
-    # Calculate pitch type percentages
     pitch_percentages = pitch_counts.div(total_pitches, axis=0)
 
-    # Rename columns to reflect they are percentages
+    # Rename columns
     pitch_percentages.columns = [
-        f"tendency_{col}_pct" for col in pitch_percentages.columns
+        f"tendency_global_{col}_pct" for col in pitch_percentages.columns
     ]
-
-    # Add total pitch count as a feature
     pitch_percentages["tendency_total_pitches"] = total_pitches
 
-    # Merge the tendency features back into the original DataFrame
+    # Merge
     df = df.merge(pitch_percentages, on="pitcher", how="left")
-
     return df
 
 

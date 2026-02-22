@@ -8,6 +8,7 @@ import time
 import statsapi
 import pandas as pd
 import os
+import joblib
 from dotenv import load_dotenv
 
 from src.features import extract_pitches_with_context, add_contextual_features, add_global_pitcher_tendencies
@@ -23,6 +24,7 @@ BARREL_EV_THRESHOLD = 98.0
 
 # --- State ---
 processed_pitches = set()
+baseline = None # Global baseline to be loaded in main()
 
 def get_live_game_pks():
     """Fetches gamePks for games that are currently live."""
@@ -38,14 +40,6 @@ def get_live_game_pks():
         print(f"Error fetching schedule: {e}")
         return []
 
-def prepare_features_for_model(df: pd.DataFrame, predictor: PitchPredictor) -> pd.DataFrame:
-    """Prepares a DataFrame row for the XGBoost model."""
-    # Ensure all columns the model expects are present
-    for col in predictor.model.feature_names:
-        if col not in df.columns:
-            df[col] = 0
-
-    return df[predictor.model.feature_names]
 
 def get_video_link(game_pk: int, play_id: str) -> str | None:
     """
@@ -108,36 +102,115 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
 
     print(f"Analyzing interesting outcome: {outcome_str} in game {game_pk}")
 
-    # 2. Extract basic info and tweet directly
+    # 2. Extract features and run inference
     try:
-        pitcher_name = current_play.get('matchup', {}).get('pitcher', {}).get('fullName')
-        batter_name = current_play.get('matchup', {}).get('batter', {}).get('fullName')
-        actual_pitch_type = last_pitch_event.get('details', {}).get('type', {}).get('description', 'Pitch')
+        pitch_rows = extract_pitches_with_context(game_data)
+        df = pd.DataFrame(pitch_rows)
         
-        # Try to get playId for video lookup
-        play_id = current_play.get('playId')
-        video_url = None
-        if play_id:
-            # We wait a few seconds as the content API might be slightly behind the live data
-            time.sleep(2) 
-            video_url = get_video_link(game_pk, play_id)
+        # Add basic contextual features (inning, count one-hot, etc.)
+        df = add_contextual_features(df)
+        
+        # Hydrate with Baseline Tendencies
+        # This replaces the need to calculate them from the single-game DF
+        row = df[(df['at_bat_index'] == at_bat_index) & (df['pitch_index'] == pitch_index)].copy()
+        if row.empty: return
+        
+        pitcher = row['pitcher'].values[0]
+        balls = row['balls'].values[0]
+        strikes = row['strikes'].values[0]
+        
+        # Hydrate tendencies if baseline is ready
+        if baseline:
+            # Global tendencies
+            p_global = baseline['global'].get(pitcher, {})
+            for col, val in p_global.items():
+                row[col] = val
+                
+            # Count tendencies
+            p_count = baseline['count'].get((pitcher, balls, strikes), {})
+            for col, val in p_count.items():
+                row[col] = val
+        else:
+            print("  Warning: Baseline tendencies not loaded. Expect surprises in predictions.")
 
-        tweet_text = format_tweet(pitcher_name, batter_name, actual_pitch_type, 0.0, outcome_str)
+        # 2. Run inference
+        actual_pitch_code = row['pitch_type'].values[0]
+        # predict_probabilities now handles its own feature alignment and encoding
+        probabilities = predictor.predict_probabilities(row)
+        surprisal = predictor.calculate_surprisal(actual_pitch_code, probabilities)
+
+        # Determine Narrative based on tendency
+        expected_prob = probabilities.get(actual_pitch_code, 0)
+        is_surprise_pitch = expected_prob < 0.15
         
-        if video_url:
-            tweet_text += f"\n\n📺 Video: {video_url}"
+        # Check if swinging or looking (for strikeouts)
+        pitch_description = last_pitch_event.get('details', {}).get('description', '').lower()
+        is_looking = "called strike" in pitch_description
+        is_swinging = "swinging strike" in pitch_description or "foul tip" in pitch_description
         
-        post_tweet(tweet_text)
+        print(f"  Pitch: {actual_pitch_code}, Prob: {expected_prob:.2f}, Surprisal: {surprisal:.2f}, Desc: {pitch_description}")
+
+        # 3. Filter by surprise or significance
+        tweet_logic = False
+        narrative = ""
+        
+        if event_type == "strikeout":
+            if is_surprise_pitch:
+                if is_looking:
+                    narrative = "🥶 Frozen! Caught him looking with a pitch he wasn't expecting."
+                else:
+                    narrative = "🔀 Fooled him! Went against tendency to get the swinging K."
+                tweet_logic = True
+            elif surprisal > SURPRISAL_THRESHOLD:
+                narrative = "🤯 Unbelievable K! High-surprisal pitch."
+                tweet_logic = True
+        elif launch_speed >= BARREL_EV_THRESHOLD and not is_out:
+            if expected_prob > 0.4:
+                narrative = "🎯 Sitting on it! Hitter was waiting for that specific tendency."
+                tweet_logic = True
+            elif surprisal > SURPRISAL_THRESHOLD:
+                narrative = "💥 Punished! Unconventional pitch didn't work."
+                tweet_logic = True
+
+        if tweet_logic:
+            pitcher_name = current_play.get('matchup', {}).get('pitcher', {}).get('fullName')
+            batter_name = current_play.get('matchup', {}).get('batter', {}).get('fullName')
+            actual_pitch_desc = last_pitch_event.get('details', {}).get('type', {}).get('description', actual_pitch_code)
+            
+            video_url = None
+            play_id = current_play.get('playId')
+            if play_id:
+                time.sleep(2)
+                video_url = get_video_link(game_pk, play_id)
+
+            tweet_text = format_tweet(pitcher_name, batter_name, actual_pitch_desc, surprisal, outcome_str)
+            tweet_text = f"{narrative}\n\n{tweet_text}"
+            
+            if video_url:
+                tweet_text += f"\n\n📺 Video: {video_url}"
+            
+            print("\n" + "="*50)
+            print("🚀 [SIMULATED TWEET]")
+            print(tweet_text)
+            print("="*50 + "\n")
+            # post_tweet(tweet_text) # Disabled for simulation
+        else:
+            print(f"  Skipping: Not a significant surprise/outcome combo.")
 
     except Exception as e:
-        print(f"Error posting tweet: {e}")
+        print(f"Error in model inference: {e}")
+        import traceback
+        traceback.print_exc()
 
 def main():
-    print("Starting MLB Live Game Tracker (Outcome-Focused Build)...")
+    global baseline
+    print("Starting MLB Live Game Tracker (Simulation Mode)...")
+    processed_pitches.clear()
     try:
+        baseline = joblib.load('models/baseline_tendencies.pkl')
         # Ensure model paths are correct
         predictor = PitchPredictor(model_path='models/pitch_classifier.pkl', encoder_path='models/encoder.pkl')
-        print("Model loaded.")
+        print("Model and Baseline loaded.")
     except Exception as e:
         print(f"Error loading model: {e}. (Have you run src/train_model.py?)")
         # predictor = None # Allow running for debug, but here we probably want to stop

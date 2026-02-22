@@ -14,6 +14,7 @@ import statsapi
 from src.features import (
     add_contextual_features,
     add_global_pitcher_tendencies,
+    add_pitcher_count_tendencies,
     extract_pitches_with_context,
 )
 
@@ -54,6 +55,10 @@ def add_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     print("Adding global pitcher tendencies...")
     df = add_global_pitcher_tendencies(df)
+    
+    print("Adding situation-specific pitcher tendencies (by count)...")
+    df = add_pitcher_count_tendencies(df)
+
     print("Adding contextual features (count, leverage, etc.)...")
     df = add_contextual_features(df)
     return df

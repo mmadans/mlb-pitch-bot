@@ -9,6 +9,7 @@ import joblib
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
 import xgboost as xgb
 
 
@@ -40,10 +41,10 @@ def prepare_target_and_features(df: pd.DataFrame):
     y_encoded = label_encoder.fit_transform(y)
 
     count_cols = [c for c in df.columns if c.startswith("count_") and "-" not in c]
-    numeric = ["inning", "balls", "strikes", "outs", "is_leverage", "velocity", "spin_rate", "score_home", "score_away"]
+    numeric = ["inning", "balls", "strikes", "outs", "is_leverage", "score_home", "score_away"]
     tendency_cols = [
         c for c in df.columns
-        if c.startswith("pitcher_tendency_") and (c.endswith("_pct") or c == "pitcher_tendency_pitches_used")
+        if (c.startswith("tendency_global_") or c.startswith("tendency_count_")) and (c.endswith("_pct") or c == "tendency_total_pitches")
     ]
     feature_cols = count_cols + [c for c in numeric if c in df.columns] + tendency_cols
 
@@ -84,20 +85,27 @@ def main() -> None:
     )
     model.fit(X_train, y_train)
 
-    acc = (model.predict(X_test) == y_test).mean()
-    print(f"Test accuracy: {acc:.4f}")
+    y_pred = model.predict(X_test)
+    acc = (y_pred == y_test).mean()
+    print(f"\nOverall Test Accuracy: {acc:.4f}\n")
+    
+    print("Detailed Classification Report:")
+    print(classification_report(y_test, y_pred, target_names=label_encoder.classes_))
 
     model_path = models_dir / "pitch_classifier.pkl"
     encoder_path = models_dir / "encoder.pkl"
     prev_encoder_path = models_dir / "prev_pitch_encoder.pkl"
+    feature_cols_path = models_dir / "feature_cols.pkl"
     
     joblib.dump(model, model_path)
     joblib.dump(label_encoder, encoder_path)
     joblib.dump(prev_encoder, prev_encoder_path)
+    joblib.dump(feature_cols, feature_cols_path)
     
     print(f"Saved model to {model_path}")
     print(f"Saved encoder to {encoder_path}")
     print(f"Saved prev pitch encoder to {prev_encoder_path}")
+    print(f"Saved feature columns to {feature_cols_path}")
 
 
 if __name__ == "__main__":
