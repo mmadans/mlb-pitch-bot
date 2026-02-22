@@ -97,6 +97,7 @@ def extract_pitches_with_context(play_data: dict) -> list[dict]:
         inning = about.get("inning") or 0
         half = about.get("halfInning", "")
 
+        at_bat_index = about.get("atBatIndex")
         pitch_events = [e for e in play["playEvents"] if e.get("isPitch")]
         prev_pitch_type_in_ab = None
 
@@ -108,6 +109,8 @@ def extract_pitches_with_context(play_data: dict) -> list[dict]:
             count = event.get("count", {})
 
             pitch = {
+                "at_bat_index": at_bat_index,
+                "pitch_index": event.get("index"),
                 "batter": batter,
                 "pitcher": pitcher,
                 "pitch_type": code,

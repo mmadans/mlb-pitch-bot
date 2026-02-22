@@ -1,8 +1,3 @@
-"""
-This script runs the MLB Pitch Bot, which finds a surprising pitch
-and posts it to Twitter.
-"""
-
 import os
 import pandas as pd
 import tweepy
@@ -10,25 +5,33 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def post_tweet(tweet_text: str):
-    """Posts a tweet to Twitter."""
-    # Authenticate to Twitter
-    # Make sure to set these environment variables in your .env file
+def get_twitter_conn_v2() -> tweepy.Client:
+    """Get Twitter connection using API v2."""
     consumer_key = os.getenv("TWITTER_CONSUMER_KEY")
     consumer_secret = os.getenv("TWITTER_CONSUMER_SECRET")
     access_token = os.getenv("TWITTER_ACCESS_TOKEN")
     access_token_secret = os.getenv("TWITTER_ACCESS_TOKEN_SECRET")
 
     if not all([consumer_key, consumer_secret, access_token, access_token_secret]):
+        return None
+
+    return tweepy.Client(
+        consumer_key=consumer_key,
+        consumer_secret=consumer_secret,
+        access_token=access_token,
+        access_token_secret=access_token_secret
+    )
+
+def post_tweet(tweet_text: str):
+    """Posts a tweet to Twitter using API v2."""
+    client = get_twitter_conn_v2()
+    if not client:
         print("Twitter credentials are not fully set in .env file. Skipping tweet.")
+        print(f"DEBUG - Would have tweeted:\n{tweet_text}")
         return
 
     try:
-        auth = tweepy.OAuth1UserHandler(
-            consumer_key, consumer_secret, access_token, access_token_secret
-        )
-        api = tweepy.API(auth)
-        api.update_status(tweet_text)
+        client.create_tweet(text=tweet_text)
         print("Tweet posted successfully!")
     except tweepy.TweepyException as e:
         print(f"Error posting tweet: {e}")
@@ -36,6 +39,8 @@ def post_tweet(tweet_text: str):
 
 def load_latest_dataset(data_dir: str = "data") -> pd.DataFrame | None:
     """Loads the most recent pitch feature dataset from the data directory."""
+    if not os.path.exists(data_dir):
+        return None
     files = [
         os.path.join(data_dir, f)
         for f in os.listdir(data_dir)
@@ -52,13 +57,7 @@ def load_latest_dataset(data_dir: str = "data") -> pd.DataFrame | None:
 def find_surprising_pitch(df: pd.DataFrame) -> pd.Series:
     """
     Finds a "surprising" pitch from the dataset.
-
-    A surprising pitch is defined as a pitch type thrown by a pitcher
-    with a very low tendency for that pitch type.
     """
-    # For now, let's define "surprising" as a pitch with the lowest tendency_pct
-    # for the pitch type that was actually thrown.
-    
     # Create a column with the tendency for the pitch that was thrown
     df["thrown_pitch_tendency"] = 0.0
     for pitch_type in df["pitch_type"].unique():
@@ -77,39 +76,39 @@ def find_surprising_pitch(df: pd.DataFrame) -> pd.Series:
     return surprising_pitch
 
 
-def format_tweet(pitch_data: pd.Series) -> str:
-    """Formats a tweet for a surprising pitch."""
-    pitcher = pitch_data["pitcher"]
-    batter = pitch_data["batter"]
-    pitch_type = pitch_data["pitch_type"]
-    tendency = pitch_data["thrown_pitch_tendency"]
+def format_tweet(pitcher: str, batter: str, pitch_type: str, surprisal: float, outcome: str) -> str:
+    """Formats a tweet for an interesting pitch event."""
+    if outcome == "strikeout":
+        emoji = "🪓"
+        header = "SURPRISING STRIKEOUT!"
+    else:
+        emoji = "💥"
+        header = "SURPRISING HARD HIT!"
 
     tweet = (
-        f"⚾ Surprising Pitch! ⚾\n\n"
+        f"{emoji} {header} {emoji}\n\n"
         f"Pitcher: {pitcher}\n"
         f"Batter: {batter}\n"
-        f"Pitch Type: {pitch_type}\n\n"
-        f"{pitcher} throws a {pitch_type} only {tendency:.1%} of the time!"
+        f"Pitch: {pitch_type}\n\n"
+        f"Surprisal: {surprisal:.2f} bits!\n"
+        f"Outcome: {outcome.replace('_', ' ').title()}"
     )
     return tweet
-
-
-def post_tweet(tweet_text: str):
-    """Posts a tweet to Twitter."""
-    try:
-        api.update_status(tweet_text)
-        print("Tweet posted successfully!")
-    except tweepy.TweepyException as e:
-        print(f"Error posting tweet: {e}")
 
 
 if __name__ == "__main__":
     dataset = load_latest_dataset()
     if dataset is not None:
         surprising_pitch = find_surprising_pitch(dataset)
-        tweet = format_tweet(surprising_pitch)
-        print("\n--- TWEET ---\n")
+        # Dummy surprisal for formatting test
+        tweet = format_tweet(
+            surprising_pitch["pitcher"], 
+            surprising_pitch["batter"], 
+            surprising_pitch["pitch_type"], 
+            4.5, 
+            "strikeout"
+        )
+        print("\n--- TWEET PREVIEW ---\n")
         print(tweet)
-        print("\n-------------\n")
-        # Uncomment the line below to actually post the tweet
+        print("\n---------------------\n")
         # post_tweet(tweet)

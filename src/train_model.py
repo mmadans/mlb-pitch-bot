@@ -53,7 +53,7 @@ def prepare_target_and_features(df: pd.DataFrame):
     feature_cols = ["prev_pitch_type_in_ab_enc"] + [c for c in feature_cols if c in df.columns]
 
     X = df[feature_cols].fillna(0)
-    return X, y_encoded, label_encoder, feature_cols
+    return X, y_encoded, label_encoder, prev_encoder, feature_cols
 
 
 def main() -> None:
@@ -66,7 +66,7 @@ def main() -> None:
     df = pd.read_csv(path)
     print(f"Loaded {len(df)} pitches.")
 
-    X, y, label_encoder, feature_cols = prepare_target_and_features(df)
+    X, y, label_encoder, prev_encoder, feature_cols = prepare_target_and_features(df)
     print(f"Features: {len(feature_cols)} columns.")
     print(f"Classes: {label_encoder.classes_.tolist()}.")
 
@@ -89,10 +89,15 @@ def main() -> None:
 
     model_path = models_dir / "pitch_classifier.pkl"
     encoder_path = models_dir / "encoder.pkl"
+    prev_encoder_path = models_dir / "prev_pitch_encoder.pkl"
+    
     joblib.dump(model, model_path)
     joblib.dump(label_encoder, encoder_path)
+    joblib.dump(prev_encoder, prev_encoder_path)
+    
     print(f"Saved model to {model_path}")
     print(f"Saved encoder to {encoder_path}")
+    print(f"Saved prev pitch encoder to {prev_encoder_path}")
 
 
 if __name__ == "__main__":
