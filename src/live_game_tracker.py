@@ -47,6 +47,32 @@ def prepare_features_for_model(df: pd.DataFrame, predictor: PitchPredictor) -> p
 
     return df[predictor.model.feature_names]
 
+def get_video_link(game_pk: int, play_id: str) -> str | None:
+    """
+    Fetches the official MLB video link for a specific play.
+    Note: Highlights usually take 2-5 minutes to appear after the play.
+    """
+    try:
+        content = statsapi.get("game_content", {"gamePk": game_pk})
+        highlights = content.get("highlights", {}).get("highlights", {}).get("items", [])
+        
+        # Look for a highlight that matches our playId
+        for item in highlights:
+            if item.get("playId") == play_id:
+                # Find the best quality mp4
+                playbacks = item.get("playbacks", [])
+                # Prefer 720p or 1080p mp4
+                best_url = None
+                for pb in playbacks:
+                    if "mp4" in pb.get("url", ""):
+                        url = pb.get("url")
+                        if "1200K" in url or "2500K" in url: # Decent qualities
+                            best_url = url
+                return best_url or (playbacks[0].get("url") if playbacks else None)
+    except Exception as e:
+        print(f"Error fetching video: {e}")
+    return None
+
 def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredictor):
     """Processes a pitch if it matches outcome criteria."""
     game_pk, at_bat_index, pitch_index = pitch_id
@@ -62,8 +88,6 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
     last_pitch_event = next((e for e in reversed(play_events) if e.get('isPitch')), None)
     
     if not last_pitch_event or last_pitch_event.get('index') != pitch_index:
-        # User requested ONLY to analyze pitches that result in SO or Barrel+No-Out.
-        # Usually these are play-ending pitches.
         return
 
     # Check outcomes
@@ -84,39 +108,29 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
 
     print(f"Analyzing interesting outcome: {outcome_str} in game {game_pk}")
 
-    # 2. Extract features and run inference
+    # 2. Extract basic info and tweet directly
     try:
-        pitch_rows = extract_pitches_with_context(game_data)
-        df = pd.DataFrame(pitch_rows)
-        df = add_global_pitcher_tendencies(df)
-        df = add_contextual_features(df)
-
-        # Build feature vector for the model
-        row = df[(df['at_bat_index'] == at_bat_index) & (df['pitch_index'] == pitch_index)].copy()
-        if row.empty: return
-
-        # Encode previous pitch if necessary (matching train_model.py logic)
-        # Note: PitchPredictor should handle this or we do it here.
-        # For simplicity, let's assume PitchPredictor handles the raw strings or we map them.
-        # Checking src/inference.py... it uses DMatrix(features_df).
+        pitcher_name = current_play.get('matchup', {}).get('pitcher', {}).get('fullName')
+        batter_name = current_play.get('matchup', {}).get('batter', {}).get('fullName')
+        actual_pitch_type = last_pitch_event.get('details', {}).get('type', {}).get('description', 'Pitch')
         
-        actual_pitch_type = row['pitch_type'].values[0]
-        model_input_df = prepare_features_for_model(row, predictor)
+        # Try to get playId for video lookup
+        play_id = current_play.get('playId')
+        video_url = None
+        if play_id:
+            # We wait a few seconds as the content API might be slightly behind the live data
+            time.sleep(2) 
+            video_url = get_video_link(game_pk, play_id)
+
+        tweet_text = format_tweet(pitcher_name, batter_name, actual_pitch_type, 0.0, outcome_str)
         
-        probabilities = predictor.predict_probabilities(model_input_df)
-        surprisal = predictor.calculate_surprisal(actual_pitch_type, probabilities)
-
-        print(f"  Pitch: {actual_pitch_type}, Surprisal: {surprisal:.2f}")
-
-        if surprisal > SURPRISAL_THRESHOLD:
-            pitcher_name = current_play.get('matchup', {}).get('pitcher', {}).get('fullName')
-            batter_name = current_play.get('matchup', {}).get('batter', {}).get('fullName')
-            
-            tweet_text = format_tweet(pitcher_name, batter_name, actual_pitch_type, surprisal, outcome_str)
-            post_tweet(tweet_text)
+        if video_url:
+            tweet_text += f"\n\n📺 Video: {video_url}"
+        
+        post_tweet(tweet_text)
 
     except Exception as e:
-        print(f"Error analyzing pitch: {e}")
+        print(f"Error posting tweet: {e}")
 
 def main():
     print("Starting MLB Live Game Tracker (Outcome-Focused Build)...")

@@ -90,9 +90,11 @@ def format_tweet(pitcher: str, batter: str, pitch_type: str, surprisal: float, o
         f"Pitcher: {pitcher}\n"
         f"Batter: {batter}\n"
         f"Pitch: {pitch_type}\n\n"
-        f"Surprisal: {surprisal:.2f} bits!\n"
         f"Outcome: {outcome.replace('_', ' ').title()}"
     )
+    if surprisal > 0:
+        tweet += f"\nSurprisal: {surprisal:.2f} bits!"
+    
     return tweet
 
 
