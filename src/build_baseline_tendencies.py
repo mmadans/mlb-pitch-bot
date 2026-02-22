@@ -2,8 +2,9 @@ import pandas as pd
 import joblib
 import os
 from src.features import add_global_pitcher_tendencies, add_pitcher_count_tendencies
+from src.constants import BASELINE_PATH
 
-def build_baseline(csv_path: str, output_path: str = "models/baseline_tendencies.pkl"):
+def build_baseline(csv_path: str, output_path: str = BASELINE_PATH):
     """
     Reads a historical CSV and builds a baseline tendency mapping.
     """

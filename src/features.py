@@ -1,18 +1,11 @@
 """
 Feature engineering from raw MLB API game JSON.
-Computes Pitcher's Tendency (last 5 pitches) and build_pitch_features
-(count one-hot, is_leverage, previous pitch in AB).
+Computes Pitcher's Situational tendencies (global and by count).
 """
 
 from collections import Counter
-
 import pandas as pd
-
-
-# Common pitch type groupings for tendency summary
-FASTBALL_CODES = {"FF", "FT", "FC", "SI", "FS", "SF", "FA", "ST"}
-BREAKING_CODES = {"SL", "CU", "KC", "SV", "CS", "CB", "GY"}
-OFFSPEED_CODES = {"CH", "SC", "FO", "KN", "EP"}
+from src.constants import FASTBALL_CODES, BREAKING_CODES, OFFSPEED_CODES
 
 
 def _classify_pitch_family(code: str | None) -> str:

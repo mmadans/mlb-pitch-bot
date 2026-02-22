@@ -14,7 +14,10 @@ import xgboost as xgb
 
 
 def get_data_path() -> Path:
-    """Return path to most recent pitch_features_*.csv in data/."""
+    """
+    Search the data directory and return the path to the most recent 
+    pitch feature CSV file.
+    """
     root = Path(__file__).resolve().parent.parent
     data_dir = root / "data"
     if not data_dir.exists():
@@ -26,7 +29,13 @@ def get_data_path() -> Path:
 
 
 def prepare_target_and_features(df: pd.DataFrame):
-    """Mirror notebook: prepare y (pitch_type) and X with same feature columns."""
+    """
+    Cleans and encodes raw pitch data for training.
+    
+    - Filters out rare pitch types (< 20 samples).
+    - Encodes categorical columns (pitch_type, prev_pitch_type).
+    - Selects final feature columns (situational, tendencies, count).
+    """
     df = df.dropna(subset=["pitch_type"]).copy()
     df["pitch_type"] = df["pitch_type"].astype(str).str.upper()
 

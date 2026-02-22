@@ -3,8 +3,14 @@ import pandas as pd
 import joblib
 import numpy as np
 
+from src.constants import MODEL_PATH, ENCODER_PATH, PREV_ENCODER_PATH, FEATURE_COLS_PATH
+
 class PitchPredictor:
-    def __init__(self, model_path='models/pitch_classifier.pkl', encoder_path='models/encoder.pkl', prev_encoder_path='models/prev_pitch_encoder.pkl', feature_cols_path='models/feature_cols.pkl'):
+    """
+    Wrapper for the XGBoost model to handle preprocessing and prediction.
+    """
+    def __init__(self, model_path=MODEL_PATH, encoder_path=ENCODER_PATH, prev_encoder_path=PREV_ENCODER_PATH, feature_cols_path=FEATURE_COLS_PATH):
+        """Loads the model and associated encoders from disk."""
         # Train model saves an XGBClassifier object via joblib
         self.model = joblib.load(model_path)
         self.encoder = joblib.load(encoder_path)
@@ -12,6 +18,14 @@ class PitchPredictor:
         self.feature_cols = joblib.load(feature_cols_path)
 
     def predict_probabilities(self, features_df):
+        """
+        Prepares features and calculates probabilities for each pitch type.
+        
+        Args:
+            features_df: A DataFrame containing a single row of pitch context.
+        Returns:
+            A dictionary mapping pitch types to their predicted probabilities.
+        """
         # Handle the categorical encoding for previous pitch
         if 'prev_pitch_type_in_ab' in features_df.columns:
             prev = features_df['prev_pitch_type_in_ab'].fillna("None").astype(str).str.upper()
@@ -37,5 +51,9 @@ class PitchPredictor:
         return dict(zip(pitch_names, probs[0]))
 
     def calculate_surprisal(self, actual_pitch, probs):
+        """
+        Calculates the surprisal of the actual pitch in bits.
+        Formula: -log2(P(pitch))
+        """
         p = probs.get(actual_pitch, 0.001) # Avoid log(0)
         return -np.log2(p)

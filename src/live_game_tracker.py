@@ -11,16 +11,23 @@ import os
 import joblib
 from dotenv import load_dotenv
 
-from src.features import extract_pitches_with_context, add_contextual_features, add_global_pitcher_tendencies
+from src.features import (
+    extract_pitches_with_context, 
+    add_contextual_features, 
+    add_global_pitcher_tendencies
+)
 from src.inference import PitchPredictor
 from src.bot import post_tweet, format_tweet
+from src.constants import (
+    POLLING_INTERVAL_SECONDS,
+    SURPRISAL_THRESHOLD,
+    BARREL_EV_THRESHOLD,
+    MODEL_PATH,
+    ENCODER_PATH,
+    BASELINE_PATH
+)
 
 load_dotenv()
-
-# --- Constants ---
-POLLING_INTERVAL_SECONDS = 30
-SURPRISAL_THRESHOLD = 2.5 # Adjusted for SOs/Barrels
-BARREL_EV_THRESHOLD = 98.0
 
 # --- State ---
 processed_pitches = set()
@@ -139,35 +146,39 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
         probabilities = predictor.predict_probabilities(row)
         surprisal = predictor.calculate_surprisal(actual_pitch_code, probabilities)
 
-        # Determine Narrative based on tendency
+        # Determine Narrative based on situational context and tendencies
         expected_prob = probabilities.get(actual_pitch_code, 0)
         is_surprise_pitch = expected_prob < 0.15
         
-        # Check if swinging or looking (for strikeouts)
+        # Check pitch description to distinguish swinging from looking
         pitch_description = last_pitch_event.get('details', {}).get('description', '').lower()
         is_looking = "called strike" in pitch_description
         is_swinging = "swinging strike" in pitch_description or "foul tip" in pitch_description
         
         print(f"  Pitch: {actual_pitch_code}, Prob: {expected_prob:.2f}, Surprisal: {surprisal:.2f}, Desc: {pitch_description}")
 
-        # 3. Filter by surprise or significance
+        # --- Narrative Selection Logic ---
         tweet_logic = False
         narrative = ""
         
         if event_type == "strikeout":
+            # 1. Unexpected pitch leads to strikeout (Frozen or Fooled)
             if is_surprise_pitch:
                 if is_looking:
                     narrative = "🥶 Frozen! Caught him looking with a pitch he wasn't expecting."
                 else:
                     narrative = "🔀 Fooled him! Went against tendency to get the swinging K."
                 tweet_logic = True
+            # 2. General high-surprisal strikeout fallback
             elif surprisal > SURPRISAL_THRESHOLD:
                 narrative = "🤯 Unbelievable K! High-surprisal pitch."
                 tweet_logic = True
         elif launch_speed >= BARREL_EV_THRESHOLD and not is_out:
+            # 3. Hitter hits a pitch they were statistically expecting
             if expected_prob > 0.4:
                 narrative = "🎯 Sitting on it! Hitter was waiting for that specific tendency."
                 tweet_logic = True
+            # 4. Hitter punishes an unconventional pitch
             elif surprisal > SURPRISAL_THRESHOLD:
                 narrative = "💥 Punished! Unconventional pitch didn't work."
                 tweet_logic = True
@@ -207,9 +218,9 @@ def main():
     print("Starting MLB Live Game Tracker (Simulation Mode)...")
     processed_pitches.clear()
     try:
-        baseline = joblib.load('models/baseline_tendencies.pkl')
+        baseline = joblib.load(BASELINE_PATH)
         # Ensure model paths are correct
-        predictor = PitchPredictor(model_path='models/pitch_classifier.pkl', encoder_path='models/encoder.pkl')
+        predictor = PitchPredictor(model_path=MODEL_PATH, encoder_path=ENCODER_PATH)
         print("Model and Baseline loaded.")
     except Exception as e:
         print(f"Error loading model: {e}. (Have you run src/train_model.py?)")
