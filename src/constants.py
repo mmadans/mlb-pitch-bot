@@ -1,6 +1,8 @@
-"""
-Shared constants for the MLB Pitch Bot.
-"""
+import os
+from pathlib import Path
+
+# Project root setup
+ROOT = Path(__file__).resolve().parent.parent
 
 # Common pitch type groupings
 FASTBALL_CODES = {"FF", "FT", "FC", "SI", "FS", "SF", "FA", "ST"}
@@ -12,9 +14,13 @@ SURPRISAL_THRESHOLD = 2.5
 BARREL_EV_THRESHOLD = 98.0
 POLLING_INTERVAL_SECONDS = 30
 
-# Model paths
-MODEL_PATH = 'models/pitch_classifier.pkl'
-ENCODER_PATH = 'models/encoder.pkl'
-PREV_ENCODER_PATH = 'models/prev_pitch_encoder.pkl'
-FEATURE_COLS_PATH = 'models/feature_cols.pkl'
-BASELINE_PATH = 'models/baseline_tendencies.pkl'
+# Model paths (Absolute for cross-directory compatibility)
+MODEL_PATH = str(ROOT / 'models/pitch_classifier.pkl')
+ENCODER_PATH = str(ROOT / 'models/encoder.pkl')
+PREV_ENCODER_PATH = str(ROOT / 'models/prev_pitch_encoder.pkl')
+P_HAND_ENCODER_PATH = str(ROOT / 'models/p_hand_encoder.pkl')
+B_SIDE_ENCODER_PATH = str(ROOT / 'models/b_side_encoder.pkl')
+MOB_ENCODER_PATH = str(ROOT / 'models/mob_encoder.pkl')
+FEATURE_COLS_PATH = str(ROOT / 'models/feature_cols.pkl')
+BASELINE_PATH = str(ROOT / 'models/baseline_tendencies.pkl')
+DATABASE_PATH = str(ROOT / 'data/pitches.db')

@@ -3,38 +3,61 @@ import pandas as pd
 import joblib
 import numpy as np
 
-from src.constants import MODEL_PATH, ENCODER_PATH, PREV_ENCODER_PATH, FEATURE_COLS_PATH
+from src.constants import (
+    MODEL_PATH, ENCODER_PATH, PREV_ENCODER_PATH, FEATURE_COLS_PATH,
+    P_HAND_ENCODER_PATH, B_SIDE_ENCODER_PATH, MOB_ENCODER_PATH
+)
+
+from src.features import _classify_pitch_family
 
 class PitchPredictor:
     """
     Wrapper for the XGBoost model to handle preprocessing and prediction.
     """
-    def __init__(self, model_path=MODEL_PATH, encoder_path=ENCODER_PATH, prev_encoder_path=PREV_ENCODER_PATH, feature_cols_path=FEATURE_COLS_PATH):
+    def __init__(self, model_path=MODEL_PATH, encoder_path=ENCODER_PATH, 
+                 prev_encoder_path=PREV_ENCODER_PATH, feature_cols_path=FEATURE_COLS_PATH,
+                 p_hand_path=P_HAND_ENCODER_PATH, b_side_path=B_SIDE_ENCODER_PATH,
+                 mob_path=MOB_ENCODER_PATH):
         """Loads the model and associated encoders from disk."""
-        # Train model saves an XGBClassifier object via joblib
         self.model = joblib.load(model_path)
         self.encoder = joblib.load(encoder_path)
         self.prev_encoder = joblib.load(prev_encoder_path)
         self.feature_cols = joblib.load(feature_cols_path)
+        self.p_hand_encoder = joblib.load(p_hand_path)
+        self.b_side_encoder = joblib.load(b_side_path)
+        self.mob_encoder = joblib.load(mob_path)
 
     def predict_probabilities(self, features_df):
         """
-        Prepares features and calculates probabilities for each pitch type.
+        Prepares features and calculates probabilities for each pitch family.
         
         Args:
             features_df: A DataFrame containing a single row of pitch context.
         Returns:
-            A dictionary mapping pitch types to their predicted probabilities.
+            A dictionary mapping pitch families to their predicted probabilities.
         """
-        # Handle the categorical encoding for previous pitch
+        # categorical encoding
         if 'prev_pitch_type_in_ab' in features_df.columns:
-            prev = features_df['prev_pitch_type_in_ab'].fillna("None").astype(str).str.upper()
-            # We need to handle unseen labels gracefully
-            # A simple way is to map unknown to the 'None' or 'UN' class index if it exists
+            raw_prev = features_df['prev_pitch_type_in_ab'].iloc[0]
+            family_prev = _classify_pitch_family(raw_prev)
             labels = list(self.prev_encoder.classes_)
-            features_df['prev_pitch_type_in_ab_enc'] = prev.apply(
-                lambda x: self.prev_encoder.transform([x])[0] if x in labels else self.prev_encoder.transform(["NONE"])[0] if "NONE" in labels else 0
-            )
+            val = self.prev_encoder.transform([family_prev])[0] if family_prev in labels else 0
+            features_df['prev_pitch_family_enc'] = val
+
+        if 'pitcher_hand' in features_df.columns:
+            val = features_df['pitcher_hand'].iloc[0] or "R"
+            labels = list(self.p_hand_encoder.classes_)
+            features_df['pitcher_hand_enc'] = self.p_hand_encoder.transform([val])[0] if val in labels else 0
+
+        if 'batter_side' in features_df.columns:
+            val = features_df['batter_side'].iloc[0] or "R"
+            labels = list(self.b_side_encoder.classes_)
+            features_df['batter_side_enc'] = self.b_side_encoder.transform([val])[0] if val in labels else 0
+
+        if 'men_on_base' in features_df.columns:
+            val = features_df['men_on_base'].iloc[0] or "Empty"
+            labels = list(self.mob_encoder.classes_)
+            features_df['men_on_base_enc'] = self.mob_encoder.transform([val])[0] if val in labels else 0
 
         # Ensure all columns the model expects are present
         for col in self.feature_cols:

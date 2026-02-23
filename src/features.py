@@ -10,7 +10,7 @@ from src.constants import FASTBALL_CODES, BREAKING_CODES, OFFSPEED_CODES
 
 def _classify_pitch_family(code: str | None) -> str:
     """Map pitch type code to family: Fastball, Breaking, Offspeed, or Other."""
-    if not code:
+    if not isinstance(code, str) or not code:
         return "Other"
     code = code.upper()
     if code in FASTBALL_CODES:
@@ -107,6 +107,9 @@ def extract_pitches_with_context(play_data: dict) -> list[dict]:
                 "batter": batter,
                 "pitcher": pitcher,
                 "pitch_type": code,
+                "pitcher_hand": matchup.get("pitchHand", {}).get("code"),
+                "batter_side": matchup.get("batSide", {}).get("code"),
+                "men_on_base": matchup.get("splits", {}).get("menOnBase"),
                 "call": details.get("description"),
                 "velocity": pitch_data.get("startSpeed"),
                 "spin_rate": (pitch_data.get("breaks") or {}).get("spinRate"),
