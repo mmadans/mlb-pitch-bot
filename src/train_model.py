@@ -1,5 +1,5 @@
 """
-Train XGBoost pitch-type classifier using data from SQLite or CSV.
+Train XGBoost pitch-type classifier using data from SQLite database.
 """
 import os
 import joblib

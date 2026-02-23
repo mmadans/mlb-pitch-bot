@@ -35,28 +35,20 @@ def build_baseline(df: pd.DataFrame, output_path: str = BASELINE_PATH):
 
 if __name__ == "__main__":
     import argparse
-    import glob
     
     p = argparse.ArgumentParser()
-    p.add_argument("--csv", type=str, default=None, help="Path to historical CSV. If None, uses DB or finds latest in data/")
-    p.add_argument("--no-db", action="store_false", dest="use_db", help="Do not use the SQLite database as source")
-    p.set_defaults(use_db=True)
+    p.add_argument("--db", type=str, default=DATABASE_PATH, help="Path to SQLite database")
     args = p.parse_args()
     
-    df = None
-    if args.use_db and os.path.exists(DATABASE_PATH):
-        print(f"Loading data from database: {DATABASE_PATH}")
-        df = query_all_pitches()
+    if not os.path.exists(args.db):
+        print(f"Database not found at {args.db}. Run dataset_generator first.")
+        exit(1)
+
+    print(f"Loading data from database: {args.db}")
+    df = query_all_pitches()
     
-    if df is None or df.empty:
-        csv_file = args.csv
-        if not csv_file:
-            files = glob.glob("data/raw_pitches_*.csv") or glob.glob("data/pitch_features_*.csv")
-            if not files:
-                print("No source found (DB or CSV). Please run dataset_generator first.")
-                exit(1)
-            csv_file = max(files)
-        print(f"Loading data from CSV: {csv_file}")
-        df = pd.read_csv(csv_file)
+    if df.empty:
+        print("Database is empty. Run dataset_generator first.")
+        exit(1)
         
     build_baseline(df)
