@@ -32,11 +32,12 @@ def _extract_all_pitches_from_games(games: list[dict]) -> pd.DataFrame:
     all_dfs = []
     for i, game in enumerate(games):
         game_id = game.get("game_id")
+        game_date = game.get("original_date", "")
         summary = game.get("summary", f"game {game_id}")
         print(f"    [{i+1}/{len(games)}] Extracting pitches from {summary}")
         try:
             play_data = statsapi.get("game", {"gamePk": game_id})
-            pitch_rows = extract_pitches_with_context(play_data)
+            pitch_rows = extract_pitches_with_context(play_data, game_date=game_date)
             if pitch_rows:
                 df = pd.DataFrame(pitch_rows)
                 df["game_pk"] = game_id

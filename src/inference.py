@@ -1,23 +1,23 @@
-import xgboost as xgb
 import pandas as pd
 import joblib
 import numpy as np
 
 from src.constants import (
     MODEL_PATH, ENCODER_PATH, PREV_ENCODER_PATH, FEATURE_COLS_PATH,
-    P_HAND_ENCODER_PATH, B_SIDE_ENCODER_PATH, MOB_ENCODER_PATH
+    P_HAND_ENCODER_PATH, B_SIDE_ENCODER_PATH, MOB_ENCODER_PATH, 
+    SCALER_PATH, BATTER_FEATURES_PATH
 )
 
 from src.features import _classify_pitch_family
 
 class PitchPredictor:
     """
-    Wrapper for the XGBoost model to handle preprocessing and prediction.
+    Wrapper for the pitch classification model to handle preprocessing and prediction.
     """
     def __init__(self, model_path=MODEL_PATH, encoder_path=ENCODER_PATH, 
                  prev_encoder_path=PREV_ENCODER_PATH, feature_cols_path=FEATURE_COLS_PATH,
                  p_hand_path=P_HAND_ENCODER_PATH, b_side_path=B_SIDE_ENCODER_PATH,
-                 mob_path=MOB_ENCODER_PATH):
+                 mob_path=MOB_ENCODER_PATH, scaler_path=SCALER_PATH):
         """Loads the model and associated encoders from disk."""
         self.model = joblib.load(model_path)
         self.encoder = joblib.load(encoder_path)
@@ -26,6 +26,11 @@ class PitchPredictor:
         self.p_hand_encoder = joblib.load(p_hand_path)
         self.b_side_encoder = joblib.load(b_side_path)
         self.mob_encoder = joblib.load(mob_path)
+        self.scaler = joblib.load(scaler_path)
+        try:
+            self.batter_features = joblib.load(BATTER_FEATURES_PATH)
+        except Exception:
+            self.batter_features = pd.DataFrame()
 
     def predict_probabilities(self, features_df):
         """
@@ -59,15 +64,27 @@ class PitchPredictor:
             labels = list(self.mob_encoder.classes_)
             features_df['men_on_base_enc'] = self.mob_encoder.transform([val])[0] if val in labels else 0
 
+        # Batter lookup
+        if not self.batter_features.empty and 'batter_id' in features_df.columns:
+            bid = features_df['batter_id'].iloc[0]
+            # Find the row in batter_features for this ID
+            b_stats = self.batter_features[self.batter_features['batter_id'] == bid]
+            if not b_stats.empty:
+                for col in b_stats.columns:
+                    if col != 'batter_id':
+                        features_df[col] = b_stats[col].iloc[0]
+
         # Ensure all columns the model expects are present
         for col in self.feature_cols:
             if col not in features_df.columns:
                 features_df[col] = 0
 
-        # XGBClassifier.predict_proba returns probability for each class
-        # Ensure we only pass the columns the model was trained on
+        # Scale features
         model_input = features_df[self.feature_cols]
-        probs = self.model.predict_proba(model_input)
+        model_input_scaled = self.scaler.transform(model_input)
+        
+        # Predict probabilities
+        probs = self.model.predict_proba(model_input_scaled)
         
         # Map probabilities to pitch names
         pitch_names = self.encoder.classes_

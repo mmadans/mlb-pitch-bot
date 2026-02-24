@@ -67,10 +67,11 @@ def _extract_pitches_in_order(game_json: dict) -> list[dict]:
     return pitches
 
 
-def extract_pitches_with_context(play_data: dict) -> list[dict]:
+def extract_pitches_with_context(play_data: dict, game_date: str | None = None) -> list[dict]:
     """
     Extract pitch-level rows with score at time of pitch and previous pitch in AB.
-    play_data: raw game JSON from MLB API (e.g. statsapi.get('game', {'gamePk': pk})).
+    play_data: raw game JSON from MLB API.
+    game_date: optional date string (YYYY-MM-DD). If not provided, tries to extract from play_data.
     """
     all_plays = play_data.get("liveData", {}).get("plays", {}).get("allPlays", [])
     pitches = []
@@ -84,8 +85,14 @@ def extract_pitches_with_context(play_data: dict) -> list[dict]:
             continue
 
         matchup = play.get("matchup", {})
-        batter = (matchup.get("batter") or {}).get("fullName", "")
-        pitcher = (matchup.get("pitcher") or {}).get("fullName", "")
+        batter_info = matchup.get("batter") or {}
+        batter_name = batter_info.get("fullName", "")
+        batter_id = batter_info.get("id")
+        
+        pitcher_info = matchup.get("pitcher") or {}
+        pitcher_name = pitcher_info.get("fullName", "")
+        pitcher_id = pitcher_info.get("id")
+
         about = play.get("about", {})
         inning = about.get("inning") or 0
         half = about.get("halfInning", "")
@@ -94,6 +101,8 @@ def extract_pitches_with_context(play_data: dict) -> list[dict]:
         pitch_events = [e for e in play["playEvents"] if e.get("isPitch")]
         prev_pitch_type_in_ab = None
 
+        if not game_date:
+            game_date = play_data.get("gameData", {}).get("datetime", {}).get("officialDate", "")
         for event in pitch_events:
             details = event.get("details", {})
             type_info = details.get("type", {})
@@ -104,8 +113,11 @@ def extract_pitches_with_context(play_data: dict) -> list[dict]:
             pitch = {
                 "at_bat_index": at_bat_index,
                 "pitch_index": event.get("index"),
-                "batter": batter,
-                "pitcher": pitcher,
+                "game_date": game_date,
+                "batter": batter_name,
+                "batter_id": batter_id,
+                "pitcher": pitcher_name,
+                "pitcher_id": pitcher_id,
                 "pitch_type": code,
                 "pitcher_hand": matchup.get("pitchHand", {}).get("code"),
                 "batter_side": matchup.get("batSide", {}).get("code"),
@@ -113,6 +125,7 @@ def extract_pitches_with_context(play_data: dict) -> list[dict]:
                 "call": details.get("description"),
                 "velocity": pitch_data.get("startSpeed"),
                 "spin_rate": (pitch_data.get("breaks") or {}).get("spinRate"),
+                "zone": pitch_data.get("zone"),
                 "inning": inning,
                 "half_inning": half,
                 "balls": count.get("balls"),
