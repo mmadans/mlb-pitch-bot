@@ -206,6 +206,40 @@ def add_pitcher_count_tendencies(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def add_batter_count_tendencies(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Adds batter tendency features specific to each count (balls and strikes).
+    For each (batter, balls, strikes), it calculates the frequency of each pitch family.
+    Historically, this captures how the league typically scouts/attacks this batter.
+    """
+    if df.empty:
+        return df
+        
+    # We want to use pitch families for more robust batter scouting
+    df = df.copy()
+    if 'pitch_family' not in df.columns:
+        df['pitch_family'] = df['pitch_type'].apply(_classify_pitch_family)
+        
+    # Group by batter, balls, strikes, and pitch_family to get counts
+    group_cols = ["batter_id", "balls", "strikes", "pitch_family"]
+    counts = df.groupby(group_cols).size().unstack(fill_value=0)
+    
+    # Calculate percentages per (batter, balls, strikes)
+    totals = counts.sum(axis=1)
+    percentages = counts.div(totals, axis=0)
+    
+    # Rename columns to reflect they are batter-count tendencies
+    percentages.columns = [
+        f"tendency_batter_count_{col}_pct" for col in percentages.columns
+    ]
+    
+    # Merge back to original dataframe
+    percentages = percentages.reset_index()
+    df = df.merge(percentages, on=["batter_id", "balls", "strikes"], how="left")
+    
+    return df
+
+
 def add_global_pitcher_tendencies(df: pd.DataFrame) -> pd.DataFrame:
     """
     Adds global (regardless of count) pitcher tendency features.

@@ -52,7 +52,7 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
     numeric = ["inning", "balls", "strikes", "outs", "is_leverage", "score_home", "score_away"]
     tendency_cols = [
         c for c in df.columns
-        if (c.startswith("tendency_global_") or c.startswith("tendency_count_")) and (c.endswith("_pct") or c == "tendency_total_pitches")
+        if (c.startswith("tendency_global_") or c.startswith("tendency_count_") or c.startswith("tendency_batter_count_")) and (c.endswith("_pct") or c == "tendency_total_pitches")
     ]
     feature_cols = count_cols + [c for c in numeric if c in df.columns] + tendency_cols
 

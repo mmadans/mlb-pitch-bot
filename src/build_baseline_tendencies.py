@@ -22,10 +22,15 @@ def build_baseline(df: pd.DataFrame, output_path: str = BASELINE_PATH):
     # Count: (pitcher, balls, strikes) -> {tendency_count_...}
     count_cols = [c for c in df_full.columns if c.startswith("tendency_count_")]
     baseline_count = df_full[["pitcher", "balls", "strikes"] + count_cols].groupby(["pitcher", "balls", "strikes"]).first().to_dict("index")
+
+    # Batter Count: (batter_id, balls, strikes) -> {tendency_batter_count_...}
+    batter_count_cols = [c for c in df_full.columns if c.startswith("tendency_batter_count_")]
+    baseline_batter_count = df_full[["batter_id", "balls", "strikes"] + batter_count_cols].dropna(subset=["batter_id"]).groupby(["batter_id", "balls", "strikes"]).first().to_dict("index")
     
     baseline = {
         "global": baseline_global,
         "count": baseline_count,
+        "batter_count": baseline_batter_count,
         "feature_cols": list(df_full.columns) # To know what columns to expect
     }
     

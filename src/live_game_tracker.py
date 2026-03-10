@@ -137,6 +137,12 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             p_count = baseline['count'].get((pitcher, balls, strikes), {})
             for col, val in p_count.items():
                 row[col] = val
+            
+            # Batter Count tendencies
+            batter_id = row['batter_id'].values[0]
+            b_count = baseline.get('batter_count', {}).get((batter_id, balls, strikes), {})
+            for col, val in b_count.items():
+                row[col] = val
         else:
             print("  Warning: Baseline tendencies not loaded. Expect surprises in predictions.")
 
