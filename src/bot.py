@@ -40,6 +40,44 @@ def post_tweet(tweet_text: str):
         print(f"Error posting tweet: {e}")
 
 
+def format_surprise_strikeout_tweet(
+    pitcher: str, 
+    batter: str, 
+    pitch_type: str, 
+    prob: float, 
+    is_whiff: bool,
+    inning_info: str,
+    score_info: str,
+    runners_info: str,
+    outs: int,
+    matchup_num: int,
+    sequence: list[str],
+    highlight_url: str = ""
+) -> str:
+    """
+    Formats a detailed tweet for a 'Surprise Strikeout'.
+    Template: <Pitcher> <freezes/whiffs> <batter> with <pitch> (% probability throwing it).
+    """
+    action = "whiffs" if is_whiff else "freezes"
+    prob_pct = f"{prob * 100:.1f}%"
+    
+    header = f"🪓 {pitcher} {action} {batter} with a {pitch_type} ({prob_pct} prob)."
+    
+    context = (
+        f"Context: {inning_info}, {score_info}, {runners_info}, {outs} Outs. "
+        f"Matchup #{matchup_num}."
+    )
+    
+    seq_str = "AB Sequence: " + ", ".join(sequence)
+    
+    tweet = f"{header}\n\n{context}\n{seq_str}"
+    
+    if highlight_url:
+        tweet += f"\n\nWatch: {highlight_url}"
+    
+    return tweet
+
+
 def format_tweet(pitcher: str, batter: str, pitch_type: str, surprisal: float, outcome: str) -> str:
     """
     Formats a tweet for an interesting pitch event.

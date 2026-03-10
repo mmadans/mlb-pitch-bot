@@ -16,6 +16,8 @@ from src.features import (
     add_global_pitcher_tendencies,
     add_pitcher_count_tendencies,
     add_batter_count_tendencies,
+    add_league_count_tendencies,
+    add_pitcher_out_pitch,
     extract_pitches_with_context,
 )
 from src.database import save_pitches_to_db
@@ -59,6 +61,8 @@ def add_features(df: pd.DataFrame) -> pd.DataFrame:
     print("    Adding situational features...")
     df = add_pitcher_count_tendencies(df)
     df = add_batter_count_tendencies(df)
+    df = add_league_count_tendencies(df)
+    df = add_pitcher_out_pitch(df)
     df = add_global_pitcher_tendencies(df)
     df = add_contextual_features(df)
     return df

@@ -240,6 +240,73 @@ def add_batter_count_tendencies(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def add_league_count_tendencies(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Adds league-wide pitch family frequencies for each count (balls and strikes).
+    Provides a "baseline" of what is expected regardless of the specific pitcher.
+    """
+    if df.empty:
+        return df
+        
+    df = df.copy()
+    if 'pitch_family' not in df.columns:
+        df['pitch_family'] = df['pitch_type'].apply(_classify_pitch_family)
+        
+    # Group by balls, strikes, and pitch_family to get league averages
+    group_cols = ["balls", "strikes", "pitch_family"]
+    counts = df.groupby(group_cols).size().unstack(fill_value=0)
+    
+    # Calculate percentages per count
+    totals = counts.sum(axis=1)
+    percentages = counts.div(totals, axis=0)
+    
+    # Rename columns to reflect they are league-count tendencies
+    percentages.columns = [
+        f"tendency_league_count_{col}_pct" for col in percentages.columns
+    ]
+    
+    # Merge back to original dataframe (join on count only)
+    percentages = percentages.reset_index()
+    df = df.merge(percentages, on=["balls", "strikes"], how="left")
+    
+    return df
+
+
+def add_pitcher_out_pitch(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Identifies the "Out Pitch" (highest K-rate) for each pitcher and adds it as a feature.
+    """
+    if df.empty:
+        return df
+        
+    df = df.copy()
+    if 'pitch_family' not in df.columns:
+        df['pitch_family'] = df['pitch_type'].apply(_classify_pitch_family)
+        
+    # Analyze strikeouts by pitch family per pitcher
+    # Assuming 'call' contains strikeout info if it's the 3rd strike
+    # However, 'call' is usually 'called strike' or 'swinging strike'.
+    # For a more robust 'Out Pitch', we should ideally look at the result of the play.
+    # But since we're at pitch level, let's define it as "pitches that lead to a whiff on strike 2".
+    df["is_whiff_strike_2"] = ((df["strikes"] == 2) & 
+                               df["call"].str.lower().str.contains("swinging strike|foul tip", na=False)).astype(int)
+    
+    out_pitch_stats = df.groupby(["pitcher_id", "pitch_family"]).agg(
+        total_pitches=("pitch_family", "count"),
+        total_whiffs=("is_whiff_strike_2", "sum")
+    ).reset_index()
+    
+    out_pitch_stats["whiff_rate"] = out_pitch_stats["total_whiffs"] / out_pitch_stats["total_pitches"]
+    
+    # Get the family with the highest wharf rate for each pitcher (primary out pitch)
+    idx = out_pitch_stats.groupby("pitcher_id")["whiff_rate"].idxmax()
+    primary_out_pitches = out_pitch_stats.loc[idx, ["pitcher_id", "pitch_family"]]
+    primary_out_pitches.columns = ["pitcher_id", "primary_out_pitch"]
+    
+    df = df.merge(primary_out_pitches, on="pitcher_id", how="left")
+    return df
+
+
 def add_global_pitcher_tendencies(df: pd.DataFrame) -> pd.DataFrame:
     """
     Adds global (regardless of count) pitcher tendency features.

@@ -14,7 +14,7 @@ from sklearn.preprocessing import StandardScaler
 from src.constants import (
     DATABASE_PATH, MODEL_PATH, ENCODER_PATH, PREV_ENCODER_PATH,
     P_HAND_ENCODER_PATH, B_SIDE_ENCODER_PATH, MOB_ENCODER_PATH,
-    SCALER_PATH, FEATURE_COLS_PATH
+    OUT_PITCH_ENCODER_PATH, SCALER_PATH, FEATURE_COLS_PATH
 )
 from src.database import query_all_pitches
 from src.dataset_generator import add_features
@@ -49,17 +49,17 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
     y_encoded = label_encoder.fit_transform(y)
 
     count_cols = [c for c in df.columns if c.startswith("count_") and "-" not in c]
-    numeric = ["inning", "balls", "strikes", "outs", "is_leverage", "score_home", "score_away"]
+    numeric = ["balls", "strikes", "outs", "is_leverage"]
     tendency_cols = [
         c for c in df.columns
-        if (c.startswith("tendency_global_") or c.startswith("tendency_count_") or c.startswith("tendency_batter_count_")) and (c.endswith("_pct") or c == "tendency_total_pitches")
+        if (c.startswith("tendency_global_") or c.startswith("tendency_count_") or c.startswith("tendency_batter_count_") or c.startswith("tendency_league_count_")) and (c.endswith("_pct") or c == "tendency_total_pitches")
     ]
     feature_cols = count_cols + [c for c in numeric if c in df.columns] + tendency_cols
 
     # Previous pitch family encoding
     print("    Encoding categorical features...")
     
-    # Handedness and Men On Base
+    # Handedness, Men On Base, and Out Pitch
     p_hand_enc = LabelEncoder()
     df["pitcher_hand_enc"] = p_hand_enc.fit_transform(df["pitcher_hand"].fillna("R"))
     
@@ -69,11 +69,14 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
     mob_enc = LabelEncoder()
     df["men_on_base_enc"] = mob_enc.fit_transform(df["men_on_base"].fillna("Empty"))
     
+    out_pitch_enc = LabelEncoder()
+    df["primary_out_pitch_enc"] = out_pitch_enc.fit_transform(df["primary_out_pitch"].fillna("Fastball"))
+
     df["prev_pitch_family"] = df["prev_pitch_type_in_ab"].apply(_classify_pitch_family)
     prev_encoder = LabelEncoder()
     df["prev_pitch_family_enc"] = prev_encoder.fit_transform(df["prev_pitch_family"])
     
-    new_cats = ["pitcher_hand_enc", "batter_side_enc", "men_on_base_enc", "prev_pitch_family_enc"]
+    new_cats = ["pitcher_hand_enc", "batter_side_enc", "men_on_base_enc", "prev_pitch_family_enc", "primary_out_pitch_enc"]
     feature_cols = new_cats + [c for c in feature_cols if c in df.columns]
 
     # Batter Tendencies Integration
@@ -83,8 +86,9 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
         batter_df = get_batter_features(df, use_api=True)
         df = df.merge(batter_df, on="batter_id", how="left")
         
-        # Add batter columns to feature list
-        batter_cols = [c for c in batter_df.columns if c != "batter_id"]
+        # Add batter columns to feature list (Filtering out low-importance stats)
+        exclude_stats = ["chase_rate", "whiff_rate", "k_pct"]
+        batter_cols = [c for c in batter_df.columns if c != "batter_id" and c not in exclude_stats]
         feature_cols += batter_cols
 
     X = df[feature_cols].fillna(0)
@@ -96,7 +100,7 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
     df.loc[leveraged_mask, "sample_weight"] = 2.0
     weights = df["sample_weight"]
 
-    return X, y_encoded, label_encoder, prev_encoder, feature_cols, p_hand_enc, b_side_enc, mob_enc, batter_df, weights
+    return X, y_encoded, label_encoder, prev_encoder, feature_cols, p_hand_enc, b_side_enc, mob_enc, out_pitch_enc, batter_df, weights
 
 
 def main() -> None:
@@ -125,7 +129,7 @@ def main() -> None:
     
     print(f"Training on {len(df)} pitches from recent 60 days.")
 
-    X, y, le, prev_le, feature_cols, p_le, b_le, mob_le, batter_df, weights = prepare_target_and_features(df)
+    X, y, le, prev_le, feature_cols, p_le, b_le, mob_le, out_pitch_le, batter_df, weights = prepare_target_and_features(df)
     print(f"Features: {len(feature_cols)} columns.")
     print(f"Classes: {le.classes_.tolist()}.")
 
@@ -171,6 +175,7 @@ def main() -> None:
     joblib.dump(p_le, P_HAND_ENCODER_PATH)
     joblib.dump(b_le, B_SIDE_ENCODER_PATH)
     joblib.dump(mob_le, MOB_ENCODER_PATH)
+    joblib.dump(out_pitch_le, OUT_PITCH_ENCODER_PATH)
     joblib.dump(scaler, SCALER_PATH)
     joblib.dump(feature_cols, FEATURE_COLS_PATH)
     

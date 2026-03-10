@@ -1,7 +1,13 @@
 import pandas as pd
 import joblib
 import os
-from src.features import add_global_pitcher_tendencies, add_pitcher_count_tendencies
+from src.features import (
+    add_global_pitcher_tendencies, 
+    add_pitcher_count_tendencies,
+    add_batter_count_tendencies,
+    add_league_count_tendencies,
+    add_pitcher_out_pitch
+)
 from src.constants import BASELINE_PATH, DATABASE_PATH
 from src.database import query_all_pitches
 
@@ -11,8 +17,11 @@ def build_baseline(df: pd.DataFrame, output_path: str = BASELINE_PATH):
     """
     print("Calculating tendencies from data...")
     # These functions add columns to the DF. We want to extract just the mapping.
-    df_global = add_global_pitcher_tendencies(df)
-    df_full = add_pitcher_count_tendencies(df_global)
+    df = add_global_pitcher_tendencies(df)
+    df = add_pitcher_count_tendencies(df)
+    df = add_batter_count_tendencies(df)
+    df = add_league_count_tendencies(df)
+    df_full = add_pitcher_out_pitch(df)
     
     # Extract unique mappings
     # Global: pitcher -> {tendency_global_...}
@@ -27,10 +36,19 @@ def build_baseline(df: pd.DataFrame, output_path: str = BASELINE_PATH):
     batter_count_cols = [c for c in df_full.columns if c.startswith("tendency_batter_count_")]
     baseline_batter_count = df_full[["batter_id", "balls", "strikes"] + batter_count_cols].dropna(subset=["batter_id"]).groupby(["batter_id", "balls", "strikes"]).first().to_dict("index")
     
+    # League Count: (balls, strikes) -> {tendency_league_count_...}
+    league_count_cols = [c for c in df_full.columns if c.startswith("tendency_league_count_")]
+    baseline_league_count = df_full[["balls", "strikes"] + league_count_cols].groupby(["balls", "strikes"]).first().to_dict("index")
+
+    # Out Pitch: pitcher_id -> primary_out_pitch
+    baseline_out_pitch = df_full[["pitcher_id", "primary_out_pitch"]].dropna().groupby("pitcher_id").first()["primary_out_pitch"].to_dict()
+
     baseline = {
         "global": baseline_global,
         "count": baseline_count,
         "batter_count": baseline_batter_count,
+        "league_count": baseline_league_count,
+        "out_pitch": baseline_out_pitch,
         "feature_cols": list(df_full.columns) # To know what columns to expect
     }
     
