@@ -299,7 +299,7 @@ def check_pending_tweets():
             print("🚀 [POSTING TWEET]")
             print(tweet_text)
             print("="*50 + "\n")
-            # post_tweet(tweet_text) # Enable for production
+            post_tweet(tweet_text) # Enable for production
         else:
             remaining.append(item)
             
