@@ -15,7 +15,8 @@ from dotenv import load_dotenv
 from src.features import (
     extract_pitches_with_context, 
     add_contextual_features, 
-    add_global_pitcher_tendencies
+    add_global_pitcher_tendencies,
+    _classify_pitch_family
 )
 from src.inference import PitchPredictor
 from src.bot import post_tweet, format_tweet, format_surprise_strikeout_tweet
@@ -56,6 +57,9 @@ def get_video_link(game_pk: int, play_id: str) -> str | None:
     Fetches the official MLB video link for a specific play.
     Note: Highlights usually take 2-5 minutes to appear after the play.
     """
+    if not play_id:
+        return None
+        
     try:
         content = statsapi.get("game_content", {"gamePk": game_pk})
         highlights = content.get("highlights", {}).get("highlights", {}).get("items", [])
@@ -160,12 +164,14 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
 
         # 2. Run inference
         actual_pitch_code = row['pitch_type'].values[0]
+        actual_pitch_family = _classify_pitch_family(actual_pitch_code)
+        
         # predict_probabilities now handles its own feature alignment and encoding
         probabilities = predictor.predict_probabilities(row)
-        surprisal = predictor.calculate_surprisal(actual_pitch_code, probabilities)
+        surprisal = predictor.calculate_surprisal(actual_pitch_family, probabilities)
 
         # Determine Narrative based on situational context and tendencies
-        expected_prob = probabilities.get(actual_pitch_code, 0)
+        expected_prob = probabilities.get(actual_pitch_family, 0)
         is_surprise_pitch = expected_prob < 0.15
         
         # Check pitch description to distinguish swinging from looking
@@ -213,7 +219,9 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             
             h_score = row['score_home'].values[0]
             a_score = row['score_away'].values[0]
-            score_info = f"{a_score}-{h_score} NYY" # NYY is a placeholder, strictly it should come from game data
+            a_team = game_data.get('gameData', {}).get('teams', {}).get('away', {}).get('abbreviation', 'AWY')
+            h_team = game_data.get('gameData', {}).get('teams', {}).get('home', {}).get('abbreviation', 'HOM')
+            score_info = f"{a_team} {a_score}, {h_team} {h_score}"
             
             mob = row['men_on_base'].values[0] or "Empty"
             runners_info = mob.replace('_', ' ')
@@ -225,25 +233,51 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             matchup_num = matchup_tracker.get(m_key, 0) + 1
             matchup_tracker[m_key] = matchup_num
             
-            # Sequence
-            sequence = [e.get('details', {}).get('type', {}).get('description', 'Unknown') for e in play_events if e.get('isPitch')]
+            # Sequence: Map each pitch to "Family (Description)"
+            # Limit to last 4 pitches and shorten descriptions to save character space
+            sequence = []
+            for e in play_events:
+                if e.get('isPitch'):
+                    p_code = e.get('details', {}).get('type', {}).get('code', 'UN')
+                    p_desc = e.get('details', {}).get('type', {}).get('description', 'Unknown')
+                    
+                    # Shorten common long descriptions
+                    p_desc = p_desc.replace('Four-Seam Fastball', '4-Seam') \
+                                 .replace('Fastball', 'FB') \
+                                 .replace('Changeup', 'CH') \
+                                 .replace('Curveball', 'CU') \
+                                 .replace('Slider', 'SL') \
+                                 .replace('Sinker', 'SI') \
+                                 .replace('Sweeper', 'ST') \
+                                 .replace('Knuckle Curve', 'KC') \
+                                 .replace('Splitter', 'FS') \
+                                 .replace('Cutter', 'FC')
+                                 
+                    p_family = _classify_pitch_family(p_code)
+                    sequence.append(f"{p_family} ({p_desc})")
+            
+            sequence = sequence[-4:] # Only show the last 4 pitches to avoid 280-char limit
+            
+            # Use playId from the pitch event if available, fallback to play level
+            precise_play_id = last_pitch_event.get('playId') or current_play.get('playId')
             
             # Queue the tweet for 5 minutes later
             post_time = datetime.now() + timedelta(minutes=5)
             
             # Prepare tweet text without video link first
             tweet_text = format_surprise_strikeout_tweet(
-                pitcher_name, batter_name, actual_pitch_desc, expected_prob, is_swinging,
+                pitcher_name, batter_name, actual_pitch_desc, actual_pitch_family, expected_prob, is_swinging,
                 inning_info, score_info, runners_info, outs, matchup_num, sequence
             )
             
             pending_tweets.append({
                 'post_at': post_time,
                 'game_pk': game_pk,
-                'play_id': current_play.get('playId'),
+                'play_id': precise_play_id,
                 'pitcher': pitcher_name,
                 'batter': batter_name,
                 'pitch_type': actual_pitch_desc,
+                'pitch_family': actual_pitch_family,
                 'prob': expected_prob,
                 'is_whiff': is_swinging,
                 'inning': inning_info,
@@ -289,7 +323,7 @@ def check_pending_tweets():
             # Format the final tweet
             tweet_text = format_surprise_strikeout_tweet(
                 item['pitcher'], item['batter'], item['pitch_type'], 
-                item['prob'], item['is_whiff'],
+                item['pitch_family'], item['prob'], item['is_whiff'],
                 item['inning'], item['score'], item['runners'], 
                 item['outs'], item['matchup_num'], item['sequence'],
                 highlight_url=video_url
@@ -319,6 +353,25 @@ def main():
         print(f"Error loading model: {e}. (Have you run src/train_model.py?)")
         # predictor = None # Allow running for debug, but here we probably want to stop
         return
+
+    # --- Startup Skip Logic ---
+    # To prevent spamming tweets for plays that already happened, 
+    # we mark all existing pitches in live games as 'processed' upon launch.
+    print("Initializing: Skipping already completed pitches in live games...")
+    live_game_pks = get_live_game_pks()
+    for game_pk in live_game_pks:
+        try:
+            game_data = statsapi.get("game", {"gamePk": game_pk})
+            all_plays = game_data.get("liveData", {}).get("plays", {}).get("allPlays", [])
+            for play in all_plays:
+                at_bat_idx = play.get("about", {}).get("atBatIndex")
+                for event in play.get("playEvents", []):
+                    if event.get("isPitch"):
+                        processed_pitches.add((game_pk, at_bat_idx, event.get("index")))
+        except Exception as e:
+            print(f"Error during initialization for game {game_pk}: {e}")
+    
+    print(f"Initialization complete. Monitoring {len(live_game_pks)} games.")
 
     while True:
         # Check queue
