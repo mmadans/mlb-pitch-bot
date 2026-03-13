@@ -159,6 +159,10 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             # Out Pitch
             pitcher_id = row['pitcher_id'].values[0]
             row['primary_out_pitch'] = baseline.get('out_pitch', {}).get(pitcher_id, "Fastball")
+
+            # Park ID
+            venue_id = game_data.get('gameData', {}).get('venue', {}).get('id', 0)
+            row['park_id'] = venue_id
         else:
             print("  Warning: Baseline tendencies not loaded. Expect surprises in predictions.")
 

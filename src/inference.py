@@ -5,7 +5,7 @@ import numpy as np
 from src.constants import (
     MODEL_PATH, ENCODER_PATH, PREV_ENCODER_PATH, FEATURE_COLS_PATH,
     P_HAND_ENCODER_PATH, B_SIDE_ENCODER_PATH, MOB_ENCODER_PATH, 
-    OUT_PITCH_ENCODER_PATH, SCALER_PATH, BATTER_FEATURES_PATH
+    OUT_PITCH_ENCODER_PATH, PARK_ENCODER_PATH, SCALER_PATH, BATTER_FEATURES_PATH
 )
 
 from src.features import _classify_pitch_family
@@ -18,7 +18,7 @@ class PitchPredictor:
                  prev_encoder_path=PREV_ENCODER_PATH, feature_cols_path=FEATURE_COLS_PATH,
                  p_hand_path=P_HAND_ENCODER_PATH, b_side_path=B_SIDE_ENCODER_PATH,
                  mob_path=MOB_ENCODER_PATH, out_pitch_path=OUT_PITCH_ENCODER_PATH,
-                 scaler_path=SCALER_PATH):
+                 park_path=PARK_ENCODER_PATH, scaler_path=SCALER_PATH):
         """Loads the model and associated encoders from disk."""
         self.model = joblib.load(model_path)
         self.encoder = joblib.load(encoder_path)
@@ -28,6 +28,7 @@ class PitchPredictor:
         self.b_side_encoder = joblib.load(b_side_path)
         self.mob_encoder = joblib.load(mob_path)
         self.out_pitch_encoder = joblib.load(out_pitch_path)
+        self.park_encoder = joblib.load(park_path)
         self.scaler = joblib.load(scaler_path)
         try:
             self.batter_features = joblib.load(BATTER_FEATURES_PATH)
@@ -70,6 +71,11 @@ class PitchPredictor:
             val = features_df['primary_out_pitch'].iloc[0] or "Fastball"
             labels = list(self.out_pitch_encoder.classes_)
             features_df['primary_out_pitch_enc'] = self.out_pitch_encoder.transform([val])[0] if val in labels else 0
+
+        if 'park_id' in features_df.columns:
+            val = str(features_df['park_id'].iloc[0] or "0")
+            labels = list(self.park_encoder.classes_)
+            features_df['park_id_enc'] = self.park_encoder.transform([val])[0] if val in labels else 0
 
         # Batter lookup
         if not self.batter_features.empty and 'batter_id' in features_df.columns:

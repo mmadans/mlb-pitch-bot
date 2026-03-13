@@ -9,12 +9,13 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, balanced_accuracy_score, confusion_matrix
 from sklearn.linear_model import LogisticRegression
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.preprocessing import StandardScaler
 
 from src.constants import (
     DATABASE_PATH, MODEL_PATH, ENCODER_PATH, PREV_ENCODER_PATH,
     P_HAND_ENCODER_PATH, B_SIDE_ENCODER_PATH, MOB_ENCODER_PATH,
-    OUT_PITCH_ENCODER_PATH, SCALER_PATH, FEATURE_COLS_PATH
+    OUT_PITCH_ENCODER_PATH, PARK_ENCODER_PATH, SCALER_PATH, FEATURE_COLS_PATH
 )
 from src.database import query_all_pitches
 from src.dataset_generator import add_features
@@ -72,11 +73,14 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
     out_pitch_enc = LabelEncoder()
     df["primary_out_pitch_enc"] = out_pitch_enc.fit_transform(df["primary_out_pitch"].fillna("Fastball"))
 
+    park_enc = LabelEncoder()
+    df["park_id_enc"] = park_enc.fit_transform(df["park_id"].fillna(0).astype(str))
+
     df["prev_pitch_family"] = df["prev_pitch_type_in_ab"].apply(_classify_pitch_family)
     prev_encoder = LabelEncoder()
     df["prev_pitch_family_enc"] = prev_encoder.fit_transform(df["prev_pitch_family"])
     
-    new_cats = ["pitcher_hand_enc", "batter_side_enc", "men_on_base_enc", "prev_pitch_family_enc", "primary_out_pitch_enc"]
+    new_cats = ["pitcher_hand_enc", "batter_side_enc", "men_on_base_enc", "prev_pitch_family_enc", "primary_out_pitch_enc", "park_id_enc"]
     feature_cols = new_cats + [c for c in feature_cols if c in df.columns]
 
     # Batter Tendencies Integration
@@ -93,6 +97,10 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
 
     X = df[feature_cols].fillna(0)
     
+    # RE-ENCODE y here to ensure it perfectly matches the final df/X length
+    # (The merge might have changed row count or alignment if not 1:1)
+    y_final = label_encoder.transform(df["pitch_family"])
+    
     # Store Leverage weights (2 strikes or 3 balls)
     # Give 2.0x weight to high-advantage/disadvantage situations
     df["sample_weight"] = 1.0
@@ -100,7 +108,7 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
     df.loc[leveraged_mask, "sample_weight"] = 2.0
     weights = df["sample_weight"]
 
-    return X, y_encoded, label_encoder, prev_encoder, feature_cols, p_hand_enc, b_side_enc, mob_enc, out_pitch_enc, batter_df, weights
+    return X, y_final, label_encoder, prev_encoder, feature_cols, p_hand_enc, b_side_enc, mob_enc, out_pitch_enc, park_enc, batter_df, weights
 
 
 def main() -> None:
@@ -129,7 +137,7 @@ def main() -> None:
     
     print(f"Training on {len(df)} pitches from recent 60 days.")
 
-    X, y, le, prev_le, feature_cols, p_le, b_le, mob_le, out_pitch_le, batter_df, weights = prepare_target_and_features(df)
+    X, y, le, prev_le, feature_cols, p_le, b_le, mob_le, out_pitch_le, park_le, batter_df, weights = prepare_target_and_features(df)
     print(f"Features: {len(feature_cols)} columns.")
     print(f"Classes: {le.classes_.tolist()}.")
 
@@ -143,15 +151,17 @@ def main() -> None:
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
 
-    # Initialize and train Logistic Regression with Hyperparameter Tuning
-    print("Training Logistic Regression model with tuned hyperparameters...")
-    model = LogisticRegression(
+    # Initialize and train Calibrated Logistic Regression with Hyperparameter Tuning
+    print("Training Logistic Regression model with Isotonic Calibration...")
+    base_model = LogisticRegression(
         max_iter=1000,
         C=0.1,  # Stronger regularization
         class_weight='balanced',  # Crucial for maximizing balanced_accuracy on non-Fastballs
         solver='lbfgs',
         random_state=42
     )
+    
+    model = CalibratedClassifierCV(estimator=base_model, method='isotonic', cv=5)
     model.fit(X_train_scaled, y_train, sample_weight=w_train)
 
     y_pred = model.predict(X_test_scaled)
@@ -176,6 +186,7 @@ def main() -> None:
     joblib.dump(b_le, B_SIDE_ENCODER_PATH)
     joblib.dump(mob_le, MOB_ENCODER_PATH)
     joblib.dump(out_pitch_le, OUT_PITCH_ENCODER_PATH)
+    joblib.dump(park_le, PARK_ENCODER_PATH)
     joblib.dump(scaler, SCALER_PATH)
     joblib.dump(feature_cols, FEATURE_COLS_PATH)
     

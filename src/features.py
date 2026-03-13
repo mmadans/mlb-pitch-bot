@@ -103,6 +103,7 @@ def extract_pitches_with_context(play_data: dict, game_date: str | None = None) 
 
         if not game_date:
             game_date = play_data.get("gameData", {}).get("datetime", {}).get("officialDate", "")
+        venue_id = play_data.get("gameData", {}).get("venue", {}).get("id")
         for event in pitch_events:
             details = event.get("details", {})
             type_info = details.get("type", {})
@@ -133,6 +134,7 @@ def extract_pitches_with_context(play_data: dict, game_date: str | None = None) 
                 "outs": count.get("outs"),
                 "score_home": home_score,
                 "score_away": away_score,
+                "park_id": venue_id,
                 "prev_pitch_type_in_ab": prev_pitch_type_in_ab,
             }
             pitches.append(pitch)
