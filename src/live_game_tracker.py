@@ -193,13 +193,17 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             # 1. Unexpected pitch leads to strikeout (Frozen or Fooled)
             if is_surprise_pitch:
                 if is_looking:
-                    narrative = "🥶 Frozen! Caught him looking with a pitch he wasn't expecting."
+                    narrative = "🥶 Frozen! Caught him looking."
                 else:
-                    narrative = "🔀 Fooled him! Went against tendency to get the swinging K."
+                    narrative = "🔀 Fooled him! Went against tendency."
                 tweet_logic = True
-            # 2. General high-surprisal strikeout fallback
+            # 2. Dominance: Predictive fastball but still gets the whiff
+            elif expected_prob > 0.8 and actual_pitch_family == "Fastball" and is_swinging:
+                narrative = "😤 Pure Dominance. He knew it was coming and still missed."
+                tweet_logic = True
+            # 3. General high-surprisal strikeout fallback
             elif surprisal > SURPRISAL_THRESHOLD:
-                narrative = "🤯 Unbelievable K! High-surprisal pitch."
+                narrative = "🤯 Unbelievable K!"
                 tweet_logic = True
         elif launch_speed >= BARREL_EV_THRESHOLD and not is_out:
             # 3. Hitter hits a pitch they were statistically expecting
@@ -271,7 +275,8 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             # Prepare tweet text without video link first
             tweet_text = format_surprise_strikeout_tweet(
                 pitcher_name, batter_name, actual_pitch_desc, actual_pitch_family, expected_prob, is_swinging,
-                inning_info, score_info, runners_info, outs, matchup_num, sequence
+                inning_info, score_info, runners_info, outs, matchup_num, sequence,
+                narrative=narrative
             )
             
             pending_tweets.append({
@@ -289,7 +294,8 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
                 'runners': runners_info,
                 'outs': outs,
                 'matchup_num': matchup_num,
-                'sequence': sequence
+                'sequence': sequence,
+                'narrative': narrative
             })
             
             print(f"  Queued surprise strikeout tweet for {post_time.strftime('%H:%M:%S')}")
@@ -330,6 +336,7 @@ def check_pending_tweets():
                 item['pitch_family'], item['prob'], item['is_whiff'],
                 item['inning'], item['score'], item['runners'], 
                 item['outs'], item['matchup_num'], item['sequence'],
+                narrative=item.get('narrative', ""),
                 highlight_url=video_url
             )
             

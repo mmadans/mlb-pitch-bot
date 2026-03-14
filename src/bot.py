@@ -40,6 +40,29 @@ def post_tweet(tweet_text: str):
         print(f"Error posting tweet: {e}")
 
 
+PITCH_ABBR = {
+    "Four-Seam Fastball": "FF",
+    "Sinker": "SI",
+    "Cutter": "FC",
+    "Slider": "SL",
+    "Sweeper": "ST",
+    "Curveball": "CU",
+    "Knuckle Curve": "KC",
+    "Changeup": "CH",
+    "Splitter": "FS",
+    "Slurve": "SV",
+    "Knuckleball": "KN",
+    "Forkball": "FO",
+    "Eephus": "EP",
+    "Screwball": "SC",
+    "Other": "OT",
+    "Unknown": "UN"
+}
+
+def _get_pitch_abbr(full_name: str) -> str:
+    """Returns a short abbreviation for a pitch type."""
+    return PITCH_ABBR.get(full_name, full_name[:3].upper())
+
 def format_surprise_strikeout_tweet(
     pitcher: str, 
     batter: str, 
@@ -53,28 +76,53 @@ def format_surprise_strikeout_tweet(
     outs: int,
     matchup_num: int,
     sequence: list[str],
+    narrative: str = "",
     highlight_url: str = ""
 ) -> str:
     """
-    Formats a detailed tweet for a 'Surprise Strikeout'.
+    Formats a detailed tweet for a 'Surprise Strikeout' with 280-char limit in mind.
     """
     action = "whiffs" if is_whiff else "freezes"
     prob_pct = f"{prob * 100:.1f}%"
+    p_abbr = _get_pitch_abbr(pitch_type)
     
-    header = f"🪓 {pitcher} {action} {batter} with a {pitch_type} ({prob_pct} Probability of {pitch_family})."
+    # 1. Header with Narrative
+    header_prefix = f"{narrative} " if narrative else ""
+    header = f"{header_prefix}{pitcher} {action} {batter} with a {p_abbr}.\n"
+    header += f"Prob: {prob_pct} of {pitch_family}."
     
+    # 2. Context (Compressed)
     context = (
-        f"Context: {inning_info}, {score_info}, {runners_info}, {outs} Outs. "
-        f"Matchup #{matchup_num}."
+        f"In: {inning_info} | {score_info}\n"
+        f"OB: {runners_info} | {outs} Out | AB #{matchup_num}"
     )
     
-    seq_str = "AB Sequence:\n" + "\n".join([f"{i+1}. {s}" for i, s in enumerate(sequence)])
+    # 3. Sequence (Abbreviations)
+    def format_seq_item(s):
+        # Expecting "Family (Description)"
+        if "(" in s:
+            fam, desc = s.split(" (")
+            desc = desc.rstrip(")")
+            return f"{_get_pitch_abbr(desc)}"
+        return s[:2]
+
+    seq_abbrs = [format_seq_item(s) for s in sequence]
+    seq_str = "Sequence: " + " -> ".join(seq_abbrs)
     
-    tweet = f"{header}\n\n{context}\n\n{seq_str}"
-    
+    parts = [header, context, seq_str]
     if highlight_url:
-        tweet += f"\n\nWatch: {highlight_url}"
+        parts.append(f"Video: {highlight_url}")
     
+    tweet = "\n\n".join(parts)
+    
+    # Truncation safety
+    if len(tweet) > 280:
+        # If still over, drop the sequence
+        parts = [header, context]
+        if highlight_url:
+            parts.append(f"Video: {highlight_url}")
+        tweet = "\n\n".join(parts)
+        
     return tweet
 
 
