@@ -50,11 +50,7 @@ Pre-calculate pitcher tendencies for fast live lookup.
 uv run python -m src.build_baseline_tendencies
 ```
 
-### 3. Train the Brain
-Train the XGBoost model to predict pitch probabilities without "leaky" physical features (velocity/spin).
-```bash
-uv run python -m src.train_model
-```
+
 
 ### 4. Start Live Tracking
 Launch the bot to monitor today's games.

@@ -18,6 +18,7 @@ POLLING_INTERVAL_SECONDS = 30
 MODEL_PATH = str(ROOT / 'models/pitch_classifier.pkl')
 ENCODER_PATH = str(ROOT / 'models/encoder.pkl')
 PREV_ENCODER_PATH = str(ROOT / 'models/prev_pitch_encoder.pkl')
+PREV_CALL_ENCODER_PATH = str(ROOT / 'models/prev_call_encoder.pkl')
 P_HAND_ENCODER_PATH = str(ROOT / 'models/p_hand_encoder.pkl')
 B_SIDE_ENCODER_PATH = str(ROOT / 'models/b_side_encoder.pkl')
 MOB_ENCODER_PATH = str(ROOT / 'models/mob_encoder.pkl')

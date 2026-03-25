@@ -100,6 +100,7 @@ def extract_pitches_with_context(play_data: dict, game_date: str | None = None) 
         at_bat_index = about.get("atBatIndex")
         pitch_events = [e for e in play["playEvents"] if e.get("isPitch")]
         prev_pitch_type_in_ab = None
+        prev_pitch_call_in_ab = None
 
         if not game_date:
             game_date = play_data.get("gameData", {}).get("datetime", {}).get("officialDate", "")
@@ -136,9 +137,11 @@ def extract_pitches_with_context(play_data: dict, game_date: str | None = None) 
                 "score_away": away_score,
                 "park_id": venue_id,
                 "prev_pitch_type_in_ab": prev_pitch_type_in_ab,
+                "prev_pitch_call": prev_pitch_call_in_ab,
             }
             pitches.append(pitch)
             prev_pitch_type_in_ab = (code or "UN").upper() if code else "UN"
+            prev_pitch_call_in_ab = details.get("description")
 
         result = play.get("result", {})
         home_score = result.get("homeScore", home_score)
@@ -172,6 +175,15 @@ def add_contextual_features(df: pd.DataFrame) -> pd.DataFrame:
     # Leverage: inning > 7 and score diff <= 2
     score_home = df["score_home"].fillna(0).astype(int)
     score_away = df["score_away"].fillna(0).astype(int)
+    
+    # Run Differential: Pitching Team Score - Batting Team Score
+    df["run_differential"] = 0
+    is_top = (df["half_inning"].str.lower() == "top")
+    # Top inning: Away bats, Home pitches
+    df.loc[is_top, "run_differential"] = score_home[is_top] - score_away[is_top]
+    # Bottom inning: Home bats, Away pitches
+    df.loc[~is_top, "run_differential"] = score_away[~is_top] - score_home[~is_top]
+
     df["score_diff"] = (score_home - score_away).abs()
     inning = df["inning"].fillna(0).astype(int)
     df["is_leverage"] = ((inning > 7) & (df["score_diff"] <= 2)).astype(int)

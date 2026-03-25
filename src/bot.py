@@ -88,13 +88,15 @@ def format_surprise_strikeout_tweet(
     
     # 1. Header with Narrative
     header_prefix = f"{narrative} " if narrative else ""
-    header = f"{header_prefix}{pitcher} {action} {batter} with a {p_abbr}.\n"
-    header += f"Prob: {prob_pct} of {pitch_family}."
+    header = f"{header_prefix}{pitcher} {action} {batter} with a {pitch_type}.\n"
+    header += f"Prob: {prob_pct} of {pitch_family.replace('Breaking', 'Breaking Ball')}."
     
-    # 2. Context (Compressed)
+    # 2. Context (Expanded)
     context = (
-        f"In: {inning_info} | {score_info}\n"
-        f"OB: {runners_info} | {outs} Out | AB #{matchup_num}"
+        f"Inning: {inning_info}\n"
+        f"Outs: {outs}\n"
+        f"Score: {score_info}\n"
+        f"Bases: {runners_info}"
     )
     
     # 3. Sequence (Abbreviations)

@@ -3,9 +3,9 @@ import joblib
 import numpy as np
 
 from src.constants import (
-    MODEL_PATH, ENCODER_PATH, PREV_ENCODER_PATH, FEATURE_COLS_PATH,
     P_HAND_ENCODER_PATH, B_SIDE_ENCODER_PATH, MOB_ENCODER_PATH, 
-    OUT_PITCH_ENCODER_PATH, PARK_ENCODER_PATH, SCALER_PATH, BATTER_FEATURES_PATH
+    OUT_PITCH_ENCODER_PATH, PARK_ENCODER_PATH, BATTER_FEATURES_PATH,
+    PREV_CALL_ENCODER_PATH
 )
 
 from src.features import _classify_pitch_family
@@ -18,7 +18,7 @@ class PitchPredictor:
                  prev_encoder_path=PREV_ENCODER_PATH, feature_cols_path=FEATURE_COLS_PATH,
                  p_hand_path=P_HAND_ENCODER_PATH, b_side_path=B_SIDE_ENCODER_PATH,
                  mob_path=MOB_ENCODER_PATH, out_pitch_path=OUT_PITCH_ENCODER_PATH,
-                 park_path=PARK_ENCODER_PATH, scaler_path=SCALER_PATH):
+                 park_path=PARK_ENCODER_PATH, prev_call_path=PREV_CALL_ENCODER_PATH):
         """Loads the model and associated encoders from disk."""
         self.model = joblib.load(model_path)
         self.encoder = joblib.load(encoder_path)
@@ -29,7 +29,7 @@ class PitchPredictor:
         self.mob_encoder = joblib.load(mob_path)
         self.out_pitch_encoder = joblib.load(out_pitch_path)
         self.park_encoder = joblib.load(park_path)
-        self.scaler = joblib.load(scaler_path)
+        self.prev_call_encoder = joblib.load(prev_call_path)
         try:
             self.batter_features = joblib.load(BATTER_FEATURES_PATH)
         except Exception:
@@ -51,6 +51,11 @@ class PitchPredictor:
             labels = list(self.prev_encoder.classes_)
             val = self.prev_encoder.transform([family_prev])[0] if family_prev in labels else 0
             features_df['prev_pitch_family_enc'] = val
+
+        if 'prev_pitch_call' in features_df.columns:
+            val = str(features_df['prev_pitch_call'].iloc[0] or "None")
+            labels = list(self.prev_call_encoder.classes_)
+            features_df['prev_pitch_call_enc'] = self.prev_call_encoder.transform([val])[0] if val in labels else 0
 
         if 'pitcher_hand' in features_df.columns:
             val = features_df['pitcher_hand'].iloc[0] or "R"
@@ -87,17 +92,19 @@ class PitchPredictor:
                     if col != 'batter_id':
                         features_df[col] = b_stats[col].iloc[0]
 
+        # Add platoon advantage
+        if 'pitcher_hand' in features_df.columns and 'batter_side' in features_df.columns:
+            features_df['is_platoon_advantage'] = ((features_df['pitcher_hand'] == features_df['batter_side']) & (features_df['batter_side'] != 'S')).astype(int)
+
         # Ensure all columns the model expects are present
         for col in self.feature_cols:
             if col not in features_df.columns:
-                features_df[col] = 0
+                features_df[col] = 0.0
 
-        # Scale features
         model_input = features_df[self.feature_cols]
-        model_input_scaled = self.scaler.transform(model_input)
         
         # Predict probabilities
-        probs = self.model.predict_proba(model_input_scaled)
+        probs = self.model.predict_proba(model_input)
         
         # Map probabilities to pitch names
         pitch_names = self.encoder.classes_

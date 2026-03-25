@@ -193,13 +193,13 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             # 1. Unexpected pitch leads to strikeout (Frozen or Fooled)
             if is_surprise_pitch:
                 if is_looking:
-                    narrative = "🥶 Frozen! Caught him looking."
+                    narrative = "🥶 Frozen!"
                 else:
-                    narrative = "🔀 Fooled him! Went against tendency."
+                    narrative = "🔀 Fooled him!"
                 tweet_logic = True
             # 2. Dominance: Predictive fastball but still gets the whiff
             elif expected_prob > 0.8 and actual_pitch_family == "Fastball" and is_swinging:
-                narrative = "😤 Pure Dominance. He knew it was coming and still missed."
+                narrative = "😤 Pure Dominance."
                 tweet_logic = True
             # 3. General high-surprisal strikeout fallback
             elif surprisal > SURPRISAL_THRESHOLD:
@@ -208,11 +208,11 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
         elif launch_speed >= BARREL_EV_THRESHOLD and not is_out:
             # 3. Hitter hits a pitch they were statistically expecting
             if expected_prob > 0.4:
-                narrative = "🎯 Sitting on it! Hitter was waiting for that specific tendency."
+                narrative = "🎯 Sitting on it!"
                 tweet_logic = True
             # 4. Hitter punishes an unconventional pitch
             elif surprisal > SURPRISAL_THRESHOLD:
-                narrative = "💥 Punished! Unconventional pitch didn't work."
+                narrative = "💥 Punished!"
                 tweet_logic = True
 
         if tweet_logic and event_type == "strikeout":
