@@ -88,7 +88,11 @@ def build_dataset(
         print(f"Processing games for {d_str}...")
         
         games = statsapi.schedule(date=d_str)
-        final_games = [g for g in games if g.get("status") == "Final"]
+        # Filter for Final games that are Regular Season (R), Postseason (P), or World Series (W)
+        final_games = [
+            g for g in games 
+            if g.get("status") == "Final" and g.get("game_type") in ["R", "P", "W"]
+        ]
         
         if final_games:
             day_df = _extract_all_pitches_from_games(final_games)

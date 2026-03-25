@@ -100,6 +100,15 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
     ]
     feature_cols = count_cols + [c for c in numeric if c in df.columns] + tendency_cols
 
+    # Prune features with 0.0 historical importance to optimize the model
+    features_to_prune = [
+        "tendency_global_KN_pct", 
+        "tendency_global_SC_pct", 
+        "tendency_count_CS_pct", 
+        "tendency_count_UN_pct"
+    ]
+    feature_cols = [f for f in feature_cols if f not in features_to_prune]
+
     # Previous pitch family encoding
     print("    Encoding categorical features...")
     
@@ -178,9 +187,21 @@ def main() -> None:
     if "game_date" in df.columns:
         df["game_date"] = pd.to_datetime(df["game_date"])
         max_date = df["game_date"].max()
-        start_date = max_date - pd.Timedelta(days=60)
-        print(f"Filtering dataset to 60-day temporal window: {start_date.date()} to {max_date.date()}")
+        
+        # Opening Day Adjustment: If we're early in the year, use 180 days to capture 2025 Postseason/Regular
+        # Otherwise, stick to 60 days for recent mid-season trends.
+        window_days = 180 if max_date.month < 5 else 60
+        start_date = max_date - pd.Timedelta(days=window_days)
+        print(f"Filtering dataset to {window_days}-day temporal window: {start_date.date()} to {max_date.date()}")
         df = df[(df["game_date"] > start_date) & (df["game_date"] <= max_date)].copy()
+    
+    # Filter for Regular and Postseason ONLY (Ignore Spring Training 'S' and All-Star 'A')
+    if "game_type" in df.columns:
+        valid_types = ["R", "P", "W"]
+        before_count = len(df)
+        df = df[df["game_type"].isin(valid_types)].copy()
+        if len(df) < before_count:
+            print(f"    Filtered out {before_count - len(df)} spring training/exhibition pitches.")
     
     print(f"Dataset contains {len(df)} pitches. Splitting chronologically to prevent data leakage...")
     df = df.sort_values(by=["game_date", "at_bat_index", "pitch_index"]).reset_index(drop=True)
