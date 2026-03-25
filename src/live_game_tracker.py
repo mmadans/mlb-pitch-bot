@@ -276,7 +276,7 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             tweet_text = format_surprise_strikeout_tweet(
                 pitcher_name, batter_name, actual_pitch_desc, actual_pitch_family, expected_prob, is_swinging,
                 inning_info, score_info, runners_info, outs, matchup_num, sequence,
-                narrative=narrative
+                narrative=narrative, away_team=a_team, home_team=h_team
             )
             
             pending_tweets.append({
@@ -295,7 +295,9 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
                 'outs': outs,
                 'matchup_num': matchup_num,
                 'sequence': sequence,
-                'narrative': narrative
+                'narrative': narrative,
+                'away_team': a_team,
+                'home_team': h_team
             })
             
             print(f"  Queued surprise strikeout tweet for {post_time.strftime('%H:%M:%S')}")
@@ -304,8 +306,10 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             pitcher_name = current_play.get('matchup', {}).get('pitcher', {}).get('fullName')
             batter_name = current_play.get('matchup', {}).get('batter', {}).get('fullName')
             actual_pitch_desc = last_pitch_event.get('details', {}).get('type', {}).get('description', actual_pitch_code)
+            a_team = game_data.get('gameData', {}).get('teams', {}).get('away', {}).get('abbreviation', 'AWY')
+            h_team = game_data.get('gameData', {}).get('teams', {}).get('home', {}).get('abbreviation', 'HOM')
             
-            tweet_text = format_tweet(pitcher_name, batter_name, actual_pitch_desc, surprisal, outcome_str)
+            tweet_text = format_tweet(pitcher_name, batter_name, actual_pitch_desc, surprisal, outcome_str, away_team=a_team, home_team=h_team)
             tweet_text = f"{narrative}\n\n{tweet_text}"
             print(f"🚀 [QUEUED HARD HIT]: {narrative}")
             # Log it but maybe don't queue for video if we don't have video logic for hard hits yet
@@ -337,7 +341,9 @@ def check_pending_tweets():
                 item['inning'], item['score'], item['runners'], 
                 item['outs'], item['matchup_num'], item['sequence'],
                 narrative=item.get('narrative', ""),
-                highlight_url=video_url
+                highlight_url=video_url,
+                away_team=item.get('away_team', ""),
+                home_team=item.get('home_team', "")
             )
             
             print("\n" + "="*50)

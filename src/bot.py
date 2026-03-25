@@ -63,6 +63,17 @@ def _get_pitch_abbr(full_name: str) -> str:
     """Returns a short abbreviation for a pitch type."""
     return PITCH_ABBR.get(full_name, full_name[:3].upper())
 
+TEAM_HASHTAGS = {
+    "ARI": "#DBacks", "ATL": "#BravesCountry", "BAL": "#Birdland", "BOS": "#DirtyWater",
+    "CHC": "#YouHaveToSeeIt", "CWS": "#WhiteSox", "CIN": "#ATOBTTR", "CLE": "#ForTheLand",
+    "COL": "#Rockies", "DET": "#RepDetroit", "HOU": "#NeverSettle", "KC": "#RaisedRoyal",
+    "LAA": "#TheHaloWay", "LAD": "#LetsGoDodgers", "MIA": "#HomeOfBeisbol", "MIL": "#ThisIsMyCrew",
+    "MIN": "#MNTwins", "NYM": "#LGM", "NYY": "#RepBX", "OAK": "#RootedInOakland",
+    "PHI": "#RingTheBell", "PIT": "#LetsGoBucs", "SD": "#LetsGoPadres", "SF": "#SFGiants",
+    "SEA": "#TrueToTheBlue", "STL": "#ForTheLou", "TB": "#RaysUp", "TEX": "#TexasRangers",
+    "TOR": "#TOTHECORE", "WSH": "#Natitude"
+}
+
 def format_surprise_strikeout_tweet(
     pitcher: str, 
     batter: str, 
@@ -77,7 +88,9 @@ def format_surprise_strikeout_tweet(
     matchup_num: int,
     sequence: list[str],
     narrative: str = "",
-    highlight_url: str = ""
+    highlight_url: str = "",
+    away_team: str = "",
+    home_team: str = ""
 ) -> str:
     """
     Formats a detailed tweet for a 'Surprise Strikeout' with 280-char limit in mind.
@@ -112,6 +125,14 @@ def format_surprise_strikeout_tweet(
     seq_str = "Sequence: " + " -> ".join(seq_abbrs)
     
     parts = [header, context, seq_str]
+    
+    # Add Hashtags
+    hashtags = []
+    if away_team in TEAM_HASHTAGS: hashtags.append(TEAM_HASHTAGS[away_team])
+    if home_team in TEAM_HASHTAGS: hashtags.append(TEAM_HASHTAGS[home_team])
+    if hashtags:
+        parts.append(" ".join(hashtags))
+        
     if highlight_url:
         parts.append(f"Video: {highlight_url}")
     
@@ -121,6 +142,8 @@ def format_surprise_strikeout_tweet(
     if len(tweet) > 280:
         # If still over, drop the sequence
         parts = [header, context]
+        if hashtags:
+            parts.append(" ".join(hashtags))
         if highlight_url:
             parts.append(f"Video: {highlight_url}")
         tweet = "\n\n".join(parts)
@@ -128,7 +151,7 @@ def format_surprise_strikeout_tweet(
     return tweet
 
 
-def format_tweet(pitcher: str, batter: str, pitch_type: str, surprisal: float, outcome: str) -> str:
+def format_tweet(pitcher: str, batter: str, pitch_type: str, surprisal: float, outcome: str, away_team: str = "", home_team: str = "") -> str:
     """
     Formats a tweet for an interesting pitch event.
     
@@ -155,6 +178,12 @@ def format_tweet(pitcher: str, batter: str, pitch_type: str, surprisal: float, o
     )
     if surprisal > 0:
         tweet += f"\nSurprisal: {surprisal:.2f} bits!"
+        
+    hashtags = []
+    if away_team in TEAM_HASHTAGS: hashtags.append(TEAM_HASHTAGS[away_team])
+    if home_team in TEAM_HASHTAGS: hashtags.append(TEAM_HASHTAGS[home_team])
+    if hashtags:
+        tweet += "\n\n" + " ".join(hashtags)
     
     return tweet
 
