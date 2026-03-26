@@ -20,6 +20,7 @@ from src.features import (
 )
 from src.inference import PitchPredictor
 from src.bot import post_tweet, format_tweet, format_surprise_strikeout_tweet
+from src.database import create_live_predictions_table, insert_live_prediction
 from src.constants import (
     POLLING_INTERVAL_SECONDS,
     SURPRISAL_THRESHOLD,
@@ -173,6 +174,21 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
         # predict_probabilities now handles its own feature alignment and encoding
         probabilities = predictor.predict_probabilities(row)
         surprisal = predictor.calculate_surprisal(actual_pitch_family, probabilities)
+        
+        # Log every single live prediction to monitor model calibration over time
+        try:
+            game_pk_val = game_pk
+            pitcher_id_val = int(row['pitcher_id'].values[0])
+            batter_id_val = int(row['batter_id'].values[0])
+            play_id_val = last_pitch_event.get('playId') or current_play.get('playId', '')
+            insert_live_prediction(
+                game_pk=game_pk_val, play_id=play_id_val, 
+                pitcher_id=pitcher_id_val, batter_id=batter_id_val, 
+                actual_pitch_family=actual_pitch_family,
+                probs=probabilities, surprisal=surprisal
+            )
+        except Exception as e:
+            print(f"  Warning: Failed to log live prediction DB entry: {e}")
 
         # Determine Narrative based on situational context and tendencies
         expected_prob = probabilities.get(actual_pitch_family, 0)
@@ -361,6 +377,7 @@ def main():
     global baseline
     print("Starting MLB Live Game Tracker (Simulation Mode)...")
     processed_pitches.clear()
+    create_live_predictions_table()
     try:
         baseline = joblib.load(BASELINE_PATH)
         # Ensure model paths are correct
