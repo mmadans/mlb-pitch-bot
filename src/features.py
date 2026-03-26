@@ -101,6 +101,11 @@ def extract_pitches_with_context(play_data: dict, game_date: str | None = None) 
         pitch_events = [e for e in play["playEvents"] if e.get("isPitch")]
         prev_pitch_type_in_ab = None
         prev_pitch_call_in_ab = None
+        
+        # Streak tracking for the current at-bat
+        breaking_streak = 0
+        fastball_streak = 0
+        offspeed_streak = 0
 
         if not game_date:
             game_date = play_data.get("gameData", {}).get("datetime", {}).get("officialDate", "")
@@ -109,6 +114,8 @@ def extract_pitches_with_context(play_data: dict, game_date: str | None = None) 
             details = event.get("details", {})
             type_info = details.get("type", {})
             code = type_info.get("code")
+            pitch_family = _classify_pitch_family(code)
+            
             pitch_data = event.get("pitchData", {})
             count = event.get("count", {})
 
@@ -140,8 +147,31 @@ def extract_pitches_with_context(play_data: dict, game_date: str | None = None) 
                 "game_type": play_data.get("gameData", {}).get("game", {}).get("type"),
                 "prev_pitch_type_in_ab": prev_pitch_type_in_ab,
                 "prev_pitch_call": prev_pitch_call_in_ab,
+                "breaking_streak": breaking_streak,
+                "fastball_streak": fastball_streak,
+                "offspeed_streak": offspeed_streak,
             }
             pitches.append(pitch)
+            
+            # Update streaks for the NEXT pitch
+            if pitch_family == "Breaking":
+                breaking_streak += 1
+                fastball_streak = 0
+                offspeed_streak = 0
+            elif pitch_family == "Fastball":
+                fastball_streak += 1
+                breaking_streak = 0
+                offspeed_streak = 0
+            elif pitch_family == "Offspeed":
+                offspeed_streak += 1
+                breaking_streak = 0
+                fastball_streak = 0
+            else:
+                # 'Other' resest all streaks
+                breaking_streak = 0
+                fastball_streak = 0
+                offspeed_streak = 0
+
             prev_pitch_type_in_ab = (code or "UN").upper() if code else "UN"
             prev_pitch_call_in_ab = details.get("description")
 

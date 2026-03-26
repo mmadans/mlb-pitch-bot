@@ -93,7 +93,7 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
     y_encoded = label_encoder.fit_transform(y)
 
     count_cols = [c for c in df.columns if c.startswith("count_") and "-" not in c]
-    numeric = ["balls", "strikes", "outs", "is_leverage", "is_platoon_advantage", "run_differential"]
+    numeric = ["balls", "strikes", "outs", "is_leverage", "is_platoon_advantage", "run_differential", "breaking_streak", "fastball_streak", "offspeed_streak"]
     tendency_cols = [
         c for c in df.columns
         if (c.startswith("tendency_global_") or c.startswith("tendency_count_") or c.startswith("tendency_batter_count_") or c.startswith("tendency_league_count_")) and (c.endswith("_pct") or c == "tendency_total_pitches")
