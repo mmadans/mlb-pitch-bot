@@ -136,7 +136,7 @@ def extract_pitches_with_context(play_data: dict, game_date: str | None = None) 
                 "score_home": home_score,
                 "score_away": away_score,
                 "park_id": venue_id,
-                "game_pk": game_data.get("gamePk"),
+                "game_pk": play_data.get("gamePk"),
                 "game_type": play_data.get("gameData", {}).get("game", {}).get("type"),
                 "prev_pitch_type_in_ab": prev_pitch_type_in_ab,
                 "prev_pitch_call": prev_pitch_call_in_ab,
