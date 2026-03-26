@@ -5,9 +5,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 # Common pitch type groupings
-FASTBALL_CODES = {"FF", "FT", "FC", "SI", "FS", "SF", "FA", "ST"}
-BREAKING_CODES = {"SL", "CU", "KC", "SV", "CS", "CB", "GY"}
-OFFSPEED_CODES = {"CH", "SC", "FO", "KN", "EP"}
+FASTBALL_CODES = {"FF", "FT", "FC", "SI", "FA"}
+BREAKING_CODES = {"SL", "CU", "KC", "SV", "CS", "CB", "GY", "ST"}
+OFFSPEED_CODES = {"CH", "SC", "FO", "KN", "EP", "FS", "SF"}
 
 # Thresholds for surprisal and outcomes
 SURPRISAL_THRESHOLD = 2.5
