@@ -88,7 +88,6 @@ def format_surprise_strikeout_tweet(
     matchup_num: int,
     sequence: list[str],
     narrative: str = "",
-    highlight_url: str = "",
     away_team: str = "",
     home_team: str = ""
 ) -> str:
@@ -133,9 +132,6 @@ def format_surprise_strikeout_tweet(
     if hashtags:
         parts.append(" ".join(hashtags))
         
-    if highlight_url:
-        parts.append(f"Video: {highlight_url}")
-    
     tweet = "\n\n".join(parts)
     
     # Truncation safety
@@ -144,8 +140,6 @@ def format_surprise_strikeout_tweet(
         parts = [header, context]
         if hashtags:
             parts.append(" ".join(hashtags))
-        if highlight_url:
-            parts.append(f"Video: {highlight_url}")
         tweet = "\n\n".join(parts)
         
     return tweet

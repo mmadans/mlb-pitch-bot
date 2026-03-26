@@ -53,35 +53,6 @@ def get_live_game_pks():
         return []
 
 
-def get_video_link(game_pk: int, play_id: str) -> str | None:
-    """
-    Fetches the official MLB video link for a specific play.
-    Note: Highlights usually take 2-5 minutes to appear after the play.
-    """
-    if not play_id:
-        return None
-        
-    try:
-        content = statsapi.get("game_content", {"gamePk": game_pk})
-        highlights = content.get("highlights", {}).get("highlights", {}).get("items", [])
-        
-        # Look for a highlight that matches our playId
-        for item in highlights:
-            if item.get("playId") == play_id:
-                # Find the best quality mp4
-                playbacks = item.get("playbacks", [])
-                # Prefer 720p or 1080p mp4
-                best_url = None
-                for pb in playbacks:
-                    if "mp4" in pb.get("url", ""):
-                        url = pb.get("url")
-                        if "1200K" in url or "2500K" in url: # Decent qualities
-                            best_url = url
-                return best_url or (playbacks[0].get("url") if playbacks else None)
-    except Exception as e:
-        print(f"Error fetching video: {e}")
-    return None
-
 def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredictor):
     """Processes a pitch if it matches outcome criteria."""
     game_pk, at_bat_index, pitch_index = pitch_id
@@ -285,9 +256,6 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             # Use playId from the pitch event if available, fallback to play level
             precise_play_id = last_pitch_event.get('playId') or current_play.get('playId')
             
-            # Queue the tweet for 5 minutes later
-            post_time = datetime.now() + timedelta(minutes=5)
-            
             # Prepare tweet text without video link first
             tweet_text = format_surprise_strikeout_tweet(
                 pitcher_name, batter_name, actual_pitch_desc, actual_pitch_family, expected_prob, is_swinging,
@@ -295,29 +263,12 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
                 narrative=narrative, away_team=a_team, home_team=h_team
             )
             
-            pending_tweets.append({
-                'post_at': post_time,
-                'game_pk': game_pk,
-                'play_id': precise_play_id,
-                'pitcher': pitcher_name,
-                'batter': batter_name,
-                'pitch_type': actual_pitch_desc,
-                'pitch_family': actual_pitch_family,
-                'prob': expected_prob,
-                'is_whiff': is_swinging,
-                'inning': inning_info,
-                'score': score_info,
-                'runners': runners_info,
-                'outs': outs,
-                'matchup_num': matchup_num,
-                'sequence': sequence,
-                'narrative': narrative,
-                'away_team': a_team,
-                'home_team': h_team
-            })
-            
-            print(f"  Queued surprise strikeout tweet for {post_time.strftime('%H:%M:%S')}")
-            
+            print("\n" + "="*50)
+            print("🚀 [POSTING LIVE TWEET]")
+            print(tweet_text)
+            print("="*50 + "\n")
+            post_tweet(tweet_text) # Enable for production
+
         elif tweet_logic: # Fallback for non-strikeout surprises (hard hits)
             pitcher_name = current_play.get('matchup', {}).get('pitcher', {}).get('fullName')
             batter_name = current_play.get('matchup', {}).get('batter', {}).get('fullName')
@@ -337,40 +288,7 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
         import traceback
         traceback.print_exc()
 
-def check_pending_tweets():
-    """Processes the queue of pending tweets, fetching video highlights if available."""
-    global pending_tweets
-    now = datetime.now()
-    remaining = []
-    
-    for item in pending_tweets:
-        if now >= item['post_at']:
-            print(f"⏰ Processing queued tweet for {item['pitcher']} vs {item['batter']}")
-            
-            # Try to get video link
-            video_url = get_video_link(item['game_pk'], item['play_id'])
-            
-            # Format the final tweet
-            tweet_text = format_surprise_strikeout_tweet(
-                item['pitcher'], item['batter'], item['pitch_type'], 
-                item['pitch_family'], item['prob'], item['is_whiff'],
-                item['inning'], item['score'], item['runners'], 
-                item['outs'], item['matchup_num'], item['sequence'],
-                narrative=item.get('narrative', ""),
-                highlight_url=video_url,
-                away_team=item.get('away_team', ""),
-                home_team=item.get('home_team', "")
-            )
-            
-            print("\n" + "="*50)
-            print("🚀 [POSTING TWEET]")
-            print(tweet_text)
-            print("="*50 + "\n")
-            post_tweet(tweet_text) # Enable for production
-        else:
-            remaining.append(item)
-            
-    pending_tweets = remaining
+
 
 
 def main():
@@ -408,9 +326,8 @@ def main():
     print(f"Initialization complete. Monitoring {len(live_game_pks)} games.")
 
     while True:
-        # Check queue
-        check_pending_tweets()
-        
+        # Removed pending tweets check Queue
+
         live_game_pks = get_live_game_pks()
         if not live_game_pks:
             print(f"Waiting for live games... (Interval: {POLLING_INTERVAL_SECONDS}s)")
