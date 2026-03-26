@@ -16,6 +16,12 @@ function App() {
   const [selectedInning, setSelectedInning] = useState('1');
   const [selectedHalf, setSelectedHalf] = useState('top');
   const [selectedAB, setSelectedAB] = useState(null);
+  const [selectedPitchIndex, setSelectedPitchIndex] = useState(null);
+
+  // Clear selected pitch when navigating
+  useEffect(() => {
+    setSelectedPitchIndex(null);
+  }, [selectedAB, selectedInning, selectedHalf, selectedGame]);
 
   useEffect(() => {
     fetch('/data/dashboard_data.json')
@@ -67,7 +73,14 @@ function App() {
     );
   }
 
-  const COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
+  const PITCH_COLORS = {
+    'Fastball': '#ef4444',
+    'Breaking': '#3b82f6',
+    'Offspeed': '#10b981',
+    'Other': '#8b5cf6',
+    'Unknown': '#64748b'
+  };
+  const getPitchColor = (name) => PITCH_COLORS[name] || '#64748b';
   
   // Dashboard Calculations
   const pieData = Object.keys(data.pitch_distribution).map(key => ({
@@ -260,7 +273,7 @@ function App() {
                               {spotlightData.map((item, i) => (
                                 <div key={item.name} className="bg-white/2 border border-white/5 p-4 rounded-2xl flex items-center justify-between group hover:bg-white/5 transition-colors">
                                    <div className="flex items-center gap-3">
-                                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
+                                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getPitchColor(item.name) }}></div>
                                       <div>
                                          <p className="text-xs font-bold text-white uppercase">{item.name}</p>
                                          <p className="text-[10px] text-slate-500">{item.avgSpeed} MPH Avg</p>
@@ -329,7 +342,7 @@ function App() {
                             stroke="rgba(0,0,0,0)"
                           >
                             {pieData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} cornerRadius={8} />
+                              <Cell key={`cell-${index}`} fill={getPitchColor(entry.name)} cornerRadius={8} />
                             ))}
                           </Pie>
                         </PieChart>
@@ -345,7 +358,7 @@ function App() {
                       {pieData.map((item, i) => (
                         <div key={item.name} className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/5">
                             <div className="flex items-center gap-3">
-                               <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
+                               <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: getPitchColor(item.name) }}></div>
                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{item.name}</span>
                             </div>
                             <span className="text-xs font-black text-white">{Math.round((item.value / data.summary.total_pitches) * 100)}%</span>
@@ -535,24 +548,170 @@ function App() {
                       <div className="glass-panel p-8 rounded-[2.5rem] border border-white/5 relative overflow-hidden flex flex-col md:flex-row justify-between items-center gap-8">
                          <div className="text-center md:text-left">
                             <h2 className="text-3xl font-black italic tracking-tighter text-white mb-2 uppercase">{selectedGame.matchup}</h2>
-                            <div className="flex items-center gap-3 justify-center md:justify-start">
+                            <div className="flex flex-wrap items-center gap-3 justify-center md:justify-start">
                                <span className="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-lg text-blue-400 text-xs font-bold uppercase tracking-widest">
                                  Inning {selectedInning} • {selectedHalf.toUpperCase()}
                                </span>
+                               {selectedAB.outs !== undefined && (
+                                 <span className="px-3 py-1 bg-slate-800/50 border border-white/5 rounded-lg text-slate-400 text-xs font-bold uppercase tracking-widest">
+                                   {selectedAB.outs} Outs
+                                 </span>
+                               )}
+                               {selectedAB.men_on_base && (
+                                 <span className="px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-500 text-xs font-bold uppercase tracking-widest">
+                                   OB: {selectedAB.men_on_base.replace('_', ' & ')}
+                                 </span>
+                               )}
                             </div>
                          </div>
                          <div className="flex items-center gap-6">
-                            <div className="text-right">
+                            <div className="text-right flex flex-col items-end">
+                               {selectedAB.pitcher_hand && (
+                                 <span className="text-[9px] bg-slate-800 px-1.5 py-0.5 rounded text-white font-black mb-1.5 tracking-widest">{selectedAB.pitcher_hand}HP</span>
+                               )}
                                <p className="text-[10px] font-black text-slate-500 uppercase">Pitcher</p>
                                <p className="font-black text-xl text-white">{selectedAB.pitcher}</p>
                             </div>
-                            <div className="w-px h-10 bg-white/5"></div>
-                            <div className="text-left">
+                            <div className="w-px h-12 bg-white/5"></div>
+                            <div className="text-left flex flex-col items-start">
+                               {selectedAB.batter_side && (
+                                 <span className="text-[9px] bg-slate-800 px-1.5 py-0.5 rounded text-white font-black mb-1.5 tracking-widest">{selectedAB.batter_side}HB</span>
+                               )}
                                <p className="text-[10px] font-black text-slate-500 uppercase">Batter</p>
                                <p className="font-black text-xl text-white">{selectedAB.batter}</p>
                             </div>
                          </div>
                       </div>
+
+                      {/* Pitch Mix Overview */}
+                      {(() => {
+                        const currentPitch = selectedPitchIndex !== null ? selectedAB.pitches[selectedPitchIndex] : null;
+
+                        const pMix = currentPitch?.pitcher_count_mix || selectedAB.pitcher_mix || {};
+                        const bMix = currentPitch?.batter_count_mix || selectedAB.batter_mix || {};
+                        const lMix = currentPitch?.league_count_mix || data.pitch_distribution || {};
+
+                        const pitcherTotal = pMix.total || Object.values(pMix).reduce((a, b) => a + b, 0);
+                        const batterTotal = bMix.total || Object.values(bMix).reduce((a, b) => a + b, 0);
+                        const leagueTotal = lMix.total || Object.values(lMix).reduce((a, b) => a + b, 0);
+
+                        return (
+                          <div className="space-y-4">
+                            {/* Shared Legend */}
+                            <div className="glass-panel p-4 rounded-2xl border border-white/5 flex flex-wrap items-center justify-center gap-6 relative">
+                               {currentPitch && (
+                                 <button 
+                                   onClick={() => setSelectedPitchIndex(null)}
+                                   className="absolute left-4 px-2 py-1 bg-blue-600/20 border border-blue-500/30 rounded text-[9px] font-black text-blue-400 hover:bg-blue-600 hover:text-white transition-all uppercase"
+                                 >
+                                   Reset to Global
+                                 </button>
+                               )}
+                               {Object.entries(PITCH_COLORS).map(([name, color]) => (
+                                 <div key={name} className="flex items-center gap-2">
+                                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }}></div>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{name}</span>
+                                 </div>
+                               ))}
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                               {/* Pitcher Mix */}
+                               <div className="glass-panel p-5 rounded-3xl border border-white/5 flex flex-col items-center relative overflow-hidden">
+                                  <h3 className="text-[9px] font-black text-blue-400 uppercase tracking-widest w-full text-center">
+                                    Pitcher Arsenal {currentPitch ? `(${currentPitch.count} Count)` : '(Global)'}
+                                  </h3>
+                                  <div className="h-36 w-full z-10 my-2">
+                                     <ResponsiveContainer width="100%" height="100%">
+                                       <PieChart>
+                                         <Pie
+                                           data={Object.keys(pMix).filter(k => k !== 'total').map(k => ({ 
+                                             name: k, 
+                                             value: pMix.total ? pMix[k] * pMix.total : pMix[k] 
+                                           }))}
+                                           cx="50%" cy="50%" innerRadius={35} outerRadius={55} paddingAngle={4} dataKey="value" stroke="rgba(0,0,0,0)"
+                                           cornerRadius={4}
+                                         >
+                                           {Object.keys(pMix).filter(k => k !== 'total').map((key, index) => (
+                                             <Cell key={`cell-${index}`} fill={getPitchColor(key)} />
+                                           ))}
+                                         </Pie>
+                                         <RechartsTooltip 
+                                           formatter={(value, name) => [`${value} pitches (${pitcherTotal > 0 ? ((value / pitcherTotal) * 100).toFixed(1) : 0}%)`, name]}
+                                           contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}
+                                           itemStyle={{ color: '#f8fafc' }}
+                                         />
+                                       </PieChart>
+                                     </ResponsiveContainer>
+                                  </div>
+                                  <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-auto">N = {pitcherTotal.toLocaleString()}</div>
+                               </div>
+                               
+                               {/* Batter Mix */}
+                               <div className="glass-panel p-5 rounded-3xl border border-white/5 flex flex-col items-center relative overflow-hidden">
+                                  <h3 className="text-[9px] font-black text-purple-400 uppercase tracking-widest w-full text-center">
+                                    Batter Diet {currentPitch ? `(${currentPitch.count} Count)` : '(Global)'}
+                                  </h3>
+                                  <div className="h-36 w-full z-10 my-2">
+                                     <ResponsiveContainer width="100%" height="100%">
+                                       <PieChart>
+                                         <Pie
+                                           data={Object.keys(bMix).filter(k => k !== 'total').map(k => ({ 
+                                             name: k, 
+                                             value: bMix.total ? bMix[k] * bMix.total : bMix[k] 
+                                           }))}
+                                           cx="50%" cy="50%" innerRadius={35} outerRadius={55} paddingAngle={4} dataKey="value" stroke="rgba(0,0,0,0)"
+                                           cornerRadius={4}
+                                         >
+                                           {Object.keys(bMix).filter(k => k !== 'total').map((key, index) => (
+                                             <Cell key={`cell-${index}`} fill={getPitchColor(key)} />
+                                           ))}
+                                         </Pie>
+                                         <RechartsTooltip 
+                                           formatter={(value, name) => [`${value} pitches (${batterTotal > 0 ? ((value / batterTotal) * 100).toFixed(1) : 0}%)`, name]}
+                                           contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}
+                                           itemStyle={{ color: '#f8fafc' }}
+                                         />
+                                       </PieChart>
+                                     </ResponsiveContainer>
+                                  </div>
+                                  <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-auto">N = {batterTotal.toLocaleString()}</div>
+                               </div>
+                               
+                               {/* League Avg Mix */}
+                               <div className="glass-panel p-5 rounded-3xl border border-white/5 flex flex-col items-center relative overflow-hidden opacity-80">
+                                  <h3 className="text-[9px] font-black text-slate-500 uppercase tracking-widest w-full text-center">
+                                    League Average {currentPitch ? `(${currentPitch.count} Count)` : '(Global)'}
+                                  </h3>
+                                  <div className="h-36 w-full z-10 my-2">
+                                     <ResponsiveContainer width="100%" height="100%">
+                                       <PieChart>
+                                         <Pie
+                                           data={Object.keys(lMix).filter(k => k !== 'total').map(k => ({ 
+                                             name: k, 
+                                             value: lMix.total ? lMix[k] * lMix.total : lMix[k] 
+                                           }))}
+                                           cx="50%" cy="50%" innerRadius={35} outerRadius={55} paddingAngle={4} dataKey="value" stroke="rgba(0,0,0,0)"
+                                           cornerRadius={4}
+                                         >
+                                           {Object.keys(lMix).filter(k => k !== 'total').map((key, index) => (
+                                             <Cell key={`cell-${index}`} fill={getPitchColor(key)} />
+                                           ))}
+                                         </Pie>
+                                         <RechartsTooltip 
+                                           formatter={(value, name) => [`${value} pitches (${leagueTotal > 0 ? ((value / leagueTotal) * 100).toFixed(1) : 0}%)`, name]}
+                                           contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}
+                                           itemStyle={{ color: '#f8fafc' }}
+                                         />
+                                       </PieChart>
+                                     </ResponsiveContainer>
+                                  </div>
+                                  <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-auto">N = {leagueTotal.toLocaleString()}</div>
+                               </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
 
                       {/* Pitch Sequence Table */}
                       <div className="glass-panel rounded-[2.5rem] border border-white/5 overflow-hidden">
@@ -568,14 +727,21 @@ function App() {
                                  <th className="px-8 py-4">#</th>
                                  <th className="px-8 py-4">Pitch Profile</th>
                                  <th className="px-8 py-4">Count</th>
+                                 <th className="px-8 py-4">Outcome</th>
                                  <th className="px-8 py-4 text-center">Model Prediction</th>
                                  <th className="px-8 py-4 text-right">Surprisal</th>
                                </tr>
                              </thead>
                              <tbody className="divide-y divide-white/[0.02]">
                                {selectedAB.pitches.map((p, idx) => (
-                                 <tr key={idx} className="group hover:bg-white/[0.01] transition-colors">
-                                   <td className="px-8 py-6 font-black text-slate-600">{idx + 1}</td>
+                                 <tr 
+                                   key={idx} 
+                                   onClick={() => setSelectedPitchIndex(idx === selectedPitchIndex ? null : idx)}
+                                   className={`group hover:bg-white/[0.01] cursor-pointer transition-colors ${selectedPitchIndex === idx ? 'bg-blue-600/10' : ''}`}
+                                 >
+                                   <td className="px-8 py-6 font-black text-slate-600">
+                                      {selectedPitchIndex === idx ? <Zap size={12} className="text-blue-500 animate-pulse" /> : idx + 1}
+                                   </td>
                                    <td className="px-8 py-6">
                                       <div className="flex items-center gap-3">
                                          <div className="flex flex-col">
@@ -586,6 +752,9 @@ function App() {
                                    </td>
                                    <td className="px-8 py-6">
                                       <span className="px-2 py-1 bg-slate-900 border border-white/5 rounded text-[10px] font-bold text-slate-400">{p.count}</span>
+                                   </td>
+                                   <td className="px-8 py-6">
+                                      <span className="text-[11px] font-bold text-slate-300 capitalize">{p.outcome}</span>
                                    </td>
                                    <td className="px-8 py-6">
                                       <div className="flex flex-col items-center gap-1">

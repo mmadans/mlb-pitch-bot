@@ -10,6 +10,54 @@ def get_db_connection():
     conn = sqlite3.connect(DATABASE_PATH)
     return conn
 
+def create_live_predictions_table():
+    """Creates the table for logging live model predictions if it doesn't exist."""
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS live_predictions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                game_pk INTEGER,
+                play_id TEXT,
+                pitcher_id INTEGER,
+                batter_id INTEGER,
+                actual_pitch_family TEXT,
+                prob_fastball REAL,
+                prob_breaking REAL,
+                prob_offspeed REAL,
+                surprisal REAL
+            )
+        ''')
+        conn.commit()
+    except Exception as e:
+        print(f"Warning: Could not create live_predictions table: {e}")
+    finally:
+        conn.close()
+
+def insert_live_prediction(game_pk, play_id, pitcher_id, batter_id, actual_pitch_family, probs, surprisal):
+    """
+    Logs a single pitch prediction to the live monitoring table.
+    """
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        prob_fb = probs.get('Fastball', 0.0)
+        prob_br = probs.get('Breaking', 0.0)
+        prob_os = probs.get('Offspeed', 0.0)
+        
+        cursor.execute('''
+            INSERT INTO live_predictions 
+            (game_pk, play_id, pitcher_id, batter_id, actual_pitch_family, prob_fastball, prob_breaking, prob_offspeed, surprisal)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (game_pk, play_id, pitcher_id, batter_id, actual_pitch_family, prob_fb, prob_br, prob_os, surprisal))
+        conn.commit()
+    except Exception as e:
+        print(f"Warning: Could not log live prediction: {e}")
+    finally:
+        conn.close()
+
 def delete_games_from_db(game_pks: list[int], table_name: str = "pitches"):
     """
     Deletes all pitches associated with the given game_pks from the database.

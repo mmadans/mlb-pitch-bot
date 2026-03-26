@@ -201,8 +201,10 @@ def add_pitcher_count_tendencies(df: pd.DataFrame) -> pd.DataFrame:
     Adds pitcher tendency features specific to each count (balls and strikes).
     For each (pitcher, balls, strikes), it calculates the frequency of each pitch type.
     """
-    # Group by pitcher, balls, strikes, and pitch_type to get counts
-    group_cols = ["pitcher", "balls", "strikes", "pitch_type"]
+    # Group by pitcher, balls, strikes, and pitch_family to get counts
+    if 'pitch_family' not in df.columns:
+        df['pitch_family'] = df['pitch_type'].apply(_classify_pitch_family)
+    group_cols = ["pitcher", "balls", "strikes", "pitch_family"]
     counts = df.groupby(group_cols).size().unstack(fill_value=0)
     
     # Calculate percentages per (pitcher, balls, strikes)
@@ -213,6 +215,7 @@ def add_pitcher_count_tendencies(df: pd.DataFrame) -> pd.DataFrame:
     percentages.columns = [
         f"tendency_count_{col}_pct" for col in percentages.columns
     ]
+    percentages["tendency_count_total_pitches"] = totals
     
     # Merge back to original dataframe
     # Reset index for the join
@@ -248,6 +251,7 @@ def add_batter_count_tendencies(df: pd.DataFrame) -> pd.DataFrame:
     percentages.columns = [
         f"tendency_batter_count_{col}_pct" for col in percentages.columns
     ]
+    percentages["tendency_batter_count_total_pitches"] = totals
     
     # Merge back to original dataframe
     percentages = percentages.reset_index()
@@ -280,6 +284,7 @@ def add_league_count_tendencies(df: pd.DataFrame) -> pd.DataFrame:
     percentages.columns = [
         f"tendency_league_count_{col}_pct" for col in percentages.columns
     ]
+    percentages["tendency_league_count_total_pitches"] = totals
     
     # Merge back to original dataframe (join on count only)
     percentages = percentages.reset_index()
@@ -327,8 +332,10 @@ def add_global_pitcher_tendencies(df: pd.DataFrame) -> pd.DataFrame:
     """
     Adds global (regardless of count) pitcher tendency features.
     """
-    # Calculate pitch type counts per pitcher
-    pitch_counts = df.groupby(["pitcher", "pitch_type"]).size().unstack(fill_value=0)
+    # Calculate pitch family counts per pitcher
+    if 'pitch_family' not in df.columns:
+        df['pitch_family'] = df['pitch_type'].apply(_classify_pitch_family)
+    pitch_counts = df.groupby(["pitcher", "pitch_family"]).size().unstack(fill_value=0)
     total_pitches = pitch_counts.sum(axis=1)
     pitch_percentages = pitch_counts.div(total_pitches, axis=0)
 

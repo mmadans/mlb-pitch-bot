@@ -49,8 +49,47 @@ def _get_game_metadata(date_str):
         print(f"Error fetching metadata for {date_str}: {e}")
         return {}
 
-def _get_explorer_data(df, predictor, baseline):
+PITCH_NAMES = {
+    "FF": "Four-Seam Fastball",
+    "SI": "Sinker",
+    "FC": "Cutter",
+    "SL": "Slider",
+    "CU": "Curveball",
+    "CH": "Changeup",
+    "FS": "Splitter",
+    "KC": "Knuckle Curve",
+    "SV": "Slurve",
+    "CS": "Slow Curve",
+    "CB": "Curveball",
+    "ST": "Sweeper",
+    "FO": "Forkball",
+    "KN": "Knuckleball",
+    "EP": "Eephus",
+    "FA": "Fastball",
+    "FT": "Two-Seam Fastball",
+    "SC": "Screwball",
+    "GY": "Gyroball"
+}
+
+def _get_explorer_data(df, predictor, baseline, pitcher_mixes=None, batter_mixes=None):
     """Builds a hierarchical structure for the Matchup Explorer."""
+    
+    def _extract_mix(row_df, prefix):
+        """Helper to extract tendency percentages from a row and format as a dict."""
+        families = ["Fastball", "Breaking", "Offspeed", "Other"]
+        mix = {}
+        for fam in families:
+            col = f"{prefix}_{fam}_pct"
+            if col in row_df.columns:
+                val = row_df[col].iloc[0]
+                mix[fam] = float(val) if not pd.isna(val) else 0.0
+        
+        # Also extract total sample size for this specific count
+        total_col = f"{prefix}_total_pitches"
+        if total_col in row_df.columns:
+            mix["total"] = int(row_df[total_col].iloc[0])
+        return mix
+
     if df.empty or not predictor or not baseline:
         return {}
 
@@ -104,10 +143,19 @@ def _get_explorer_data(df, predictor, baseline):
                         ab_df = ab_df.sort_values('pitch_index')
                         rep_ab = ab_df.iloc[0]
                         
+                        pitcher_name = str(rep_ab.get('pitcher', 'Unknown'))
+                        batter_name = str(rep_ab.get('batter', 'Unknown'))
+                        
                         ab_data = {
                             "ab_index": int(ab_index),
-                            "pitcher": str(rep_ab.get('pitcher', 'Unknown')),
-                            "batter": str(rep_ab.get('batter', 'Unknown')),
+                            "pitcher": pitcher_name,
+                            "batter": batter_name,
+                            "pitcher_hand": str(rep_ab.get('pitcher_hand', 'Unknown')),
+                            "batter_side": str(rep_ab.get('batter_side', 'Unknown')),
+                            "outs": int(rep_ab.get('outs', 0)),
+                            "men_on_base": str(rep_ab.get('men_on_base', 'Empty')),
+                            "pitcher_mix": pitcher_mixes.get(pitcher_name, {}) if pitcher_mixes else {},
+                            "batter_mix": batter_mixes.get(batter_name, {}) if batter_mixes else {},
                             "pitches": []
                         }
                         
@@ -154,13 +202,18 @@ def _get_explorer_data(df, predictor, baseline):
                                 surprisal = predictor.calculate_surprisal(actual_fam, probs)
                                 
                                 pitch_data = {
-                                    "p_type": actual_p_type,
+                                    "p_type": PITCH_NAMES.get(actual_p_type, actual_p_type),
+                                    "p_code": actual_p_type,
                                     "fam": actual_fam,
                                     "speed": float(row.get('release_speed', 0.0)) if not pd.isna(row.get('release_speed')) else 0.0,
                                     "count": f"{balls}-{strikes}",
                                     "prediction": pred_fam,
                                     "prob": float(probs.get(actual_fam, 0.0)),
-                                    "surprisal": float(surprisal) if not np.isinf(surprisal) else 10.0
+                                    "surprisal": float(surprisal) if not np.isinf(surprisal) else 10.0,
+                                    "outcome": str(row.get('call', 'Unknown')),
+                                    "pitcher_count_mix": _extract_mix(inference_row, "tendency_count"),
+                                    "batter_count_mix": _extract_mix(inference_row, "tendency_batter_count"),
+                                    "league_count_mix": _extract_mix(inference_row, "tendency_league_count")
                                 }
                                 ab_data["pitches"].append(pitch_data)
                             except:
@@ -314,8 +367,8 @@ def export_dashboard_data():
                     "id": str(idx),
                     "pitcher": str(row.get('player_name', 'Unknown')),
                     "batter": str(row.get('batter_name', 'Unknown')),
-                    "pitch_type": p_type,
-                    "pitch_family": _classify_pitch_family(p_type),
+                    "pitch_type": str(row.get('pitch_type', 'UNK')),
+                    "pitch_family": _classify_pitch_family(row.get('pitch_type')),
                     "speed": speed,
                     "count": f"{int(row.get('balls', 0))}-{int(row.get('strikes', 0))}",
                     "inning": f"{row.get('inning_topbot', 'top').lower()} {int(row.get('inning', 1))}",
@@ -358,8 +411,21 @@ def export_dashboard_data():
             "avg_speeds": avg_speeds
         })
 
+    # Calculate global mixes for all pitchers and batters in the dataset
+    pitcher_mixes = {}
+    if 'pitcher' in df.columns and 'pitch_family' in df.columns:
+        p_groups = df[df['pitch_family'] != "Unknown"].groupby(['pitcher', 'pitch_family']).size().unstack(fill_value=0)
+        pitcher_mixes = {k: {fk: int(fv) for fk, fv in v.items()} for k, v in p_groups.to_dict(orient='index').items()}
+        
+    batter_mixes = {}
+    # Sometimes it's 'batter' sometimes 'batter_name' in SQL based on generation
+    batter_col = 'batter' if 'batter' in df.columns else 'batter_name'
+    if batter_col in df.columns and 'pitch_family' in df.columns:
+        b_groups = df[df['pitch_family'] != "Unknown"].groupby([batter_col, 'pitch_family']).size().unstack(fill_value=0)
+        batter_mixes = {k: {fk: int(fv) for fk, fv in v.items()} for k, v in b_groups.to_dict(orient='index').items()}
+
     # 6. Matchup Explorer Data
-    explorer_data = _get_explorer_data(df, predictor, baseline)
+    explorer_data = _get_explorer_data(df, predictor, baseline, pitcher_mixes, batter_mixes)
 
     # Compile the final data object
     dashboard_data = {
