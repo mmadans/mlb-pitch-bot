@@ -40,38 +40,17 @@ def post_tweet(tweet_text: str):
         print(f"Error posting tweet: {e}")
 
 
-PITCH_ABBR = {
-    "Four-Seam Fastball": "FF",
-    "Sinker": "SI",
-    "Cutter": "FC",
-    "Slider": "SL",
-    "Sweeper": "ST",
-    "Curveball": "CU",
-    "Knuckle Curve": "KC",
-    "Changeup": "CH",
-    "Splitter": "FS",
-    "Slurve": "SV",
-    "Knuckleball": "KN",
-    "Forkball": "FO",
-    "Eephus": "EP",
-    "Screwball": "SC",
-    "Other": "OT",
-    "Unknown": "UN"
-}
-
-def _get_pitch_abbr(full_name: str) -> str:
-    """Returns a short abbreviation for a pitch type."""
-    return PITCH_ABBR.get(full_name, full_name[:3].upper())
+from src.utils import get_pitch_abbr
 
 TEAM_HASHTAGS = {
-    "ARI": "#DBacks", "ATL": "#BravesCountry", "BAL": "#Birdland", "BOS": "#DirtyWater",
-    "CHC": "#YouHaveToSeeIt", "CWS": "#WhiteSox", "CIN": "#ATOBTTR", "CLE": "#ForTheLand",
-    "COL": "#Rockies", "DET": "#RepDetroit", "HOU": "#NeverSettle", "KC": "#RaisedRoyal",
-    "LAA": "#TheHaloWay", "LAD": "#LetsGoDodgers", "MIA": "#HomeOfBeisbol", "MIL": "#ThisIsMyCrew",
+    "ARI": "#DBacks", "ATL": "#ForTheA", "BAL": "#Birdland", "BOS": "#DirtyWater",
+    "CHC": "#Cubs", "CWS": "#WhiteSox", "CIN": "#ATOBTTR", "CLE": "#GuarsBall",
+    "COL": "#Rockies", "DET": "#RepDetroit", "HOU": "#ChaseTheFight", "KC": "#FountainsUp",
+    "LAA": "#RepTheHalo", "LAD": "#Dodgers", "MIA": "#FightinFish", "MIL": "#ThisIsMyCrew",
     "MIN": "#MNTwins", "NYM": "#LGM", "NYY": "#RepBX", "OAK": "#RootedInOakland",
-    "PHI": "#RingTheBell", "PIT": "#LetsGoBucs", "SD": "#LetsGoPadres", "SF": "#SFGiants",
-    "SEA": "#TrueToTheBlue", "STL": "#ForTheLou", "TB": "#RaysUp", "TEX": "#TexasRangers",
-    "TOR": "#TOTHECORE", "WSH": "#Natitude"
+    "PHI": "#RingTheBell", "PIT": "#LetsGoBucs", "SD": "#ForTheFaithful", "SF": "#SFGiants",
+    "SEA": "#TridentsUp", "STL": "#ForTheLou", "TB": "#RaysUp", "TEX": "#AllForTX",
+    "TOR": "#BlueJays50", "WSH": "#Natitude"
 }
 
 def format_surprise_strikeout_tweet(
@@ -86,21 +65,24 @@ def format_surprise_strikeout_tweet(
     runners_info: str,
     outs: int,
     matchup_num: int,
-    sequence: list[str],
+    sequence: list,
     narrative: str = "",
     away_team: str = "",
-    home_team: str = ""
+    home_team: str = "",
+    pitcher_hand: str = "",
+    batter_side: str = ""
 ) -> str:
     """
     Formats a detailed tweet for a 'Surprise Strikeout' with 280-char limit in mind.
     """
     action = "whiffs" if is_whiff else "freezes"
     prob_pct = f"{prob * 100:.1f}%"
-    p_abbr = _get_pitch_abbr(pitch_type)
+    p_hand_str = f" ({pitcher_hand})" if pitcher_hand else ""
+    b_side_str = f" ({batter_side})" if batter_side else ""
     
     # 1. Header with Narrative
     header_prefix = f"{narrative} " if narrative else ""
-    header = f"{header_prefix}{pitcher} {action} {batter} with a {pitch_type}.\n"
+    header = f"{header_prefix}{pitcher}{p_hand_str} {action} {batter}{b_side_str} with a {pitch_type}.\n"
     header += f"Prob: {prob_pct} of {pitch_family.replace('Breaking', 'Breaking Ball')}."
     
     # 2. Context (Expanded)
@@ -113,34 +95,47 @@ def format_surprise_strikeout_tweet(
     
     # 3. Sequence (Abbreviations)
     def format_seq_item(s):
-        # Expecting "Family (Description)"
-        if "(" in s:
-            fam, desc = s.split(" (")
-            desc = desc.rstrip(")")
-            return f"{_get_pitch_abbr(desc)}"
-        return s[:2]
+        if isinstance(s, dict):
+            desc = s.get("pitch_type_desc", s.get("name", "Unknown"))
+            return get_pitch_abbr(desc)
+            
+        # Fallback for "Family (Description)" strings
+        if isinstance(s, str) and "(" in s:
+            parts = s.split(" (")
+            if len(parts) > 1:
+                desc = parts[1].rstrip(")")
+                return f"{get_pitch_abbr(desc)}"
+        return str(s)[:2]
 
-    seq_abbrs = [format_seq_item(s) for s in sequence]
-    seq_str = "Sequence: " + " -> ".join(seq_abbrs)
-    
-    parts = [header, context, seq_str]
-    
     # Add Hashtags
     hashtags = []
     if away_team in TEAM_HASHTAGS: hashtags.append(TEAM_HASHTAGS[away_team])
     if home_team in TEAM_HASHTAGS: hashtags.append(TEAM_HASHTAGS[home_team])
-    if hashtags:
-        parts.append(" ".join(hashtags))
+
+    # 4. Dynamic Sequence Truncation
+    def build_tweet(seq_list):
+        seq_abbrs = [format_seq_item(s) for s in seq_list]
+        seq_str = "Sequence: " + " -> ".join(seq_abbrs)
+        parts = [header, context, seq_str]
         
-    tweet = "\n\n".join(parts)
+        hashtags_str = " ".join(hashtags)
+        if hashtags_str:
+            parts.append(hashtags_str)
+            
+        return "\n\n".join(parts)
+
+    current_sequence = list(sequence)
+    tweet = build_tweet(current_sequence)
     
-    # Truncation safety
-    if len(tweet) > 280:
-        # If still over, drop the sequence
-        parts = [header, context]
-        if hashtags:
-            parts.append(" ".join(hashtags))
-        tweet = "\n\n".join(parts)
+    while len(tweet) > 280 and len(current_sequence) > 0:
+        current_sequence.pop(0)
+        if not current_sequence:
+            parts = [header, context]
+            if hashtags:
+                parts.append(" ".join(hashtags))
+            tweet = "\n\n".join(parts)
+            break
+        tweet = build_tweet(current_sequence)
         
     return tweet
 

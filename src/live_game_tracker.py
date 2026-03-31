@@ -228,8 +228,7 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             matchup_num = matchup_tracker.get(m_key, 0) + 1
             matchup_tracker[m_key] = matchup_num
             
-            # Sequence: Map each pitch to "Family (Description)"
-            # Limit to last 4 pitches and shorten descriptions to save character space
+            # Sequence: Map each pitch to a detailed dictionary
             sequence = []
             for e in play_events:
                 if e.get('isPitch'):
@@ -248,19 +247,28 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
                                  .replace('Splitter', 'FS') \
                                  .replace('Cutter', 'FC')
                                  
-                    p_family = _classify_pitch_family(p_code)
-                    sequence.append(f"{p_family} ({p_desc})")
+                    e_pitch_data = e.get('pitchData', {})
+                    sequence.append({
+                        "pitch_type_code": p_code,
+                        "pitch_type_desc": p_desc,
+                        "pitch_family": _classify_pitch_family(p_code),
+                        "call": e.get('details', {}).get('description', ''),
+                        "pX": (e_pitch_data.get('coordinates') or {}).get('pX'),
+                        "pZ": (e_pitch_data.get('coordinates') or {}).get('pZ'),
+                        "pitch_number": e.get('index')
+                    })
             
-            sequence = sequence[-4:] # Only show the last 4 pitches to avoid 280-char limit
+            # Dynamic truncation now handled in bot.py logic
             
-            # Use playId from the pitch event if available, fallback to play level
-            precise_play_id = last_pitch_event.get('playId') or current_play.get('playId')
-            
-            # Prepare tweet text without video link first
+            p_hand = row['pitcher_hand'].values[0] if 'pitcher_hand' in row.columns else ""
+            b_side = row['batter_side'].values[0] if 'batter_side' in row.columns else ""
+
+            # Prepare tweet text
             tweet_text = format_surprise_strikeout_tweet(
                 pitcher_name, batter_name, actual_pitch_desc, actual_pitch_family, expected_prob, is_swinging,
                 inning_info, score_info, runners_info, outs, matchup_num, sequence,
-                narrative=narrative, away_team=a_team, home_team=h_team
+                narrative=narrative, away_team=a_team, home_team=h_team,
+                pitcher_hand=p_hand, batter_side=b_side
             )
             
             print("\n" + "="*50)

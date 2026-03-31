@@ -50,24 +50,24 @@ def _get_game_metadata(date_str):
         return {}
 
 PITCH_NAMES = {
-    "FF": "Four-Seam Fastball",
-    "SI": "Sinker",
-    "FC": "Cutter",
-    "SL": "Slider",
-    "CU": "Curveball",
     "CH": "Changeup",
-    "FS": "Splitter",
+    "CU": "Curveball",
+    "FC": "Cutter",
+    "EP": "Eephus",
+    "FO": "Forkball",
+    "FF": "Four-Seam Fastball",
+    "KN": "Knuckleball",
     "KC": "Knuckle Curve",
+    "SC": "Screwball",
+    "SI": "Sinker",
+    "SL": "Slider",
     "SV": "Slurve",
+    "FS": "Splitter",
+    "ST": "Sweeper",
     "CS": "Slow Curve",
     "CB": "Curveball",
-    "ST": "Sweeper",
-    "FO": "Forkball",
-    "KN": "Knuckleball",
-    "EP": "Eephus",
     "FA": "Fastball",
     "FT": "Two-Seam Fastball",
-    "SC": "Screwball",
     "GY": "Gyroball"
 }
 
