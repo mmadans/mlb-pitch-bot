@@ -25,33 +25,42 @@ def get_twitter_conn_v2() -> tweepy.Client:
         access_token_secret=access_token_secret
     )
 
-def post_tweet(tweet_text: str):
-    """Posts a tweet to Twitter using API v2."""
+def post_tweet(tweet_text: str, image_path: str = None):
+    """Posts a tweet to Twitter using API v2, with optional image support."""
     client = get_twitter_conn_v2()
     if not client:
         print("Twitter credentials are not fully set in .env file. Skipping tweet.")
         print(f"DEBUG - Would have tweeted:\n{tweet_text}")
+        if image_path:
+            print(f"DEBUG - Would have attached image: {image_path}")
         return
 
     try:
-        client.create_tweet(text=tweet_text)
+        media_ids = None
+        if image_path and os.path.exists(image_path):
+            # API v1.1 is required for media upload
+            consumer_key = os.getenv("TWITTER_CONSUMER_KEY")
+            consumer_secret = os.getenv("TWITTER_CONSUMER_SECRET")
+            access_token = os.getenv("TWITTER_ACCESS_TOKEN")
+            access_token_secret = os.getenv("TWITTER_ACCESS_TOKEN_SECRET")
+            
+            auth = tweepy.OAuth1UserHandler(
+                consumer_key, consumer_secret, access_token, access_token_secret
+            )
+            api = tweepy.API(auth)
+            
+            media = api.media_upload(image_path)
+            media_ids = [media.media_id]
+            print(f"Successfully uploaded image {image_path}")
+
+        client.create_tweet(text=tweet_text, media_ids=media_ids)
         print("Tweet posted successfully!")
     except tweepy.TweepyException as e:
         print(f"Error posting tweet: {e}")
 
 
 from src.utils import get_pitch_abbr
-
-TEAM_HASHTAGS = {
-    "ARI": "#DBacks", "ATL": "#ForTheA", "BAL": "#Birdland", "BOS": "#DirtyWater",
-    "CHC": "#Cubs", "CWS": "#WhiteSox", "CIN": "#ATOBTTR", "CLE": "#GuarsBall",
-    "COL": "#Rockies", "DET": "#RepDetroit", "HOU": "#ChaseTheFight", "KC": "#FountainsUp",
-    "LAA": "#RepTheHalo", "LAD": "#Dodgers", "MIA": "#FightinFish", "MIL": "#ThisIsMyCrew",
-    "MIN": "#MNTwins", "NYM": "#LGM", "NYY": "#RepBX", "OAK": "#RootedInOakland",
-    "PHI": "#RingTheBell", "PIT": "#LetsGoBucs", "SD": "#ForTheFaithful", "SF": "#SFGiants",
-    "SEA": "#TridentsUp", "STL": "#ForTheLou", "TB": "#RaysUp", "TEX": "#AllForTX",
-    "TOR": "#BlueJays50", "WSH": "#Natitude"
-}
+from src.constants import TEAM_HASHTAGS
 
 def format_surprise_strikeout_tweet(
     pitcher: str, 
@@ -60,12 +69,6 @@ def format_surprise_strikeout_tweet(
     pitch_family: str,
     prob: float, 
     is_whiff: bool,
-    inning_info: str,
-    score_info: str,
-    runners_info: str,
-    outs: int,
-    matchup_num: int,
-    sequence: list,
     narrative: str = "",
     away_team: str = "",
     home_team: str = "",
@@ -73,7 +76,7 @@ def format_surprise_strikeout_tweet(
     batter_side: str = ""
 ) -> str:
     """
-    Formats a detailed tweet for a 'Surprise Strikeout' with 280-char limit in mind.
+    Formats a concise tweet for a 'Surprise Strikeout' relying on the attached infographic for context.
     """
     action = "whiffs" if is_whiff else "freezes"
     prob_pct = f"{prob * 100:.1f}%"
@@ -85,59 +88,16 @@ def format_surprise_strikeout_tweet(
     header = f"{header_prefix}{pitcher}{p_hand_str} {action} {batter}{b_side_str} with a {pitch_type}.\n"
     header += f"Prob: {prob_pct} of {pitch_family.replace('Breaking', 'Breaking Ball')}."
     
-    # 2. Context (Expanded)
-    context = (
-        f"Inning: {inning_info}\n"
-        f"Outs: {outs}\n"
-        f"Score: {score_info}\n"
-        f"Bases: {runners_info}"
-    )
-    
-    # 3. Sequence (Abbreviations)
-    def format_seq_item(s):
-        if isinstance(s, dict):
-            desc = s.get("pitch_type_desc", s.get("name", "Unknown"))
-            return get_pitch_abbr(desc)
-            
-        # Fallback for "Family (Description)" strings
-        if isinstance(s, str) and "(" in s:
-            parts = s.split(" (")
-            if len(parts) > 1:
-                desc = parts[1].rstrip(")")
-                return f"{get_pitch_abbr(desc)}"
-        return str(s)[:2]
-
-    # Add Hashtags
+    # 2. Add Hashtags
     hashtags = []
     if away_team in TEAM_HASHTAGS: hashtags.append(TEAM_HASHTAGS[away_team])
     if home_team in TEAM_HASHTAGS: hashtags.append(TEAM_HASHTAGS[home_team])
 
-    # 4. Dynamic Sequence Truncation
-    def build_tweet(seq_list):
-        seq_abbrs = [format_seq_item(s) for s in seq_list]
-        seq_str = "Sequence: " + " -> ".join(seq_abbrs)
-        parts = [header, context, seq_str]
+    parts = [header]
+    if hashtags:
+        parts.append(" ".join(hashtags))
         
-        hashtags_str = " ".join(hashtags)
-        if hashtags_str:
-            parts.append(hashtags_str)
-            
-        return "\n\n".join(parts)
-
-    current_sequence = list(sequence)
-    tweet = build_tweet(current_sequence)
-    
-    while len(tweet) > 280 and len(current_sequence) > 0:
-        current_sequence.pop(0)
-        if not current_sequence:
-            parts = [header, context]
-            if hashtags:
-                parts.append(" ".join(hashtags))
-            tweet = "\n\n".join(parts)
-            break
-        tweet = build_tweet(current_sequence)
-        
-    return tweet
+    return "\n\n".join(parts)
 
 
 def format_tweet(pitcher: str, batter: str, pitch_type: str, surprisal: float, outcome: str, away_team: str = "", home_team: str = "") -> str:

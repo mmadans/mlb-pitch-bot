@@ -21,6 +21,7 @@ from src.features import (
 from src.inference import PitchPredictor
 from src.bot import post_tweet, format_tweet, format_surprise_strikeout_tweet
 from src.database import create_live_predictions_table, insert_live_prediction
+from src.visualization import generate_pitch_infographic
 from src.constants import (
     POLLING_INTERVAL_SECONDS,
     SURPRISAL_THRESHOLD,
@@ -52,6 +53,51 @@ def get_live_game_pks():
         print(f"Error fetching schedule: {e}")
         return []
 
+def evaluate_pitch_narrative(event_type: str, is_surprise: bool, is_looking: bool, is_swinging: bool, 
+                             expected_prob: float, actual_family: str, surprisal: float) -> tuple[bool, str]:
+    """Determines if a pitch warrants a tweet and selects the appropriate narrative prefix."""
+    tweet_logic = False
+    narrative = ""
+    
+    if event_type == "strikeout":
+        if is_surprise:
+            narrative = "🥶 Frozen!" if is_looking else "🔀 Fooled him!"
+            tweet_logic = True
+        elif expected_prob > 0.8 and actual_family == "Fastball" and is_swinging:
+            narrative = "😤 Pure Dominance."
+            tweet_logic = True
+        elif surprisal > SURPRISAL_THRESHOLD:
+            narrative = "🤯 Unbelievable K!"
+            tweet_logic = True
+            
+    elif event_type.startswith("hard_hit"):
+        if expected_prob > 0.4:
+            narrative = "🎯 Sitting on it!"
+            tweet_logic = True
+        elif surprisal > SURPRISAL_THRESHOLD:
+            narrative = "💥 Punished!"
+            tweet_logic = True
+            
+    return tweet_logic, narrative
+
+def build_pitch_sequence(play_events: list) -> list:
+    """Builds the sequence visualization dictionary from raw MLB API play events."""
+    sequence = []
+    for e in play_events:
+        if e.get('isPitch'):
+            p_code = e.get('details', {}).get('type', {}).get('code', 'UN')
+            p_desc = e.get('details', {}).get('type', {}).get('description', 'Unknown')
+            e_pitch_data = e.get('pitchData', {})
+            sequence.append({
+                "pitch_type_code": p_code,
+                "pitch_type_desc": p_desc,
+                "pitch_family": _classify_pitch_family(p_code),
+                "call": e.get('details', {}).get('description', ''),
+                "pX": (e_pitch_data.get('coordinates') or {}).get('pX'),
+                "pZ": (e_pitch_data.get('coordinates') or {}).get('pZ'),
+                "pitch_number": e.get('index')
+            })
+    return sequence
 
 def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredictor):
     """Processes a pitch if it matches outcome criteria."""
@@ -173,34 +219,15 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
         print(f"  Pitch: {actual_pitch_code}, Prob: {expected_prob:.2f}, Surprisal: {surprisal:.2f}, Desc: {pitch_description}")
         
         # --- Narrative Selection Logic ---
-        tweet_logic = False
-        narrative = ""
-        
-        if event_type == "strikeout":
-            # 1. Unexpected pitch leads to strikeout (Frozen or Fooled)
-            if is_surprise_pitch:
-                if is_looking:
-                    narrative = "🥶 Frozen!"
-                else:
-                    narrative = "🔀 Fooled him!"
-                tweet_logic = True
-            # 2. Dominance: Predictive fastball but still gets the whiff
-            elif expected_prob > 0.8 and actual_pitch_family == "Fastball" and is_swinging:
-                narrative = "😤 Pure Dominance."
-                tweet_logic = True
-            # 3. General high-surprisal strikeout fallback
-            elif surprisal > SURPRISAL_THRESHOLD:
-                narrative = "🤯 Unbelievable K!"
-                tweet_logic = True
-        elif launch_speed >= BARREL_EV_THRESHOLD and not is_out:
-            # 3. Hitter hits a pitch they were statistically expecting
-            if expected_prob > 0.4:
-                narrative = "🎯 Sitting on it!"
-                tweet_logic = True
-            # 4. Hitter punishes an unconventional pitch
-            elif surprisal > SURPRISAL_THRESHOLD:
-                narrative = "💥 Punished!"
-                tweet_logic = True
+        tweet_logic, narrative = evaluate_pitch_narrative(
+            event_type=outcome_str if outcome_str.startswith("hard_hit") else event_type, 
+            is_surprise=is_surprise_pitch, 
+            is_looking=is_looking, 
+            is_swinging=is_swinging, 
+            expected_prob=expected_prob, 
+            actual_family=actual_pitch_family, 
+            surprisal=surprisal
+        )
 
         if tweet_logic and event_type == "strikeout":
             # 3. Handle Context for the new Surprise Strikeout format
@@ -228,54 +255,37 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             matchup_num = matchup_tracker.get(m_key, 0) + 1
             matchup_tracker[m_key] = matchup_num
             
-            # Sequence: Map each pitch to a detailed dictionary
-            sequence = []
-            for e in play_events:
-                if e.get('isPitch'):
-                    p_code = e.get('details', {}).get('type', {}).get('code', 'UN')
-                    p_desc = e.get('details', {}).get('type', {}).get('description', 'Unknown')
-                    
-                    # Shorten common long descriptions
-                    p_desc = p_desc.replace('Four-Seam Fastball', '4-Seam') \
-                                 .replace('Fastball', 'FB') \
-                                 .replace('Changeup', 'CH') \
-                                 .replace('Curveball', 'CU') \
-                                 .replace('Slider', 'SL') \
-                                 .replace('Sinker', 'SI') \
-                                 .replace('Sweeper', 'ST') \
-                                 .replace('Knuckle Curve', 'KC') \
-                                 .replace('Splitter', 'FS') \
-                                 .replace('Cutter', 'FC')
-                                 
-                    e_pitch_data = e.get('pitchData', {})
-                    sequence.append({
-                        "pitch_type_code": p_code,
-                        "pitch_type_desc": p_desc,
-                        "pitch_family": _classify_pitch_family(p_code),
-                        "call": e.get('details', {}).get('description', ''),
-                        "pX": (e_pitch_data.get('coordinates') or {}).get('pX'),
-                        "pZ": (e_pitch_data.get('coordinates') or {}).get('pZ'),
-                        "pitch_number": e.get('index')
-                    })
+            sequence = build_pitch_sequence(play_events)
             
-            # Dynamic truncation now handled in bot.py logic
-            
+            # We no longer handle truncation logic, the infographic handles context entirely!
             p_hand = row['pitcher_hand'].values[0] if 'pitcher_hand' in row.columns else ""
             b_side = row['batter_side'].values[0] if 'batter_side' in row.columns else ""
 
             # Prepare tweet text
             tweet_text = format_surprise_strikeout_tweet(
                 pitcher_name, batter_name, actual_pitch_desc, actual_pitch_family, expected_prob, is_swinging,
-                inning_info, score_info, runners_info, outs, matchup_num, sequence,
                 narrative=narrative, away_team=a_team, home_team=h_team,
                 pitcher_hand=p_hand, batter_side=b_side
+            )
+            
+            # Generate the infographic image
+            os.makedirs("output", exist_ok=True)
+            image_path = f"output/live_tweet_{game_pk}_{at_bat_index}.png"
+            print(f"  Generating infographic: {image_path}")
+            
+            generate_pitch_infographic(
+                game_data=game_data,
+                play_index=at_bat_index,
+                predictor=predictor,
+                sequence=sequence,
+                output_path=image_path
             )
             
             print("\n" + "="*50)
             print("🚀 [POSTING LIVE TWEET]")
             print(tweet_text)
             print("="*50 + "\n")
-            post_tweet(tweet_text) # Enable for production
+            post_tweet(tweet_text, image_path=image_path) # Enable for production
 
         elif tweet_logic: # Fallback for non-strikeout surprises (hard hits)
             pitcher_name = current_play.get('matchup', {}).get('pitcher', {}).get('fullName')

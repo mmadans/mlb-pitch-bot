@@ -9,6 +9,24 @@ FASTBALL_CODES = {"FF", "FT", "FC", "SI", "FA"}
 BREAKING_CODES = {"SL", "CU", "KC", "SV", "CS", "CB", "GY", "ST"}
 OFFSPEED_CODES = {"CH", "SC", "FO", "KN", "EP", "FS", "SF"}
 
+PITCH_COLORS = {
+    'Fastball': '#D22D49',
+    'Breaking': '#00A1DE',
+    'Offspeed': '#1D8A58',
+    'Other': '#93A1A1'
+}
+
+TEAM_HASHTAGS = {
+    "ARI": "#DBacks", "ATL": "#ForTheA", "BAL": "#Birdland", "BOS": "#DirtyWater",
+    "CHC": "#Cubs", "CWS": "#WhiteSox", "CIN": "#ATOBTTR", "CLE": "#GuardsBall",
+    "COL": "#Rockies", "DET": "#RepDetroit", "HOU": "#ChaseTheFight", "KC": "#FountainsUp",
+    "LAA": "#RepTheHalo", "LAD": "#Dodgers", "MIA": "#FightinFish", "MIL": "#ThisIsMyCrew",
+    "MIN": "#MNTwins", "NYM": "#LGM", "NYY": "#RepBX", "OAK": "#RootedInOakland",
+    "PHI": "#RingTheBell", "PIT": "#LetsGoBucs", "SD": "#ForTheFaithful", "SF": "#SFGiants",
+    "SEA": "#TridentsUp", "STL": "#ForTheLou", "TB": "#RaysUp", "TEX": "#AllForTX",
+    "TOR": "#BlueJays50", "WSH": "#Natitude"
+}
+
 # Thresholds for surprisal and outcomes
 SURPRISAL_THRESHOLD = 2.5
 BARREL_EV_THRESHOLD = 98.0
