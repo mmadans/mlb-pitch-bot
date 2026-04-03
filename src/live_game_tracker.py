@@ -273,10 +273,11 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             image_path = f"output/live_tweet_{game_pk}_{at_bat_index}.png"
             print(f"  Generating infographic: {image_path}")
             
+            pitch_data_dict = row.to_dict('records')[0]
             generate_pitch_infographic(
-                game_data=game_data,
-                play_index=at_bat_index,
-                predictor=predictor,
+                pitch_data=pitch_data_dict,
+                probs=probabilities,
+                surprisal=surprisal,
                 sequence=sequence,
                 output_path=image_path
             )

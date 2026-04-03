@@ -4,6 +4,7 @@ import matplotlib.patches as patches
 from matplotlib.gridspec import GridSpec
 from src.utils import get_pitch_abbr
 from src.constants import PITCH_COLORS
+from src.features import _classify_pitch_family
 
 def set_dark_theme(ax):
     """Applies a premium dark theme to a matplotlib axis."""
@@ -68,7 +69,7 @@ def _draw_sequence(ax, sequence, pitch_data):
             
     full_seq.append({
         "name": pitch_data.get("pitch_type_desc", pitch_data.get("pitch_type", "Unknown")),
-        "family": pitch_data.get("pitch_family", "Unknown"),
+        "family": pitch_data.get("pitch_family") or _classify_pitch_family(pitch_data.get("pitch_type", "UN")),
         "outcome": pitch_data.get("call", "")
     })
     
@@ -91,7 +92,7 @@ def _draw_sequence(ax, sequence, pitch_data):
 
 def _draw_strike_zone(ax, pitch_data, sequence, fig):
     set_dark_theme(ax)
-    actual_fam = pitch_data.get("pitch_family", "Unknown")
+    actual_fam = pitch_data.get("pitch_family") or _classify_pitch_family(pitch_data.get("pitch_type", "UN"))
     desc = pitch_data.get("pitch_type_desc", actual_fam)
     velo = pitch_data.get("velocity")
     spin = pitch_data.get("spin_rate")

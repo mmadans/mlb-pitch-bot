@@ -128,6 +128,7 @@ def extract_pitches_with_context(play_data: dict, game_date: str | None = None) 
                 "pitcher": pitcher_name,
                 "pitcher_id": pitcher_id,
                 "pitch_type": code,
+                "pitch_family": pitch_family,
                 "pitcher_hand": matchup.get("pitchHand", {}).get("code"),
                 "batter_side": matchup.get("batSide", {}).get("code"),
                 "men_on_base": matchup.get("splits", {}).get("menOnBase"),
