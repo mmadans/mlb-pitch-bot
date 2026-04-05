@@ -25,7 +25,7 @@ from src.batter_tendency_processing import get_batter_features
 from src.features import _classify_pitch_family, add_contextual_features
 from src.build_baseline_tendencies import build_baseline
 
-def apply_baseline_to_df(df: pd.DataFrame, baseline: dict) -> pd.DataFrame:
+def apply_baseline_to_df(df: pd.DataFrame, baseline: dict, is_train: bool = False) -> pd.DataFrame:
     '''Applies baseline tendency dictionaries to a DataFrame securely (no leakage).'''
     df = df.copy()
     
@@ -58,8 +58,33 @@ def apply_baseline_to_df(df: pd.DataFrame, baseline: dict) -> pd.DataFrame:
     df["primary_out_pitch"] = df["primary_out_pitch"].fillna("Fastball")
     
     # Fill other missing tendencies with 0
-    tend_cols = [c for c in df.columns if c.startswith('tendency_')]
+    tend_cols = [c for c in df.columns if c.startswith('tendency_') and c.endswith('_pct')]
     df[tend_cols] = df[tend_cols].fillna(0.0)
+    
+    if is_train and "pitch_family" in df.columns:
+        # Prevent Target Leakage using Leave-One-Out (LOO) calculation for train data
+        for prefix in ["tendency_global", "tendency_count", "tendency_batter_count", "tendency_league_count"]:
+            total_col = f"{prefix}_total_pitches"
+            if total_col in df.columns:
+                for fam in ["Fastball", "Breaking", "Offspeed"]:
+                    pct_col = f"{prefix}_{fam}_pct"
+                    if pct_col in df.columns:
+                        # Raw count = total * percentage
+                        raw_count = (df[pct_col] * df[total_col]).round()
+                        
+                        # Subtract 1 if this row's family matches the column's family
+                        is_match = (df["pitch_family"] == fam).astype(int)
+                        new_count = raw_count - is_match
+                        new_total = df[total_col] - 1
+                        
+                        # Clip to prevent negative counts in edge cases
+                        new_count = new_count.clip(lower=0)
+                        new_total = new_total.clip(lower=0)
+                        
+                        # Recalculate percentage (default to 0.0 if new_total is 0)
+                        new_pct = new_count / new_total
+                        df[pct_col] = new_pct.fillna(0.0)
+
     
     # Add contextual features
     df = add_contextual_features(df)
@@ -93,7 +118,12 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
     y_encoded = label_encoder.fit_transform(y)
 
     count_cols = [c for c in df.columns if c.startswith("count_") and "-" not in c]
-    numeric = ["balls", "strikes", "outs", "is_leverage", "is_platoon_advantage", "run_differential", "breaking_streak", "fastball_streak", "offspeed_streak"]
+    numeric = [
+        "balls", "strikes", "outs", "is_leverage", "is_platoon_advantage", "run_differential", 
+        "breaking_streak", "fastball_streak", "offspeed_streak",
+        "pitch_count_in_game", "times_faced_today", "prev_pX", "prev_pZ",
+        "is_double_play_scenario", "prev_pitch_was_whiff", "prev_pitch_was_foul"
+    ]
     tendency_cols = [
         c for c in df.columns
         if (c.startswith("tendency_global_") or c.startswith("tendency_count_") or c.startswith("tendency_batter_count_") or c.startswith("tendency_league_count_")) and (c.endswith("_pct") or c == "tendency_total_pitches")
@@ -219,8 +249,13 @@ def main() -> None:
     baseline = joblib.load(baseline_path)
     
     print("Applying baseline tendencies securely to train and test sets...")
-    train_df = apply_baseline_to_df(train_df, baseline)
-    test_df = apply_baseline_to_df(test_df, baseline)
+    
+    # We must ensure pitch_family is available for LOO encoding
+    if "pitch_family" not in train_df.columns:
+        train_df["pitch_family"] = train_df["pitch_type"].apply(_classify_pitch_family)
+        
+    train_df = apply_baseline_to_df(train_df, baseline, is_train=True)
+    test_df = apply_baseline_to_df(test_df, baseline, is_train=False)
     
     # Combine just for categorical label encoding consistency
     # We will manually split them back using their lengths

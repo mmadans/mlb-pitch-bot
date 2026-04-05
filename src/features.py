@@ -76,6 +76,8 @@ def extract_pitches_with_context(play_data: dict, game_date: str | None = None) 
     all_plays = play_data.get("liveData", {}).get("plays", {}).get("allPlays", [])
     pitches = []
     home_score, away_score = 0, 0
+    pitcher_pitch_counts = {}
+    matchup_tracker = {}
 
     for play in all_plays:
         if "playEvents" not in play:
@@ -101,6 +103,12 @@ def extract_pitches_with_context(play_data: dict, game_date: str | None = None) 
         pitch_events = [e for e in play["playEvents"] if e.get("isPitch")]
         prev_pitch_type_in_ab = None
         prev_pitch_call_in_ab = None
+        prev_pX_in_ab = 0.0
+        prev_pZ_in_ab = 0.0
+        
+        if pitcher_id and batter_id:
+            matchup_tracker[(pitcher_id, batter_id)] = matchup_tracker.get((pitcher_id, batter_id), 0) + 1
+        times_faced = matchup_tracker.get((pitcher_id, batter_id), 1)
         
         # Streak tracking for the current at-bat
         breaking_streak = 0
@@ -118,6 +126,10 @@ def extract_pitches_with_context(play_data: dict, game_date: str | None = None) 
             
             pitch_data = event.get("pitchData", {})
             count = event.get("count", {})
+            
+            if pitcher_id:
+                pitcher_pitch_counts[pitcher_id] = pitcher_pitch_counts.get(pitcher_id, 0) + 1
+            pitch_count = pitcher_pitch_counts.get(pitcher_id, 1)
 
             pitch = {
                 "at_bat_index": at_bat_index,
@@ -151,6 +163,10 @@ def extract_pitches_with_context(play_data: dict, game_date: str | None = None) 
                 "game_type": play_data.get("gameData", {}).get("game", {}).get("type"),
                 "prev_pitch_type_in_ab": prev_pitch_type_in_ab,
                 "prev_pitch_call": prev_pitch_call_in_ab,
+                "prev_pX": prev_pX_in_ab,
+                "prev_pZ": prev_pZ_in_ab,
+                "pitch_count_in_game": pitch_count,
+                "times_faced_today": times_faced,
                 "breaking_streak": breaking_streak,
                 "fastball_streak": fastball_streak,
                 "offspeed_streak": offspeed_streak,
@@ -178,6 +194,12 @@ def extract_pitches_with_context(play_data: dict, game_date: str | None = None) 
 
             prev_pitch_type_in_ab = (code or "UN").upper() if code else "UN"
             prev_pitch_call_in_ab = details.get("description")
+            try:
+                prev_pX_in_ab = float((pitch_data.get("coordinates") or {}).get("pX") or 0.0)
+                prev_pZ_in_ab = float((pitch_data.get("coordinates") or {}).get("pZ") or 0.0)
+            except (ValueError, TypeError):
+                prev_pX_in_ab = 0.0
+                prev_pZ_in_ab = 0.0
 
         result = play.get("result", {})
         home_score = result.get("homeScore", home_score)
@@ -224,6 +246,18 @@ def add_contextual_features(df: pd.DataFrame) -> pd.DataFrame:
     inning = df["inning"].fillna(0).astype(int)
     df["is_leverage"] = ((inning > 7) & (df["score_diff"] <= 2)).astype(int)
 
+    if "men_on_base" in df.columns and "outs" in df.columns:
+        df["is_double_play_scenario"] = (((df["men_on_base"] == "Men_On") | (df["men_on_base"] == "Loaded")) & (df["outs"] < 2)).astype(int)
+    else:
+        df["is_double_play_scenario"] = 0
+
+    if "prev_pitch_call" in df.columns:
+        df["prev_pitch_was_whiff"] = df["prev_pitch_call"].str.lower().str.contains("swinging strike", na=False).astype(int)
+        df["prev_pitch_was_foul"] = df["prev_pitch_call"].str.lower().str.contains("foul", na=False).astype(int)
+    else:
+        df["prev_pitch_was_whiff"] = 0
+        df["prev_pitch_was_foul"] = 0
+
     # Drop helper columns used only for feature construction
     df = df.drop(columns=["count_str", "score_diff"], errors="ignore")
 
@@ -241,9 +275,12 @@ def add_pitcher_count_tendencies(df: pd.DataFrame) -> pd.DataFrame:
     group_cols = ["pitcher", "balls", "strikes", "pitch_family"]
     counts = df.groupby(group_cols).size().unstack(fill_value=0)
     
-    # Calculate percentages per (pitcher, balls, strikes)
+    # Calculate percentages per (pitcher, balls, strikes) with Laplace Smoothing
     totals = counts.sum(axis=1)
-    percentages = counts.div(totals, axis=0)
+    num_classes = counts.shape[1]
+    smoothed_counts = counts + 1.0
+    smoothed_totals = totals + num_classes
+    percentages = smoothed_counts.div(smoothed_totals, axis=0)
     
     # Rename columns to reflect they are count-specific tendencies
     percentages.columns = [
@@ -277,9 +314,12 @@ def add_batter_count_tendencies(df: pd.DataFrame) -> pd.DataFrame:
     group_cols = ["batter_id", "balls", "strikes", "pitch_family"]
     counts = df.groupby(group_cols).size().unstack(fill_value=0)
     
-    # Calculate percentages per (batter, balls, strikes)
+    # Calculate percentages per (batter, balls, strikes) with Laplace Smoothing
     totals = counts.sum(axis=1)
-    percentages = counts.div(totals, axis=0)
+    num_classes = counts.shape[1]
+    smoothed_counts = counts + 1.0
+    smoothed_totals = totals + num_classes
+    percentages = smoothed_counts.div(smoothed_totals, axis=0)
     
     # Rename columns to reflect they are batter-count tendencies
     percentages.columns = [
@@ -310,9 +350,12 @@ def add_league_count_tendencies(df: pd.DataFrame) -> pd.DataFrame:
     group_cols = ["balls", "strikes", "pitch_family"]
     counts = df.groupby(group_cols).size().unstack(fill_value=0)
     
-    # Calculate percentages per count
+    # Calculate percentages per count with Laplace Smoothing
     totals = counts.sum(axis=1)
-    percentages = counts.div(totals, axis=0)
+    num_classes = counts.shape[1]
+    smoothed_counts = counts + 1.0
+    smoothed_totals = totals + num_classes
+    percentages = smoothed_counts.div(smoothed_totals, axis=0)
     
     # Rename columns to reflect they are league-count tendencies
     percentages.columns = [
@@ -366,12 +409,16 @@ def add_global_pitcher_tendencies(df: pd.DataFrame) -> pd.DataFrame:
     """
     Adds global (regardless of count) pitcher tendency features.
     """
-    # Calculate pitch family counts per pitcher
+    # Calculate pitch family counts per pitcher with Laplace Smoothing
     if 'pitch_family' not in df.columns:
         df['pitch_family'] = df['pitch_type'].apply(_classify_pitch_family)
     pitch_counts = df.groupby(["pitcher", "pitch_family"]).size().unstack(fill_value=0)
     total_pitches = pitch_counts.sum(axis=1)
-    pitch_percentages = pitch_counts.div(total_pitches, axis=0)
+    
+    num_classes = pitch_counts.shape[1]
+    smoothed_counts = pitch_counts + 1.0
+    smoothed_totals = total_pitches + num_classes
+    pitch_percentages = smoothed_counts.div(smoothed_totals, axis=0)
 
     # Rename columns
     pitch_percentages.columns = [
