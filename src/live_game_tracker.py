@@ -250,6 +250,8 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             print(f"  Generating infographic: {image_path}")
             
             pitch_data_dict = row.to_dict('records')[0]
+            pitch_data_dict['away_team'] = a_team
+            pitch_data_dict['home_team'] = h_team
             generate_pitch_infographic(
                 pitch_data=pitch_data_dict,
                 probs=probabilities,

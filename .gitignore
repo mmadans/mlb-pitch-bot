@@ -13,3 +13,4 @@ data/
 models/
 .ipynb_checkpoints/
 /.cursor
+output/*.png
