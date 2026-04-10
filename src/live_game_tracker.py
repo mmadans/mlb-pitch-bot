@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 from src.features import (
     extract_pitches_with_context, 
     add_contextual_features, 
-    add_global_pitcher_tendencies,
+    apply_baseline_to_df,
     _classify_pitch_family
 )
 from src.inference import PitchPredictor
@@ -139,50 +139,20 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
         pitch_rows = extract_pitches_with_context(game_data)
         df = pd.DataFrame(pitch_rows)
         
-        # Add basic contextual features (inning, count one-hot, etc.)
-        df = add_contextual_features(df)
-        
-        # Hydrate with Baseline Tendencies
-        # This replaces the need to calculate them from the single-game DF
+        # Identify the exact pitch
         row = df[(df['at_bat_index'] == at_bat_index) & (df['pitch_index'] == pitch_index)].copy()
         if row.empty: return
         
-        pitcher = row['pitcher'].values[0]
-        balls = row['balls'].values[0]
-        strikes = row['strikes'].values[0]
+        # Add context required before feature hydration
+        venue_id = game_data.get('gameData', {}).get('venue', {}).get('id', 0)
+        row['park_id'] = venue_id
         
         # Hydrate tendencies if baseline is ready
         if baseline:
-            # Global tendencies
-            p_global = baseline['global'].get(pitcher, {})
-            for col, val in p_global.items():
-                row[col] = val
-                
-            # Count tendencies
-            p_count = baseline['count'].get((pitcher, balls, strikes), {})
-            for col, val in p_count.items():
-                row[col] = val
-            
-            # Batter Count tendencies
-            batter_id = row['batter_id'].values[0]
-            b_count = baseline.get('batter_count', {}).get((batter_id, balls, strikes), {})
-            for col, val in b_count.items():
-                row[col] = val
-
-            # League Count tendencies
-            l_count = baseline.get('league_count', {}).get((balls, strikes), {})
-            for col, val in l_count.items():
-                row[col] = val
-
-            # Out Pitch
-            pitcher_id = row['pitcher_id'].values[0]
-            row['primary_out_pitch'] = baseline.get('out_pitch', {}).get(pitcher_id, "Fastball")
-
-            # Park ID
-            venue_id = game_data.get('gameData', {}).get('venue', {}).get('id', 0)
-            row['park_id'] = venue_id
+            row = apply_baseline_to_df(row, baseline, is_train=False)
         else:
             print("  Warning: Baseline tendencies not loaded. Expect surprises in predictions.")
+            row = add_contextual_features(row)
 
         # 2. Run inference
         actual_pitch_code = row['pitch_type'].values[0]
@@ -192,15 +162,15 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
         probabilities = predictor.predict_probabilities(row)
         surprisal = predictor.calculate_surprisal(actual_pitch_family, probabilities)
         
+        pitcher_id = int(row['pitcher_id'].values[0])
+        batter_id = int(row['batter_id'].values[0])
+        
         # Log every single live prediction to monitor model calibration over time
         try:
-            game_pk_val = game_pk
-            pitcher_id_val = int(row['pitcher_id'].values[0])
-            batter_id_val = int(row['batter_id'].values[0])
             play_id_val = last_pitch_event.get('playId') or current_play.get('playId', '')
             insert_live_prediction(
-                game_pk=game_pk_val, play_id=play_id_val, 
-                pitcher_id=pitcher_id_val, batter_id=batter_id_val, 
+                game_pk=game_pk, play_id=play_id_val, 
+                pitcher_id=pitcher_id, batter_id=batter_id, 
                 actual_pitch_family=actual_pitch_family,
                 probs=probabilities, surprisal=surprisal
             )
@@ -209,6 +179,12 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
 
         # Determine Narrative based on situational context and tendencies
         expected_prob = probabilities.get(actual_pitch_family, 0)
+        
+        # Squelch tweets for 'Other' pitch families (not handled by model)
+        if actual_pitch_family == "Other":
+            print(f"  Skipping: Pitch classified as 'Other' ({actual_pitch_code}). Model cannot provide reliable probability.")
+            return
+
         is_surprise_pitch = expected_prob < 0.15
         
         # Check pitch description to distinguish swinging from looking

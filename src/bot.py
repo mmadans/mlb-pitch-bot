@@ -79,7 +79,10 @@ def format_surprise_strikeout_tweet(
     Formats a concise tweet for a 'Surprise Strikeout' relying on the attached infographic for context.
     """
     action = "whiffs" if is_whiff else "freezes"
-    prob_pct = f"{prob * 100:.1f}%"
+    if prob < 0.001:
+        prob_pct = "<0.1%"
+    else:
+        prob_pct = f"{prob * 100:.1f}%"
     p_hand_str = f" ({pitcher_hand})" if pitcher_hand else ""
     b_side_str = f" ({batter_side})" if batter_side else ""
     

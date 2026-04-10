@@ -105,11 +105,17 @@ class PitchPredictor:
         model_input = features_df[self.feature_cols]
         
         # Predict probabilities
-        probs = self.model.predict_proba(model_input)
+        raw_probs = self.model.predict_proba(model_input)[0]
+        
+        # Apply a floor of 1e-4 to ensure no class is exactly 0.0
+        # This prevents the '0.0% chance' bug in tweets
+        epsilon = 0.0001
+        probs = (raw_probs + epsilon)
+        probs = probs / probs.sum()
         
         # Map probabilities to pitch names
         pitch_names = self.encoder.classes_
-        return dict(zip(pitch_names, probs[0]))
+        return dict(zip(pitch_names, probs))
 
     def calculate_surprisal(self, actual_pitch, probs):
         """

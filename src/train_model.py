@@ -22,77 +22,8 @@ from src.batter_tendency_processing import get_batter_features
 
 
 
-from src.features import _classify_pitch_family, add_contextual_features
+from src.features import _classify_pitch_family, apply_baseline_to_df
 from src.build_baseline_tendencies import build_baseline
-
-def apply_baseline_to_df(df: pd.DataFrame, baseline: dict, is_train: bool = False) -> pd.DataFrame:
-    '''Applies baseline tendency dictionaries to a DataFrame securely (no leakage).'''
-    df = df.copy()
-    
-    # Global
-    df_global = pd.DataFrame.from_dict(baseline['global'], orient='index')
-    df_global.index.name = 'pitcher'
-    df = df.merge(df_global, on='pitcher', how='left')
-    
-    # Count
-    df_count = pd.DataFrame.from_dict(baseline['count'], orient='index')
-    if not df_count.empty:
-        df_count.index.names = ['pitcher', 'balls', 'strikes']
-        df = df.merge(df_count, on=['pitcher', 'balls', 'strikes'], how='left')
-    
-    # Batter Count
-    df_bcount = pd.DataFrame.from_dict(baseline['batter_count'], orient='index')
-    if not df_bcount.empty:
-        df_bcount.index.names = ['batter_id', 'balls', 'strikes']
-        df = df.merge(df_bcount, on=['batter_id', 'balls', 'strikes'], how='left')
-    
-    # League count
-    df_lcount = pd.DataFrame.from_dict(baseline['league_count'], orient='index')
-    if not df_lcount.empty:
-        df_lcount.index.names = ['balls', 'strikes']
-        df = df.merge(df_lcount, on=['balls', 'strikes'], how='left')
-    
-    # out pitch
-    out_pitch_s = pd.Series(baseline['out_pitch'], name='primary_out_pitch')
-    df = df.merge(out_pitch_s, left_on='pitcher_id', right_index=True, how='left')
-    df["primary_out_pitch"] = df["primary_out_pitch"].fillna("Fastball")
-    
-    # Fill other missing tendencies with 0
-    tend_cols = [c for c in df.columns if c.startswith('tendency_') and c.endswith('_pct')]
-    df[tend_cols] = df[tend_cols].fillna(0.0)
-    
-    if is_train and "pitch_family" in df.columns:
-        # Prevent Target Leakage using Leave-One-Out (LOO) calculation for train data
-        for prefix in ["tendency_global", "tendency_count", "tendency_batter_count", "tendency_league_count"]:
-            total_col = f"{prefix}_total_pitches"
-            if total_col in df.columns:
-                for fam in ["Fastball", "Breaking", "Offspeed"]:
-                    pct_col = f"{prefix}_{fam}_pct"
-                    if pct_col in df.columns:
-                        # Raw count = total * percentage
-                        raw_count = (df[pct_col] * df[total_col]).round()
-                        
-                        # Subtract 1 if this row's family matches the column's family
-                        is_match = (df["pitch_family"] == fam).astype(int)
-                        new_count = raw_count - is_match
-                        new_total = df[total_col] - 1
-                        
-                        # Clip to prevent negative counts in edge cases
-                        new_count = new_count.clip(lower=0)
-                        new_total = new_total.clip(lower=0)
-                        
-                        # Recalculate percentage (default to 0.0 if new_total is 0)
-                        new_pct = new_count / new_total
-                        df[pct_col] = new_pct.fillna(0.0)
-
-    
-    # Add contextual features
-    df = add_contextual_features(df)
-    
-    # Add platoon advantage (Pitcher hand == Batter side, AND Batter side != 'S')
-    df['is_platoon_advantage'] = ((df['pitcher_hand'] == df['batter_side']) & (df['batter_side'] != 'S')).astype(int)
-    
-    return df
 
 
 def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = True):
@@ -130,14 +61,6 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
     ]
     feature_cols = count_cols + [c for c in numeric if c in df.columns] + tendency_cols
 
-    # Prune features with 0.0 historical importance to optimize the model
-    features_to_prune = [
-        "tendency_global_KN_pct", 
-        "tendency_global_SC_pct", 
-        "tendency_count_CS_pct", 
-        "tendency_count_UN_pct"
-    ]
-    feature_cols = [f for f in feature_cols if f not in features_to_prune]
 
     # Previous pitch family encoding
     print("    Encoding categorical features...")
@@ -274,8 +197,8 @@ def main() -> None:
     print(f"Features: {len(feature_cols)} columns.")
     print(f"Classes: {le.classes_.tolist()}.")
 
-    # Initialize and train Calibrated XGBoost
-    print("Training XGBoost Classifier model with Isotonic Calibration...")
+    # Initialize and train XGBoost
+    print("Training XGBoost Classifier model...")
     base_model = XGBClassifier(
         n_estimators=150,
         max_depth=5,
@@ -287,7 +210,7 @@ def main() -> None:
         n_jobs=-1
     )
     
-    model = CalibratedClassifierCV(estimator=base_model, method='isotonic', cv=3)
+    model = base_model
     # XGBoost handles internal scaling natively, so no scaler needed
     model.fit(X_train, y_train, sample_weight=w_train)
 
