@@ -1,4 +1,4 @@
-import sqlite3
+
 import pandas as pd
 import json
 import os
@@ -7,8 +7,9 @@ import joblib
 import statsapi
 from pathlib import Path
 from src.inference import PitchPredictor
-from src.constants import BASELINE_PATH, MODEL_PATH, ENCODER_PATH, BARREL_EV_THRESHOLD
-from src.features import _classify_pitch_family
+from src.constants import BASELINE_PATH, MODEL_PATH, TARGET_ENCODER_PATH, BARREL_EV_THRESHOLD
+from src.database import query_all_pitches, get_recent_live_predictions
+from src.api_extractors import _classify_pitch_family
 
 # Setup paths
 ROOT = Path(__file__).resolve().parent.parent
@@ -163,43 +164,16 @@ def _get_explorer_data(df, predictor, baseline, pitcher_mixes=None, batter_mixes
                         for _, row in ab_df.iterrows():
                             # Inference logic
                             inference_row = pd.DataFrame([row])
-                            pitcher = row.get('pitcher')
-                            balls = int(row.get('balls', 0))
-                            strikes = int(row.get('strikes', 0))
-                            
-                            # Hydrate from baseline
-                            for level in ['global', 'count']:
-                                key = pitcher if level == 'global' else (pitcher, balls, strikes)
-                                stats = baseline.get(level, {}).get(key, {})
-                                for col, val in stats.items():
-                                    inference_row[col] = val
-                            
-                            # Batter/League
-                            b_id = row.get('batter_id')
-                            if b_id:
-                                b_stats = baseline.get('batter_count', {}).get((b_id, balls, strikes), {})
-                                for col, val in b_stats.items():
-                                    inference_row[col] = val
-                            
-                            l_stats = baseline.get('league_count', {}).get((balls, strikes), {})
-                            for col, val in l_stats.items():
-                                inference_row[col] = val
-
-                            # Fill missing
-                            for col in predictor.feature_cols:
-                                if col not in inference_row.columns or pd.isna(inference_row[col].iloc[0]):
-                                    inference_row[col] = 0.0
-
                             try:
                                 actual_p_type = str(row.get('pitch_type', 'UNK'))
                                 if actual_p_type == 'nan' or not actual_p_type: actual_p_type = 'UNK'
                                 
-                                actual_fam = _classify_pitch_family(actual_p_type)
-                                probs = predictor.predict_probabilities(inference_row)
+                                probs, surprisal, actual_fam = predictor.hydrate_and_predict(inference_row, baseline)
+                                balls = int(row.get('balls', 0))
+                                strikes = int(row.get('strikes', 0))
                                 
                                 # Best prediction
                                 pred_fam = max(probs.items(), key=lambda x: x[1])[0]
-                                surprisal = predictor.calculate_surprisal(actual_fam, probs)
                                 
                                 pitch_data = {
                                     "p_type": PITCH_NAMES.get(actual_p_type, actual_p_type),
@@ -232,11 +206,7 @@ def export_dashboard_data():
         print(f"No database found at {DB_PATH}")
         return
         
-    conn = sqlite3.connect(DB_PATH)
-    
-    # Load recent pitches
-    df = pd.read_sql("SELECT * FROM pitches", conn)
-    conn.close()
+    df = query_all_pitches()
     
     if df.empty:
         print("Database is empty.")
@@ -246,7 +216,7 @@ def export_dashboard_data():
     
     # Initialize Predictor and Baseline
     try:
-        predictor = PitchPredictor(model_path=MODEL_PATH, encoder_path=ENCODER_PATH)
+        predictor = PitchPredictor(model_path=MODEL_PATH, target_encoder_path=TARGET_ENCODER_PATH)
         baseline = joblib.load(BASELINE_PATH)
         print("Model and Baseline loaded for inference.")
     except Exception as e:
@@ -310,42 +280,10 @@ def export_dashboard_data():
             # Prep row for inference
             inference_row = pd.DataFrame([row])
             
-            # Simple hydration for export (baseline stats)
-            pitcher = row.get('pitcher')
-            balls = row.get('balls', 0)
-            strikes = row.get('strikes', 0)
-            
-            # Global tendencies
-            p_global = baseline['global'].get(pitcher, {})
-            for col, val in p_global.items():
-                inference_row[col] = val
-                
-            # Count tendencies
-            p_count = baseline['count'].get((pitcher, balls, strikes), {})
-            for col, val in p_count.items():
-                inference_row[col] = val
-            
-            # Batter/League tendencies if available in baseline
-            batter_id = row.get('batter_id')
-            if batter_id:
-                b_count = baseline.get('batter_count', {}).get((batter_id, balls, strikes), {})
-                for col, val in b_count.items():
-                    inference_row[col] = val
-            
-            l_count = baseline.get('league_count', {}).get((balls, strikes), {})
-            for col, val in l_count.items():
-                inference_row[col] = val
-
-            # Fill all expected model columns with 0 if missing/NaN
-            for col in predictor.feature_cols:
-                if col not in inference_row.columns or pd.isna(inference_row[col].iloc[0]):
-                    inference_row[col] = 0.0
-
-            # Predict (predict_probabilities will handle the remaining _enc columns internal to its logic)
             try:
-                actual_pitch_family = _classify_pitch_family(row.get('pitch_type'))
-                probabilities = predictor.predict_probabilities(inference_row)
-                surprisal = predictor.calculate_surprisal(actual_pitch_family, probabilities)
+                balls = row.get('balls', 0)
+                strikes = row.get('strikes', 0)
+                probabilities, surprisal, actual_pitch_family = predictor.hydrate_and_predict(inference_row, baseline)
                 prob = probabilities.get(actual_pitch_family, 0.001)
                 
                 # Filter out infinity surprisal
@@ -427,6 +365,44 @@ def export_dashboard_data():
     # 6. Matchup Explorer Data
     explorer_data = _get_explorer_data(df, predictor, baseline, pitcher_mixes, batter_mixes)
 
+    # 7. Live Metrics History
+    live_metrics = []
+    try:
+        live_df = get_recent_live_predictions(days=7)
+        
+        if not live_df.empty:
+            # Coerce float columns – some older rows may store bytes from legacy schema
+            for fc in ['surprisal', 'prob_fastball', 'prob_breaking', 'prob_offspeed']:
+                live_df[fc] = pd.to_numeric(live_df[fc], errors='coerce')
+            # Drop inf / NaN
+            live_df = live_df.replace([np.inf, -np.inf], np.nan).dropna(subset=['surprisal', 'prob_fastball', 'prob_breaking', 'prob_offspeed', 'actual_pitch_family'])
+            live_df['date'] = pd.to_datetime(live_df['timestamp']).dt.date
+            
+            for d, group in live_df.groupby('date'):
+                avg_surprisal = group['surprisal'].mean()
+                
+                actual_map = {'Fastball': 0, 'Breaking': 1, 'Offspeed': 2}
+                valid_group = group[group['actual_pitch_family'].isin(actual_map.keys())]
+                
+                brier = 0.0
+                if not valid_group.empty:
+                    actual_idx = valid_group['actual_pitch_family'].map(actual_map).values
+                    y_true = np.zeros((len(actual_idx), 3))
+                    y_true[np.arange(len(actual_idx)), actual_idx] = 1.0
+                    
+                    valid_preds = valid_group[['prob_fastball', 'prob_breaking', 'prob_offspeed']].values
+                    brier = np.mean(np.sum((valid_preds - y_true)**2, axis=1)) # Multi-class Brier score
+                    
+                live_metrics.append({
+                    "date": str(d),
+                    "avg_surprisal": float(avg_surprisal),
+                    "brier_score": float(brier),
+                    "sample_size": int(len(group))
+                })
+        live_metrics = sorted(live_metrics, key=lambda x: x['date'])
+    except Exception as e:
+        print(f"Error generating live metrics: {e}")
+
     # Compile the final data object
     dashboard_data = {
         "last_updated": pd.Timestamp.now().isoformat(),
@@ -439,7 +415,8 @@ def export_dashboard_data():
         "top_pitchers": [{"name": str(k), "count": int(v)} for k, v in top_pitchers_series.items()],
         "top_surprises": surprises,
         "pitcher_spotlight": pitcher_spotlight,
-        "explorer": explorer_data
+        "explorer": explorer_data,
+        "live_metrics": live_metrics
     }
     
     # Save to the React public folder so it can be fetched client-side

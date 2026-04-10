@@ -12,12 +12,8 @@ import os
 import joblib
 from dotenv import load_dotenv
 
-from src.features import (
-    extract_pitches_with_context, 
-    add_contextual_features, 
-    apply_baseline_to_df,
-    _classify_pitch_family
-)
+from src.api_extractors import extract_pitches_with_context, _classify_pitch_family
+from src.features import add_contextual_features
 from src.inference import PitchPredictor
 from src.bot import post_tweet, format_tweet, format_surprise_strikeout_tweet
 from src.database import create_live_predictions_table, insert_live_prediction
@@ -27,7 +23,8 @@ from src.constants import (
     SURPRISAL_THRESHOLD,
     BARREL_EV_THRESHOLD,
     MODEL_PATH,
-    ENCODER_PATH,
+    TARGET_ENCODER_PATH,
+    CATEGORICAL_ENCODER_PATH,
     BASELINE_PATH
 )
 
@@ -147,20 +144,17 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
         venue_id = game_data.get('gameData', {}).get('venue', {}).get('id', 0)
         row['park_id'] = venue_id
         
-        # Hydrate tendencies if baseline is ready
+        # Hydrate tendencies and run inference in one shot
         if baseline:
-            row = apply_baseline_to_df(row, baseline, is_train=False)
+            probabilities, surprisal, actual_pitch_family = predictor.hydrate_and_predict(row, baseline)
         else:
             print("  Warning: Baseline tendencies not loaded. Expect surprises in predictions.")
+            from src.features import add_contextual_features
             row = add_contextual_features(row)
-
-        # 2. Run inference
-        actual_pitch_code = row['pitch_type'].values[0]
-        actual_pitch_family = _classify_pitch_family(actual_pitch_code)
-        
-        # predict_probabilities now handles its own feature alignment and encoding
-        probabilities = predictor.predict_probabilities(row)
-        surprisal = predictor.calculate_surprisal(actual_pitch_family, probabilities)
+            actual_pitch_code = row['pitch_type'].values[0]
+            actual_pitch_family = _classify_pitch_family(actual_pitch_code)
+            probabilities = predictor.predict_probabilities(row)
+            surprisal = predictor.calculate_surprisal(actual_pitch_family, probabilities)
         
         pitcher_id = int(row['pitcher_id'].values[0])
         batter_id = int(row['batter_id'].values[0])
@@ -296,7 +290,7 @@ def main():
     try:
         baseline = joblib.load(BASELINE_PATH)
         # Ensure model paths are correct
-        predictor = PitchPredictor(model_path=MODEL_PATH, encoder_path=ENCODER_PATH)
+        predictor = PitchPredictor(model_path=MODEL_PATH, target_encoder_path=TARGET_ENCODER_PATH, categorical_encoder_path=CATEGORICAL_ENCODER_PATH)
         print("Model and Baseline loaded.")
     except Exception as e:
         print(f"Error loading model: {e}. (Have you run src/train_model.py?)")

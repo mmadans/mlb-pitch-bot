@@ -5,7 +5,7 @@ advanced metrics (Whiff, Chase) from historically collected pitch data.
 import pandas as pd
 import statsapi
 from collections import defaultdict
-from src.features import _classify_pitch_family
+from src.api_extractors import _classify_pitch_family
 
 def fetch_batter_season_stats(batter_id: int, season: int = 2024) -> dict:
     """

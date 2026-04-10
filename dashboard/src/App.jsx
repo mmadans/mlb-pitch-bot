@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Target, Zap, Activity, Users, ChevronRight, BarChart3, Database, TrendingUp, Info, Calendar, Play, ChevronLeft, MapPin } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from 'recharts';
 
 function App() {
   const [data, setData] = useState(null);
@@ -172,6 +172,63 @@ function App() {
               
               {/* Main Content Area */}
               <div className="lg:col-span-2 space-y-8">
+                
+                {/* Live Model Calibration Metrics */}
+                {data.live_metrics && data.live_metrics.length > 0 && (
+                  <div className="glass-panel rounded-[2.5rem] border border-white/5 overflow-hidden p-8">
+                     <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-black italic tracking-tight flex items-center gap-3">
+                          <Activity className="text-emerald-400" size={24} />
+                          LIVE CALIBRATION METRICS
+                        </h2>
+                     </div>
+                     <div className="h-64 mb-4">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={data.live_metrics}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff0a" vertical={false} />
+                            <XAxis 
+                              dataKey="date" 
+                              axisLine={false} 
+                              tickLine={false} 
+                              tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }} 
+                              tickFormatter={(val) => {
+                                 const d = new Date(val);
+                                 // Add timezone offset to prevent shifting day backwards in local TZ
+                                 const adjusted = new Date(d.getTime() + d.getTimezoneOffset() * 60000);
+                                 return adjusted.toLocaleDateString('en-US', {weekday: 'short', month: 'numeric', day: 'numeric'})
+                              }}
+                            />
+                            <YAxis 
+                              yAxisId="left"
+                              axisLine={false} 
+                              tickLine={false} 
+                              tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }} 
+                              domain={['auto', 'auto']}
+                            />
+                            <YAxis 
+                              yAxisId="right"
+                              orientation="right"
+                              axisLine={false} 
+                              tickLine={false} 
+                              tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }} 
+                              domain={[0, 'auto']}
+                            />
+                            <RechartsTooltip 
+                              contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold' }}
+                              itemStyle={{ color: '#f8fafc' }}
+                              labelStyle={{ color: '#64748b' }}
+                            />
+                            <Line yAxisId="left" type="monotone" dataKey="avg_surprisal" name="Avg Surprisal (Bits)" stroke="#3b82f6" strokeWidth={3} dot={{r: 4, strokeWidth: 2, fill: '#0a0f18'}} activeDot={{r: 6}} />
+                            <Line yAxisId="right" type="monotone" dataKey="brier_score" name="Brier Score (Loss)" stroke="#f43f5e" strokeWidth={3} dot={{r: 4, strokeWidth: 2, fill: '#0a0f18'}} activeDot={{r: 6}} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                     </div>
+                     <div className="flex justify-between text-xs text-slate-500 font-bold uppercase tracking-widest px-4 pt-4 border-t border-white/5">
+                        <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500"></div> Avg Surprisal</span>
+                        <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-rose-500"></div> MSE Loss (Lower = Better) </span>
+                     </div>
+                  </div>
+                )}
                 
                 {/* Surprise Explorer */}
                 <div className="glass-panel rounded-[2.5rem] border border-white/5 overflow-hidden">

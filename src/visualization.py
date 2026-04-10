@@ -4,7 +4,7 @@ import matplotlib.patches as patches
 from matplotlib.gridspec import GridSpec
 from src.utils import get_pitch_abbr
 from src.constants import PITCH_COLORS
-from src.features import _classify_pitch_family
+from src.api_extractors import _classify_pitch_family
 
 def set_dark_theme(ax):
     """Applies a premium dark theme to a matplotlib axis."""

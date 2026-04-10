@@ -3,34 +3,23 @@ import joblib
 import numpy as np
 
 from src.constants import (
-    MODEL_PATH, ENCODER_PATH, PREV_ENCODER_PATH, FEATURE_COLS_PATH,
-    P_HAND_ENCODER_PATH, B_SIDE_ENCODER_PATH, MOB_ENCODER_PATH, 
-    OUT_PITCH_ENCODER_PATH, PARK_ENCODER_PATH, BATTER_FEATURES_PATH,
-    PREV_CALL_ENCODER_PATH
+    MODEL_PATH, TARGET_ENCODER_PATH, CATEGORICAL_ENCODER_PATH, FEATURE_COLS_PATH,  
+    BATTER_FEATURES_PATH
 )
 
-from src.features import _classify_pitch_family
+from src.api_extractors import _classify_pitch_family
 
 class PitchPredictor:
     """
     Wrapper for the pitch classification model to handle preprocessing and prediction.
     """
-    def __init__(self, model_path=MODEL_PATH, encoder_path=ENCODER_PATH, 
-                 prev_encoder_path=PREV_ENCODER_PATH, feature_cols_path=FEATURE_COLS_PATH,
-                 p_hand_path=P_HAND_ENCODER_PATH, b_side_path=B_SIDE_ENCODER_PATH,
-                 mob_path=MOB_ENCODER_PATH, out_pitch_path=OUT_PITCH_ENCODER_PATH,
-                 park_path=PARK_ENCODER_PATH, prev_call_path=PREV_CALL_ENCODER_PATH):
+    def __init__(self, model_path=MODEL_PATH, target_encoder_path=TARGET_ENCODER_PATH, 
+                 categorical_encoder_path=CATEGORICAL_ENCODER_PATH, feature_cols_path=FEATURE_COLS_PATH):
         """Loads the model and associated encoders from disk."""
         self.model = joblib.load(model_path)
-        self.encoder = joblib.load(encoder_path)
-        self.prev_encoder = joblib.load(prev_encoder_path)
+        self.encoder = joblib.load(target_encoder_path)
+        self.categorical_encoder = joblib.load(categorical_encoder_path)
         self.feature_cols = joblib.load(feature_cols_path)
-        self.p_hand_encoder = joblib.load(p_hand_path)
-        self.b_side_encoder = joblib.load(b_side_path)
-        self.mob_encoder = joblib.load(mob_path)
-        self.out_pitch_encoder = joblib.load(out_pitch_path)
-        self.park_encoder = joblib.load(park_path)
-        self.prev_call_encoder = joblib.load(prev_call_path)
         try:
             self.batter_features = joblib.load(BATTER_FEATURES_PATH)
         except Exception:
@@ -46,42 +35,21 @@ class PitchPredictor:
             A dictionary mapping pitch families to their predicted probabilities.
         """
         # categorical encoding
+        cat_cols = ["pitcher_hand", "batter_side", "men_on_base", "primary_out_pitch", "park_id", "prev_pitch_family", "prev_pitch_call"]
+        
+        # Hydrate synthetic columns derived from primary string columns
         if 'prev_pitch_type_in_ab' in features_df.columns:
-            raw_prev = features_df['prev_pitch_type_in_ab'].iloc[0]
-            family_prev = _classify_pitch_family(raw_prev)
-            labels = list(self.prev_encoder.classes_)
-            val = self.prev_encoder.transform([family_prev])[0] if family_prev in labels else 0
-            features_df['prev_pitch_family_enc'] = val
-
-        if 'prev_pitch_call' in features_df.columns:
-            val = str(features_df['prev_pitch_call'].iloc[0] or "None")
-            labels = list(self.prev_call_encoder.classes_)
-            features_df['prev_pitch_call_enc'] = self.prev_call_encoder.transform([val])[0] if val in labels else 0
-
-        if 'pitcher_hand' in features_df.columns:
-            val = features_df['pitcher_hand'].iloc[0] or "R"
-            labels = list(self.p_hand_encoder.classes_)
-            features_df['pitcher_hand_enc'] = self.p_hand_encoder.transform([val])[0] if val in labels else 0
-
-        if 'batter_side' in features_df.columns:
-            val = features_df['batter_side'].iloc[0] or "R"
-            labels = list(self.b_side_encoder.classes_)
-            features_df['batter_side_enc'] = self.b_side_encoder.transform([val])[0] if val in labels else 0
-
-        if 'men_on_base' in features_df.columns:
-            val = features_df['men_on_base'].iloc[0] or "Empty"
-            labels = list(self.mob_encoder.classes_)
-            features_df['men_on_base_enc'] = self.mob_encoder.transform([val])[0] if val in labels else 0
-
-        if 'primary_out_pitch' in features_df.columns:
-            val = features_df['primary_out_pitch'].iloc[0] or "Fastball"
-            labels = list(self.out_pitch_encoder.classes_)
-            features_df['primary_out_pitch_enc'] = self.out_pitch_encoder.transform([val])[0] if val in labels else 0
-
-        if 'park_id' in features_df.columns:
-            val = str(features_df['park_id'].iloc[0] or "0")
-            labels = list(self.park_encoder.classes_)
-            features_df['park_id_enc'] = self.park_encoder.transform([val])[0] if val in labels else 0
+            features_df['prev_pitch_family'] = features_df['prev_pitch_type_in_ab'].apply(_classify_pitch_family)
+            
+        for col in cat_cols:
+            if col not in features_df.columns:
+                features_df[col] = "Unknown"
+            features_df[col] = features_df[col].fillna("Unknown").astype(str)
+            
+        encoded_vals = self.categorical_encoder.transform(features_df[cat_cols])
+        
+        for i, col in enumerate(cat_cols):
+            features_df[f"{col}_enc"] = encoded_vals[:, i]
 
         # Batter lookup
         if not self.batter_features.empty and 'batter_id' in features_df.columns:
@@ -124,3 +92,27 @@ class PitchPredictor:
         """
         p = probs.get(actual_pitch, 0.001) # Avoid log(0)
         return -np.log2(p)
+    def hydrate_and_predict(self, inference_row, baseline):
+        """
+        Takes a raw pitch DataFrame row, applies the hierarchical baseline fallbacks 
+        using the centralized baseline_manager, and returns (probabilities, surprisal, actual_family).
+        """
+        from src.baseline_manager import apply_baseline_to_df
+        from src.api_extractors import _classify_pitch_family
+        
+        # Apply strict fallbacks using the dedicated scaler
+        hydrated_row = apply_baseline_to_df(inference_row.copy(), baseline, is_train=False)
+        
+        # Ensure missing features expected by model are zeroed out (e.g. absent columns)
+        for col in self.feature_cols:
+            if col not in hydrated_row.columns or pd.isna(hydrated_row[col].iloc[0]):
+                hydrated_row[col] = 0.0
+                
+        probabilities = self.predict_probabilities(hydrated_row)
+        
+        actual = 'Other'
+        if 'pitch_type' in hydrated_row.columns:
+            actual = _classify_pitch_family(hydrated_row['pitch_type'].iloc[0])
+            
+        surprisal = self.calculate_surprisal(actual, probabilities) if actual != 'Other' else 0.0
+        return probabilities, surprisal, actual

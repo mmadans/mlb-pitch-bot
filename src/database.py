@@ -128,3 +128,14 @@ def clear_table(table_name: str = "pitches"):
         print(f"Table '{table_name}' cleared.")
     finally:
         conn.close()
+
+def get_recent_live_predictions(days: int = 7) -> pd.DataFrame:
+    """Retrieves live predictions made within the last N days."""
+    conn = get_db_connection()
+    try:
+        df = pd.read_sql(f"SELECT * FROM live_predictions WHERE timestamp >= date('now', '-{days} days')", conn)
+        return df
+    except sqlite3.OperationalError:
+        return pd.DataFrame()
+    finally:
+        conn.close()

@@ -5,16 +5,14 @@ import os
 import joblib
 import pandas as pd
 from pathlib import Path
-from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
+import argparse
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report, balanced_accuracy_score, confusion_matrix
 from xgboost import XGBClassifier
 from sklearn.calibration import CalibratedClassifierCV
 from src.constants import (
-    DATABASE_PATH, MODEL_PATH, ENCODER_PATH, PREV_ENCODER_PATH,
-    P_HAND_ENCODER_PATH, B_SIDE_ENCODER_PATH, MOB_ENCODER_PATH,
-    OUT_PITCH_ENCODER_PATH, PARK_ENCODER_PATH, FEATURE_COLS_PATH,
-    PREV_CALL_ENCODER_PATH
+    DATABASE_PATH, MODEL_PATH, TARGET_ENCODER_PATH, CATEGORICAL_ENCODER_PATH, FEATURE_COLS_PATH
 )
 from src.database import query_all_pitches
 from src.dataset_generator import add_features
@@ -22,7 +20,8 @@ from src.batter_tendency_processing import get_batter_features
 
 
 
-from src.features import _classify_pitch_family, apply_baseline_to_df
+from src.api_extractors import _classify_pitch_family
+from src.baseline_manager import apply_baseline_to_df
 from src.build_baseline_tendencies import build_baseline
 
 
@@ -62,33 +61,26 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
     feature_cols = count_cols + [c for c in numeric if c in df.columns] + tendency_cols
 
 
-    # Previous pitch family encoding
     print("    Encoding categorical features...")
+    cat_cols = ["pitcher_hand", "batter_side", "men_on_base", "primary_out_pitch", "park_id", "prev_pitch_family", "prev_pitch_call"]
     
-    # Handedness, Men On Base, and Out Pitch
-    p_hand_enc = LabelEncoder()
-    df["pitcher_hand_enc"] = p_hand_enc.fit_transform(df["pitcher_hand"].fillna("R"))
-    
-    b_side_enc = LabelEncoder()
-    df["batter_side_enc"] = b_side_enc.fit_transform(df["batter_side"].fillna("R"))
-    
-    mob_enc = LabelEncoder()
-    df["men_on_base_enc"] = mob_enc.fit_transform(df["men_on_base"].fillna("Empty"))
-    
-    out_pitch_enc = LabelEncoder()
-    df["primary_out_pitch_enc"] = out_pitch_enc.fit_transform(df["primary_out_pitch"].fillna("Fastball"))
-
-    park_enc = LabelEncoder()
-    df["park_id_enc"] = park_enc.fit_transform(df["park_id"].fillna(0).astype(str))
-
+    df["park_id"] = df["park_id"].fillna(0).astype(str)
     df["prev_pitch_family"] = df["prev_pitch_type_in_ab"].apply(_classify_pitch_family)
-    prev_encoder = LabelEncoder()
-    df["prev_pitch_family_enc"] = prev_encoder.fit_transform(df["prev_pitch_family"])
     
-    call_encoder = LabelEncoder()
-    df["prev_pitch_call_enc"] = call_encoder.fit_transform(df["prev_pitch_call"].fillna("None"))
+    for col in cat_cols:
+        if col not in df.columns:
+            df[col] = "Unknown"
+        df[col] = df[col].fillna("Unknown").astype(str)
+        
+    categorical_encoder = OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1)
+    encoded_vals = categorical_encoder.fit_transform(df[cat_cols])
     
-    new_cats = ["pitcher_hand_enc", "batter_side_enc", "men_on_base_enc", "prev_pitch_family_enc", "primary_out_pitch_enc", "park_id_enc", "prev_pitch_call_enc"]
+    new_cats = []
+    for i, col in enumerate(cat_cols):
+        enc_col = f"{col}_enc"
+        df[enc_col] = encoded_vals[:, i]
+        new_cats.append(enc_col)
+        
     feature_cols = new_cats + [c for c in feature_cols if c in df.columns]
 
     # Batter Tendencies Integration
@@ -116,10 +108,10 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
     df.loc[leveraged_mask, "sample_weight"] = 2.0
     weights = df["sample_weight"]
 
-    return X, y_final, label_encoder, prev_encoder, call_encoder, feature_cols, p_hand_enc, b_side_enc, mob_enc, out_pitch_enc, park_enc, batter_df, weights
+    return X, y_final, label_encoder, categorical_encoder, feature_cols, batter_df, weights
 
 
-def main() -> None:
+def main(tune: bool = False) -> None:
     root = Path(__file__).resolve().parent.parent
     models_dir = root / "models"
     models_dir.mkdir(parents=True, exist_ok=True)
@@ -184,7 +176,7 @@ def main() -> None:
     # We will manually split them back using their lengths
     df_combined = pd.concat([train_df, test_df], ignore_index=True)
     
-    X, y, le, prev_le, call_le, feature_cols, p_le, b_le, mob_le, out_pitch_le, park_le, batter_df, weights = prepare_target_and_features(df_combined)
+    X, y, le, cat_enc, feature_cols, batter_df, weights = prepare_target_and_features(df_combined)
     
     # Since we dropped rows in prepare_target_and_features (e.g. 'Other' pitch family),
     # we can't just use split_idx. We need a mask or array slicing based on actual train_df rows.
@@ -210,8 +202,22 @@ def main() -> None:
         n_jobs=-1
     )
     
-    model = base_model
-    # XGBoost handles internal scaling natively, so no scaler needed
+    if tune:
+        print("Running GridSearchCV for hyperparameter tuning...")
+        param_grid = {
+            'max_depth': [3, 5],
+            'learning_rate': [0.05, 0.1]
+        }
+        grid_search = GridSearchCV(estimator=base_model, param_grid=param_grid, cv=3, scoring='neg_log_loss', n_jobs=-1)
+        grid_search.fit(X_train, y_train, sample_weight=w_train)
+        print(f"Best parameters found: {grid_search.best_params_}")
+        best_estimator = grid_search.best_estimator_
+    else:
+        best_estimator = base_model
+
+    print("Calibrating probabilities using cross-validation...")
+    # Wrap the XGBoost model in CalibratedClassifierCV to align probabilities to actual rates
+    model = CalibratedClassifierCV(estimator=best_estimator, method='sigmoid', cv=3)
     model.fit(X_train, y_train, sample_weight=w_train)
 
     y_pred = model.predict(X_test)
@@ -240,14 +246,8 @@ def main() -> None:
     print(cm_df)
 
     joblib.dump(model, MODEL_PATH)
-    joblib.dump(le, ENCODER_PATH)
-    joblib.dump(prev_le, PREV_ENCODER_PATH)
-    joblib.dump(call_le, PREV_CALL_ENCODER_PATH)
-    joblib.dump(p_le, P_HAND_ENCODER_PATH)
-    joblib.dump(b_le, B_SIDE_ENCODER_PATH)
-    joblib.dump(mob_le, MOB_ENCODER_PATH)
-    joblib.dump(out_pitch_le, OUT_PITCH_ENCODER_PATH)
-    joblib.dump(park_le, PARK_ENCODER_PATH)
+    joblib.dump(le, TARGET_ENCODER_PATH)
+    joblib.dump(cat_enc, CATEGORICAL_ENCODER_PATH)
     joblib.dump(feature_cols, FEATURE_COLS_PATH)
     
     # Save batter features for inference
@@ -266,4 +266,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--tune", action="store_true", help="Run hyperparameter tuning grid search")
+    args = parser.parse_args()
+    main(tune=args.tune)

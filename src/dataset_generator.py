@@ -18,8 +18,8 @@ from src.features import (
     add_batter_count_tendencies,
     add_league_count_tendencies,
     add_pitcher_out_pitch,
-    extract_pitches_with_context,
 )
+from src.api_extractors import extract_pitches_with_context
 from src.database import save_pitches_to_db
 
 
