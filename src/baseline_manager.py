@@ -8,6 +8,11 @@ from src.features import add_contextual_features
 def apply_baseline_to_df(df: pd.DataFrame, baseline: dict, is_train: bool = False) -> pd.DataFrame:
     """Applies baseline tendency dictionaries to a DataFrame securely, unifying offline and online features."""
     df = df.copy()
+
+    # Use empirical priors computed from training data; fall back to approximate MLB averages
+    league_priors = baseline.get('league_priors', {
+        'Fastball': 0.55, 'Breaking': 0.25, 'Offspeed': 0.20
+    })
     
     # Global
     if baseline.get('global'):
@@ -61,9 +66,14 @@ def apply_baseline_to_df(df: pd.DataFrame, baseline: dict, is_train: bool = Fals
             if f"tendency_batter_count_{fam}_pct" in df.columns and f"tendency_league_count_{fam}_pct" in df.columns:
                 df[f"tendency_batter_count_{fam}_pct"] = df[f"tendency_batter_count_{fam}_pct"].fillna(df[f"tendency_league_count_{fam}_pct"])
 
-    # Final fallback for any remaining NaNs (e.g. if global is somehow missing)
-    tend_cols = [c for c in df.columns if c.startswith('tendency_') and c.endswith('_pct')]
-    df[tend_cols] = df[tend_cols].fillna(0.3333)
+    # Final fallback for any remaining NaNs — use empirical league priors per family
+    for fam, prior in league_priors.items():
+        for col in df.columns:
+            if col.startswith('tendency_') and col.endswith('_pct') and f'_{fam}_pct' in col:
+                df[col] = df[col].fillna(prior)
+    # Any remaining tendency columns (e.g. Other family) fall back to uniform
+    remaining_tend_cols = [c for c in df.columns if c.startswith('tendency_') and c.endswith('_pct') and df[c].isna().any()]
+    df[remaining_tend_cols] = df[remaining_tend_cols].fillna(1/3)
     
     if is_train and "pitch_family" in df.columns:
         # Prevent Target Leakage using Leave-One-Out (LOO) calculation for train data
@@ -90,11 +100,25 @@ def apply_baseline_to_df(df: pd.DataFrame, baseline: dict, is_train: bool = Fals
                         
                         # Re-apply Laplace Smoothing
                         new_pct = (new_count + 1.0) / (new_total + num_classes)
-                        df[pct_col] = new_pct.fillna(0.3333)
+                        df[pct_col] = new_pct.fillna(league_priors.get(fam, 1/3))
     
-    # Add platoon advantage
+    # Delta tendency features: how much this pitcher deviates from league average at this count.
+    # This gives XGBoost a pre-computed "pitcher quirk" signal rather than making it discover
+    # the difference between two separate tendency columns on its own.
+    for fam in ["Fastball", "Breaking", "Offspeed"]:
+        count_col = f"tendency_count_{fam}_pct"
+        league_col = f"tendency_league_count_{fam}_pct"
+        global_col = f"tendency_global_{fam}_pct"
+        if count_col in df.columns and league_col in df.columns:
+            df[f"delta_count_{fam}"] = df[count_col] - df[league_col]
+        if global_col in df.columns and league_col in df.columns:
+            df[f"delta_global_{fam}"] = df[global_col] - df[league_col]
+
+    # Add platoon advantage (switch hitters always bat from the advantaged side)
     if 'pitcher_hand' in df.columns and 'batter_side' in df.columns:
-        df['is_platoon_advantage'] = ((df['pitcher_hand'] == df['batter_side']) & (df['batter_side'] != 'S')).astype(int)
+        same_hand = (df['pitcher_hand'] == df['batter_side']) & (df['batter_side'] != 'S')
+        switch_hitter = df['batter_side'] == 'S'
+        df['is_platoon_advantage'] = (same_hand | switch_hitter).astype(int)
     
     return df
 

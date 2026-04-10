@@ -144,14 +144,17 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
         venue_id = game_data.get('gameData', {}).get('venue', {}).get('id', 0)
         row['park_id'] = venue_id
         
+        # actual_pitch_code is always available from the raw row
+        actual_pitch_code = row['pitch_type'].values[0]
+
         # Hydrate tendencies and run inference in one shot
+        hydrated_row = row  # fallback; overwritten when baseline is present
         if baseline:
-            probabilities, surprisal, actual_pitch_family = predictor.hydrate_and_predict(row, baseline)
+            probabilities, surprisal, actual_pitch_family, hydrated_row = predictor.hydrate_and_predict(row, baseline)
         else:
             print("  Warning: Baseline tendencies not loaded. Expect surprises in predictions.")
             from src.features import add_contextual_features
             row = add_contextual_features(row)
-            actual_pitch_code = row['pitch_type'].values[0]
             actual_pitch_family = _classify_pitch_family(actual_pitch_code)
             probabilities = predictor.predict_probabilities(row)
             surprisal = predictor.calculate_surprisal(actual_pitch_family, probabilities)
@@ -243,7 +246,8 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             image_path = f"output/live_tweet_{game_pk}_{at_bat_index}.png"
             print(f"  Generating infographic: {image_path}")
             
-            pitch_data_dict = row.to_dict('records')[0]
+            # Use hydrated_row so tendency columns are present for the donut charts
+            pitch_data_dict = hydrated_row.to_dict('records')[0]
             pitch_data_dict['away_team'] = a_team
             pitch_data_dict['home_team'] = h_team
             generate_pitch_infographic(

@@ -168,7 +168,7 @@ def _get_explorer_data(df, predictor, baseline, pitcher_mixes=None, batter_mixes
                                 actual_p_type = str(row.get('pitch_type', 'UNK'))
                                 if actual_p_type == 'nan' or not actual_p_type: actual_p_type = 'UNK'
                                 
-                                probs, surprisal, actual_fam = predictor.hydrate_and_predict(inference_row, baseline)
+                                probs, surprisal, actual_fam, _ = predictor.hydrate_and_predict(inference_row, baseline)
                                 balls = int(row.get('balls', 0))
                                 strikes = int(row.get('strikes', 0))
                                 
@@ -283,7 +283,7 @@ def export_dashboard_data():
             try:
                 balls = row.get('balls', 0)
                 strikes = row.get('strikes', 0)
-                probabilities, surprisal, actual_pitch_family = predictor.hydrate_and_predict(inference_row, baseline)
+                probabilities, surprisal, actual_pitch_family, _ = predictor.hydrate_and_predict(inference_row, baseline)
                 prob = probabilities.get(actual_pitch_family, 0.001)
                 
                 # Filter out infinity surprisal

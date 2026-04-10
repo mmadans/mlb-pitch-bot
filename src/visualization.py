@@ -186,8 +186,9 @@ def _draw_prediction_bars(ax, probs, actual_fam):
     ax.tick_params(left=False, labelsize=9)
     
     for bar, val in zip(bars, p_values):
-        ax.text(val + 3, bar.get_y() + bar.get_height()/2, f"{val:.0f}%", 
-                     va='center', color='white', fontsize=10, fontweight='bold')
+        label = f"{val:.0f}%"
+        ax.text(val + 3, bar.get_y() + bar.get_height()/2, label,
+                va='center', color='white', fontsize=10, fontweight='bold')
 
 def generate_pitch_infographic(pitch_data: dict, probs: dict, surprisal: float, sequence: list = None, output_path: str = "temp_plot.png") -> str:
     """

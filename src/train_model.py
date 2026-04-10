@@ -10,7 +10,6 @@ import argparse
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report, balanced_accuracy_score, confusion_matrix
 from xgboost import XGBClassifier
-from sklearn.calibration import CalibratedClassifierCV
 from src.constants import (
     DATABASE_PATH, MODEL_PATH, TARGET_ENCODER_PATH, CATEGORICAL_ENCODER_PATH, FEATURE_COLS_PATH
 )
@@ -48,15 +47,17 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
     y_encoded = label_encoder.fit_transform(y)
 
     count_cols = [c for c in df.columns if c.startswith("count_") and "-" not in c]
+    # balls/strikes as raw numerics are fully redundant with the count one-hot columns
     numeric = [
-        "balls", "strikes", "outs", "is_leverage", "is_platoon_advantage", "run_differential", 
+        "outs", "is_leverage", "is_platoon_advantage", "run_differential",
         "breaking_streak", "fastball_streak", "offspeed_streak",
+        "fastball_streak_x_count_adv", "breaking_streak_x_count_adv", "offspeed_streak_x_count_adv",
         "pitch_count_in_game", "times_faced_today", "prev_pX", "prev_pZ",
         "is_double_play_scenario", "prev_pitch_was_whiff", "prev_pitch_was_foul"
     ]
     tendency_cols = [
         c for c in df.columns
-        if (c.startswith("tendency_global_") or c.startswith("tendency_count_") or c.startswith("tendency_batter_count_") or c.startswith("tendency_league_count_")) and (c.endswith("_pct") or c == "tendency_total_pitches")
+        if (c.startswith("tendency_global_") or c.startswith("tendency_count_") or c.startswith("tendency_batter_count_") or c.startswith("tendency_league_count_") or c.startswith("delta_")) and (c.endswith("_pct") or c.endswith("_Fastball") or c.endswith("_Breaking") or c.endswith("_Offspeed") or c == "tendency_total_pitches")
     ]
     feature_cols = count_cols + [c for c in numeric if c in df.columns] + tendency_cols
 
@@ -101,8 +102,7 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
     # (The merge might have changed row count or alignment if not 1:1)
     y_final = label_encoder.transform(df["pitch_family"])
     
-    # Store Leverage weights (2 strikes or 3 balls)
-    # Give 2.0x weight to high-advantage/disadvantage situations
+    # Leverage weights: 2x for high-stakes counts (2 strikes or 3 balls)
     df["sample_weight"] = 1.0
     leveraged_mask = (df["strikes"] == 2) | (df["balls"] == 3)
     df.loc[leveraged_mask, "sample_weight"] = 2.0
@@ -132,13 +132,17 @@ def main(tune: bool = False) -> None:
     if "game_date" in df.columns:
         df["game_date"] = pd.to_datetime(df["game_date"])
         max_date = df["game_date"].max()
-        
-        # Opening Day Adjustment: If we're early in the year, use 180 days to capture 2025 Postseason/Regular
-        # Otherwise, stick to 60 days for recent mid-season trends.
-        window_days = 180 if max_date.month < 5 else 60
-        start_date = max_date - pd.Timedelta(days=window_days)
-        print(f"Filtering dataset to {window_days}-day temporal window: {start_date.date()} to {max_date.date()}")
-        df = df[(df["game_date"] > start_date) & (df["game_date"] <= max_date)].copy()
+        min_date = df["game_date"].min()
+        db_span_days = (max_date - min_date).days
+
+        if db_span_days > 60:
+            # Use all data in the DB — caller is responsible for loading the desired window
+            print(f"Using full database range: {min_date.date()} to {max_date.date()} ({db_span_days} days)")
+        else:
+            # DB is a narrow window (e.g. live season top-up); apply 60-day cap
+            start_date = max_date - pd.Timedelta(days=60)
+            print(f"Filtering dataset to 60-day temporal window: {start_date.date()} to {max_date.date()}")
+            df = df[(df["game_date"] > start_date) & (df["game_date"] <= max_date)].copy()
     
     # Filter for Regular and Postseason ONLY (Ignore Spring Training 'S' and All-Star 'A')
     if "game_type" in df.columns:
@@ -201,7 +205,7 @@ def main(tune: bool = False) -> None:
         use_label_encoder=False,
         n_jobs=-1
     )
-    
+
     if tune:
         print("Running GridSearchCV for hyperparameter tuning...")
         param_grid = {
@@ -215,10 +219,10 @@ def main(tune: bool = False) -> None:
     else:
         best_estimator = base_model
 
-    print("Calibrating probabilities using cross-validation...")
-    # Wrap the XGBoost model in CalibratedClassifierCV to align probabilities to actual rates
-    model = CalibratedClassifierCV(estimator=best_estimator, method='sigmoid', cv=3)
-    model.fit(X_train, y_train, sample_weight=w_train)
+    print("Fitting model...")
+    model = best_estimator
+    if not tune:
+        model.fit(X_train, y_train, sample_weight=w_train)
 
     y_pred = model.predict(X_test)
     y_prob = model.predict_proba(X_test)

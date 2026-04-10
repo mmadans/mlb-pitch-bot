@@ -43,12 +43,22 @@ def build_baseline(df: pd.DataFrame, output_path: str = BASELINE_PATH):
     # Out Pitch: pitcher_id -> primary_out_pitch
     baseline_out_pitch = df_full[["pitcher_id", "primary_out_pitch"]].dropna().groupby("pitcher_id").first()["primary_out_pitch"].to_dict()
 
+    # Empirical league priors for pitch family (used as fallback instead of uniform 1/3)
+    family_counts = df_full['pitch_family'].value_counts() if 'pitch_family' in df_full.columns else pd.Series(dtype=float)
+    total = family_counts.sum()
+    baseline_league_priors = {
+        fam: float(family_counts.get(fam, 0)) / total if total > 0 else 1/3
+        for fam in ["Fastball", "Breaking", "Offspeed"]
+    }
+    print(f"Empirical league priors: {baseline_league_priors}")
+
     baseline = {
         "global": baseline_global,
         "count": baseline_count,
         "batter_count": baseline_batter_count,
         "league_count": baseline_league_count,
         "out_pitch": baseline_out_pitch,
+        "league_priors": baseline_league_priors,
         "feature_cols": list(df_full.columns) # To know what columns to expect
     }
     

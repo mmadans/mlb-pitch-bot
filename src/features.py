@@ -53,11 +53,24 @@ def add_contextual_features(df: pd.DataFrame) -> pd.DataFrame:
         df["is_double_play_scenario"] = 0
 
     if "prev_pitch_call" in df.columns:
-        df["prev_pitch_was_whiff"] = df["prev_pitch_call"].str.lower().str.contains("swinging strike", na=False).astype(int)
-        df["prev_pitch_was_foul"] = df["prev_pitch_call"].str.lower().str.contains("foul", na=False).astype(int)
+        prev_call = df["prev_pitch_call"].fillna("").astype(str).str.lower()
+        df["prev_pitch_was_whiff"] = prev_call.str.contains("swinging strike", na=False).astype(int)
+        df["prev_pitch_was_foul"] = prev_call.str.contains("foul", na=False).astype(int)
     else:
         df["prev_pitch_was_whiff"] = 0
         df["prev_pitch_was_foul"] = 0
+
+    # Streak × count advantage interactions
+    # count_adv is positive when batter-favorable (more balls than strikes)
+    if all(c in df.columns for c in ["fastball_streak", "breaking_streak", "offspeed_streak"]):
+        count_adv = df["balls"] - df["strikes"]
+        df["fastball_streak_x_count_adv"] = df["fastball_streak"] * count_adv
+        df["breaking_streak_x_count_adv"] = df["breaking_streak"] * count_adv
+        df["offspeed_streak_x_count_adv"] = df["offspeed_streak"] * count_adv
+    else:
+        df["fastball_streak_x_count_adv"] = 0
+        df["breaking_streak_x_count_adv"] = 0
+        df["offspeed_streak_x_count_adv"] = 0
 
     # Drop helper columns used only for feature construction
     df = df.drop(columns=["count_str", "score_diff"], errors="ignore")
@@ -196,11 +209,24 @@ def add_pitcher_out_pitch(df: pd.DataFrame) -> pd.DataFrame:
     ).reset_index()
     
     out_pitch_stats["whiff_rate"] = out_pitch_stats["total_whiffs"] / out_pitch_stats["total_pitches"]
-    
-    # Get the family with the highest wharf rate for each pitcher (primary out pitch)
-    idx = out_pitch_stats.groupby("pitcher_id")["whiff_rate"].idxmax()
-    primary_out_pitches = out_pitch_stats.loc[idx, ["pitcher_id", "pitch_family"]]
-    primary_out_pitches.columns = ["pitcher_id", "primary_out_pitch"]
+
+    # Require at least 30 pitches of a family before trusting its whiff rate.
+    # For pitchers with no qualifying family, fall back to their most-thrown family.
+    MIN_OUT_PITCH_PITCHES = 30
+
+    def _pick_out_pitch(group):
+        qualifying = group[group["total_pitches"] >= MIN_OUT_PITCH_PITCHES]
+        if not qualifying.empty:
+            return qualifying.loc[qualifying["whiff_rate"].idxmax(), "pitch_family"]
+        return group.loc[group["total_pitches"].idxmax(), "pitch_family"]
+
+    pitcher_out = (
+        out_pitch_stats.groupby("pitcher_id")
+        .apply(_pick_out_pitch)
+        .reset_index()
+    )
+    pitcher_out.columns = ["pitcher_id", "primary_out_pitch"]
+    primary_out_pitches = pitcher_out
     
     df = df.merge(primary_out_pitches, on="pitcher_id", how="left")
     return df

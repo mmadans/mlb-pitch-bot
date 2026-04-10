@@ -61,9 +61,28 @@ class PitchPredictor:
                     if col != 'batter_id':
                         features_df[col] = b_stats[col].iloc[0]
 
-        # Add platoon advantage
+        # Add platoon advantage (switch hitters always bat from the advantaged side)
         if 'pitcher_hand' in features_df.columns and 'batter_side' in features_df.columns:
-            features_df['is_platoon_advantage'] = ((features_df['pitcher_hand'] == features_df['batter_side']) & (features_df['batter_side'] != 'S')).astype(int)
+            same_hand = (features_df['pitcher_hand'] == features_df['batter_side']) & (features_df['batter_side'] != 'S')
+            switch_hitter = features_df['batter_side'] == 'S'
+            features_df['is_platoon_advantage'] = (same_hand | switch_hitter).astype(int)
+
+        # Streak × count advantage interaction features
+        if all(c in features_df.columns for c in ["fastball_streak", "breaking_streak", "offspeed_streak", "balls", "strikes"]):
+            count_adv = features_df["balls"].fillna(0).astype(int) - features_df["strikes"].fillna(0).astype(int)
+            features_df["fastball_streak_x_count_adv"] = features_df["fastball_streak"] * count_adv
+            features_df["breaking_streak_x_count_adv"] = features_df["breaking_streak"] * count_adv
+            features_df["offspeed_streak_x_count_adv"] = features_df["offspeed_streak"] * count_adv
+
+        # Delta tendency features: pitcher vs league average at this count
+        for fam in ["Fastball", "Breaking", "Offspeed"]:
+            count_col = f"tendency_count_{fam}_pct"
+            league_col = f"tendency_league_count_{fam}_pct"
+            global_col = f"tendency_global_{fam}_pct"
+            if count_col in features_df.columns and league_col in features_df.columns:
+                features_df[f"delta_count_{fam}"] = features_df[count_col] - features_df[league_col]
+            if global_col in features_df.columns and league_col in features_df.columns:
+                features_df[f"delta_global_{fam}"] = features_df[global_col] - features_df[league_col]
 
         # Ensure all columns the model expects are present
         for col in self.feature_cols:
@@ -75,11 +94,16 @@ class PitchPredictor:
         # Predict probabilities
         raw_probs = self.model.predict_proba(model_input)[0]
         
-        # Apply a floor of 1e-4 to ensure no class is exactly 0.0
-        # This prevents the '0.0% chance' bug in tweets
-        epsilon = 0.0001
-        probs = (raw_probs + epsilon)
-        probs = probs / probs.sum()
+        # Floor each class at 1% — no pitch family should ever be essentially impossible.
+        # Sub-1% outputs almost always indicate a feature hydration problem, not a real prediction.
+        # Iterative floor: repeat until all classes satisfy the floor after renormalization.
+        MIN_PROB = 0.01
+        probs = raw_probs / raw_probs.sum()
+        for _ in range(5):  # converges in 1-2 iterations in practice
+            if probs.min() >= MIN_PROB:
+                break
+            probs = np.maximum(probs, MIN_PROB)
+            probs = probs / probs.sum()
         
         # Map probabilities to pitch names
         pitch_names = self.encoder.classes_
@@ -94,12 +118,14 @@ class PitchPredictor:
         return -np.log2(p)
     def hydrate_and_predict(self, inference_row, baseline):
         """
-        Takes a raw pitch DataFrame row, applies the hierarchical baseline fallbacks 
-        using the centralized baseline_manager, and returns (probabilities, surprisal, actual_family).
+        Takes a raw pitch DataFrame row, applies the hierarchical baseline fallbacks
+        using the centralized baseline_manager, and returns
+        (probabilities, surprisal, actual_family, hydrated_row).
+        hydrated_row contains all tendency columns needed for visualization.
         """
         from src.baseline_manager import apply_baseline_to_df
         from src.api_extractors import _classify_pitch_family
-        
+
         # Apply strict fallbacks using the dedicated scaler
         hydrated_row = apply_baseline_to_df(inference_row.copy(), baseline, is_train=False)
         
@@ -115,4 +141,4 @@ class PitchPredictor:
             actual = _classify_pitch_family(hydrated_row['pitch_type'].iloc[0])
             
         surprisal = self.calculate_surprisal(actual, probabilities) if actual != 'Other' else 0.0
-        return probabilities, surprisal, actual
+        return probabilities, surprisal, actual, hydrated_row
