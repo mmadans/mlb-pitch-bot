@@ -30,6 +30,12 @@ from src.constants import (
 
 load_dotenv()
 
+# Minimum number of historical pitches a pitcher must have in the baseline before
+# we trust the model's output. Below this threshold the global tendency features
+# are too noisy and the model falls back to league-average behaviour, which
+# produces misleading predictions (e.g. 99 % Fastball for a breaking-ball pitcher).
+MIN_PITCHER_SAMPLE = 75
+
 # --- State ---
 processed_pitches = set()
 matchup_tracker = {} # (game_pk, pitcher_id, batter_id) -> count
@@ -158,18 +164,39 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             actual_pitch_family = _classify_pitch_family(actual_pitch_code)
             probabilities = predictor.predict_probabilities(row)
             surprisal = predictor.calculate_surprisal(actual_pitch_family, probabilities)
-        
+
         pitcher_id = int(row['pitcher_id'].values[0])
         batter_id = int(row['batter_id'].values[0])
-        
-        # Log every single live prediction to monitor model calibration over time
+
+        # --- Sample-size gate ---
+        # If the pitcher doesn't have enough historical pitches in the baseline,
+        # their tendency features are unreliable and the model effectively falls back
+        # to league averages. Skip rather than post a misleading prediction.
+        pitcher_sample_n = None
+        count_sample_n = None
+        if 'tendency_total_pitches' in hydrated_row.columns:
+            raw_n = hydrated_row['tendency_total_pitches'].iloc[0]
+            pitcher_sample_n = int(raw_n) if pd.notna(raw_n) else None
+        if 'tendency_count_total_pitches' in hydrated_row.columns:
+            raw_cn = hydrated_row['tendency_count_total_pitches'].iloc[0]
+            count_sample_n = int(raw_cn) if pd.notna(raw_cn) else None
+
+        if pitcher_sample_n is None or pitcher_sample_n < MIN_PITCHER_SAMPLE:
+            print(
+                f"  Skipping pitcher {pitcher_id}: insufficient sample "
+                f"({pitcher_sample_n} pitches, need {MIN_PITCHER_SAMPLE})."
+            )
+            return
+
+        # Log every prediction that clears the sample gate to monitor calibration
         try:
             play_id_val = last_pitch_event.get('playId') or current_play.get('playId', '')
             insert_live_prediction(
-                game_pk=game_pk, play_id=play_id_val, 
-                pitcher_id=pitcher_id, batter_id=batter_id, 
+                game_pk=game_pk, play_id=play_id_val,
+                pitcher_id=pitcher_id, batter_id=batter_id,
                 actual_pitch_family=actual_pitch_family,
-                probs=probabilities, surprisal=surprisal
+                probs=probabilities, surprisal=surprisal,
+                pitcher_sample_n=pitcher_sample_n, count_sample_n=count_sample_n
             )
         except Exception as e:
             print(f"  Warning: Failed to log live prediction DB entry: {e}")

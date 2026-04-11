@@ -136,7 +136,18 @@ class PitchPredictor:
             probs = np.maximum(probs, MIN_PROB)
             probs = probs / probs.sum()
 
-        return dict(zip(pitch_names, probs))
+        result = dict(zip(pitch_names, probs))
+
+        # Sanity-check: catch degenerate outputs before they reach the DB or tweets.
+        prob_sum = sum(result.values())
+        if abs(prob_sum - 1.0) > 0.05 or any(v < 0 or v > 1 for v in result.values()):
+            print(
+                f"Warning: predict_probabilities returned degenerate output "
+                f"(sum={prob_sum:.4f}, values={result}). "
+                f"raw_probs={raw_probs}, count_n={count_n}"
+            )
+
+        return result
 
     def calculate_surprisal(self, actual_pitch, probs):
         """

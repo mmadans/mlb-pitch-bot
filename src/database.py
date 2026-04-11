@@ -27,31 +27,55 @@ def create_live_predictions_table():
                 prob_fastball REAL,
                 prob_breaking REAL,
                 prob_offspeed REAL,
-                surprisal REAL
+                surprisal REAL,
+                pitcher_sample_n INTEGER,
+                count_sample_n INTEGER
             )
         ''')
         conn.commit()
+        # Migrate existing tables that are missing the new columns
+        for col, col_type in [("pitcher_sample_n", "INTEGER"), ("count_sample_n", "INTEGER")]:
+            try:
+                cursor.execute(f"ALTER TABLE live_predictions ADD COLUMN {col} {col_type}")
+                conn.commit()
+            except Exception:
+                pass  # Column already exists
     except Exception as e:
         print(f"Warning: Could not create live_predictions table: {e}")
     finally:
         conn.close()
 
-def insert_live_prediction(game_pk, play_id, pitcher_id, batter_id, actual_pitch_family, probs, surprisal):
+def insert_live_prediction(game_pk, play_id, pitcher_id, batter_id, actual_pitch_family,
+                           probs, surprisal, pitcher_sample_n=None, count_sample_n=None):
     """
     Logs a single pitch prediction to the live monitoring table.
+    Validates that probabilities are well-formed before inserting to catch inference bugs early.
     """
+    prob_fb = probs.get('Fastball', 0.0)
+    prob_br = probs.get('Breaking', 0.0)
+    prob_os = probs.get('Offspeed', 0.0)
+
+    # Sanity-check: all three families must be present and sum to ~1.
+    prob_sum = prob_fb + prob_br + prob_os
+    if prob_sum < 0.9 or prob_sum > 1.1 or prob_fb == 0.0 and prob_br == 0.0 and prob_os == 0.0:
+        print(
+            f"Warning: Skipping DB insert — invalid probs for pitcher {pitcher_id}: "
+            f"FB={prob_fb:.4f} BB={prob_br:.4f} OS={prob_os:.4f} sum={prob_sum:.4f}"
+        )
+        return
+
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
-        prob_fb = probs.get('Fastball', 0.0)
-        prob_br = probs.get('Breaking', 0.0)
-        prob_os = probs.get('Offspeed', 0.0)
-        
         cursor.execute('''
-            INSERT INTO live_predictions 
-            (game_pk, play_id, pitcher_id, batter_id, actual_pitch_family, prob_fastball, prob_breaking, prob_offspeed, surprisal)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (game_pk, play_id, pitcher_id, batter_id, actual_pitch_family, prob_fb, prob_br, prob_os, surprisal))
+            INSERT INTO live_predictions
+            (game_pk, play_id, pitcher_id, batter_id, actual_pitch_family,
+             prob_fastball, prob_breaking, prob_offspeed, surprisal,
+             pitcher_sample_n, count_sample_n)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (game_pk, play_id, pitcher_id, batter_id, actual_pitch_family,
+              float(prob_fb), float(prob_br), float(prob_os), float(surprisal),
+              pitcher_sample_n, count_sample_n))
         conn.commit()
     except Exception as e:
         print(f"Warning: Could not log live prediction: {e}")
