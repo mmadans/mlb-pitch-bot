@@ -93,20 +93,49 @@ class PitchPredictor:
         
         # Predict probabilities
         raw_probs = self.model.predict_proba(model_input)[0]
-        
-        # Floor each class at 1% — no pitch family should ever be essentially impossible.
-        # Sub-1% outputs almost always indicate a feature hydration problem, not a real prediction.
-        # Iterative floor: repeat until all classes satisfy the floor after renormalization.
-        MIN_PROB = 0.01
+        pitch_names = self.encoder.classes_
+
+        # Blend model output with pitcher's stated count tendency.
+        #
+        # The XGBoost model learns league-level count patterns as its dominant signal and
+        # under-weights pitcher-specific count tendencies (small, noisy samples). This means
+        # a pitcher like Matz who throws 22% offspeed at 0-2 still gets ~3% OS from the model,
+        # because the model treats him as "16% global OS pitcher" and ignores the count deviation.
+        #
+        # Fix: blend the model's contextual prediction with the pitcher's actual stated count
+        # tendency. The blend weight is sample-size-adjusted: pitchers with many pitches at this
+        # count get higher tendency weight; new/sparse pitchers lean on the model more.
+        #
+        # Weight formula: count_n / (count_n + PRIOR_N), where PRIOR_N = 30 (one pitcher-month).
+        # e.g., n=14 → weight=0.32;  n=30 → weight=0.50;  n=60 → weight=0.67;  n=0 → weight=0.
+        PRIOR_N = 30
+        count_tendency = {}
+        for fam in pitch_names:
+            col = f'tendency_count_{fam}_pct'
+            if col in features_df.columns and not pd.isna(features_df[col].iloc[0]):
+                count_tendency[fam] = float(features_df[col].iloc[0])
+
+        count_n_col = 'tendency_count_total_pitches'
+        count_n = float(features_df[count_n_col].iloc[0]) if count_n_col in features_df.columns else 0.0
+
         probs = raw_probs / raw_probs.sum()
+        if count_tendency and len(count_tendency) == len(pitch_names) and count_n > 0:
+            tendency_weight = count_n / (count_n + PRIOR_N)
+            t_total = sum(count_tendency.values())
+            if t_total > 0:
+                for i, fam in enumerate(pitch_names):
+                    t_prior = count_tendency[fam] / t_total
+                    probs[i] = tendency_weight * t_prior + (1 - tendency_weight) * probs[i]
+                probs = probs / probs.sum()
+
+        # Floor each class at 1% — no pitch family should ever be essentially impossible.
+        MIN_PROB = 0.01
         for _ in range(5):  # converges in 1-2 iterations in practice
             if probs.min() >= MIN_PROB:
                 break
             probs = np.maximum(probs, MIN_PROB)
             probs = probs / probs.sum()
-        
-        # Map probabilities to pitch names
-        pitch_names = self.encoder.classes_
+
         return dict(zip(pitch_names, probs))
 
     def calculate_surprisal(self, actual_pitch, probs):
