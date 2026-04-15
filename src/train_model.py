@@ -116,6 +116,17 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
     df["sample_weight"] = 1.0
     leveraged_mask = (df["strikes"] == 2) | (df["balls"] == 3)
     df.loc[leveraged_mask, "sample_weight"] = 2.0
+
+    # Class-balance weights: multiply by inverse class frequency so that
+    # minority classes (Offspeed ~14%, Breaking ~31%) get proportionally
+    # more weight relative to the Fastball majority (~55%).
+    # Formula: total / (n_classes * class_count) — same as sklearn "balanced".
+    n_classes = df["pitch_family"].nunique()
+    class_counts = df["pitch_family"].value_counts()
+    for family, count in class_counts.items():
+        balance_w = len(df) / (n_classes * count)
+        df.loc[df["pitch_family"] == family, "sample_weight"] *= balance_w
+
     weights = df["sample_weight"]
 
     return X, y_final, label_encoder, categorical_encoder, feature_cols, batter_df, weights
