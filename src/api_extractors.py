@@ -16,50 +16,6 @@ def _classify_pitch_family(code: str | None) -> str:
         return "Offspeed"
     return "Other"
 
-def _extract_pitches_in_order(game_json: dict) -> list[dict]:
-    """
-    Walk raw game JSON and yield pitch events in chronological order,
-    each with play-level context (pitcher, batter, inning, count, etc.).
-    """
-    all_plays = game_json.get("liveData", {}).get("plays", {}).get("allPlays", [])
-    pitches = []
-
-    for play in all_plays:
-        if "playEvents" not in play:
-            continue
-        matchup = play.get("matchup", {})
-        batter = (matchup.get("batter") or {}).get("fullName", "")
-        pitcher = (matchup.get("pitcher") or {}).get("fullName", "")
-        about = play.get("about", {})
-        inning = about.get("inning")
-        half = about.get("halfInning", "")
-
-        for event in play["playEvents"]:
-            if not event.get("isPitch"):
-                continue
-            details = event.get("details", {})
-            type_info = details.get("type", {})
-            code = type_info.get("code")
-            pitch_data = event.get("pitchData", {})
-            count = event.get("count", {})
-
-            pitch = {
-                "batter": batter,
-                "pitcher": pitcher,
-                "pitch_type": code,
-                "call": details.get("description"),
-                "velocity": pitch_data.get("startSpeed"),
-                "spin_rate": (pitch_data.get("breaks") or {}).get("spinRate"),
-                "inning": inning,
-                "half_inning": half,
-                "balls": count.get("balls"),
-                "strikes": count.get("strikes"),
-                "outs": count.get("outs"),
-            }
-            pitches.append(pitch)
-
-    return pitches
-
 
 def extract_pitches_with_context(play_data: dict, game_date: str | None = None) -> list[dict]:
     """

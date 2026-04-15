@@ -67,13 +67,6 @@ class PitchPredictor:
             switch_hitter = features_df['batter_side'] == 'S'
             features_df['is_platoon_advantage'] = (same_hand | switch_hitter).astype(int)
 
-        # Streak × count advantage interaction features
-        if all(c in features_df.columns for c in ["fastball_streak", "breaking_streak", "offspeed_streak", "balls", "strikes"]):
-            count_adv = features_df["balls"].fillna(0).astype(int) - features_df["strikes"].fillna(0).astype(int)
-            features_df["fastball_streak_x_count_adv"] = features_df["fastball_streak"] * count_adv
-            features_df["breaking_streak_x_count_adv"] = features_df["breaking_streak"] * count_adv
-            features_df["offspeed_streak_x_count_adv"] = features_df["offspeed_streak"] * count_adv
-
         # Delta tendency features: pitcher vs league average at this count
         for fam in ["Fastball", "Breaking", "Offspeed"]:
             count_col = f"tendency_count_{fam}_pct"

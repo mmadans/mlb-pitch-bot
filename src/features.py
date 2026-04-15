@@ -78,110 +78,41 @@ def add_contextual_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def add_pitcher_count_tendencies(df: pd.DataFrame) -> pd.DataFrame:
+def _compute_tendencies(df: pd.DataFrame, group_cols: list, prefix: str) -> pd.DataFrame:
     """
-    Adds pitcher tendency features specific to each count (balls and strikes).
-    For each (pitcher, balls, strikes), it calculates the frequency of each pitch type.
+    Shared helper: Laplace-smoothed pitch-family frequency for any grouping.
+
+    Groups df by group_cols + pitch_family, computes smoothed percentages,
+    renames columns to f"{prefix}_{family}_pct", adds a total-pitches column,
+    and left-merges the result back onto df.
     """
-    # Group by pitcher_id, balls, strikes, and pitch_family to get counts
+    if df.empty:
+        return df
     if 'pitch_family' not in df.columns:
         df['pitch_family'] = df['pitch_type'].apply(_classify_pitch_family)
-    group_cols = ["pitcher_id", "balls", "strikes", "pitch_family"]
-    counts = df.groupby(group_cols).size().unstack(fill_value=0)
-    
-    # Calculate percentages per (pitcher_id, balls, strikes) with Laplace Smoothing
+
+    counts = df.groupby(group_cols + ["pitch_family"]).size().unstack(fill_value=0)
     totals = counts.sum(axis=1)
-    num_classes = counts.shape[1]
-    smoothed_counts = counts + 1.0
-    smoothed_totals = totals + num_classes
-    percentages = smoothed_counts.div(smoothed_totals, axis=0)
-    
-    # Rename columns to reflect they are count-specific tendencies
-    percentages.columns = [
-        f"tendency_count_{col}_pct" for col in percentages.columns
-    ]
-    percentages["tendency_count_total_pitches"] = totals
-    
-    # Merge back to original dataframe
-    # Reset index for the join
-    percentages = percentages.reset_index()
-    df = df.merge(percentages, on=["pitcher_id", "balls", "strikes"], how="left")
-    
-    return df
+    smoothed = (counts + 1.0).div(totals + counts.shape[1], axis=0)
+    smoothed.columns = [f"{prefix}_{col}_pct" for col in smoothed.columns]
+    smoothed[f"{prefix}_total_pitches"] = totals
+
+    return df.merge(smoothed.reset_index(), on=group_cols, how="left")
+
+
+def add_pitcher_count_tendencies(df: pd.DataFrame) -> pd.DataFrame:
+    """Pitch-family frequencies per (pitcher, balls, strikes) with Laplace smoothing."""
+    return _compute_tendencies(df, ["pitcher_id", "balls", "strikes"], "tendency_count")
 
 
 def add_batter_count_tendencies(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Adds batter tendency features specific to each count (balls and strikes).
-    For each (batter, balls, strikes), it calculates the frequency of each pitch family.
-    Historically, this captures how the league typically scouts/attacks this batter.
-    """
-    if df.empty:
-        return df
-        
-    # We want to use pitch families for more robust batter scouting
-    df = df.copy()
-    if 'pitch_family' not in df.columns:
-        df['pitch_family'] = df['pitch_type'].apply(_classify_pitch_family)
-        
-    # Group by batter, balls, strikes, and pitch_family to get counts
-    group_cols = ["batter_id", "balls", "strikes", "pitch_family"]
-    counts = df.groupby(group_cols).size().unstack(fill_value=0)
-    
-    # Calculate percentages per (batter, balls, strikes) with Laplace Smoothing
-    totals = counts.sum(axis=1)
-    num_classes = counts.shape[1]
-    smoothed_counts = counts + 1.0
-    smoothed_totals = totals + num_classes
-    percentages = smoothed_counts.div(smoothed_totals, axis=0)
-    
-    # Rename columns to reflect they are batter-count tendencies
-    percentages.columns = [
-        f"tendency_batter_count_{col}_pct" for col in percentages.columns
-    ]
-    percentages["tendency_batter_count_total_pitches"] = totals
-    
-    # Merge back to original dataframe
-    percentages = percentages.reset_index()
-    df = df.merge(percentages, on=["batter_id", "balls", "strikes"], how="left")
-    
-    return df
+    """Pitch-family frequencies per (batter, balls, strikes) — how pitchers attack this batter."""
+    return _compute_tendencies(df, ["batter_id", "balls", "strikes"], "tendency_batter_count")
 
 
 def add_league_count_tendencies(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Adds league-wide pitch family frequencies for each count (balls and strikes).
-    Provides a "baseline" of what is expected regardless of the specific pitcher.
-    """
-    if df.empty:
-        return df
-        
-    df = df.copy()
-    if 'pitch_family' not in df.columns:
-        df['pitch_family'] = df['pitch_type'].apply(_classify_pitch_family)
-        
-    # Group by balls, strikes, and pitch_family to get league averages
-    group_cols = ["balls", "strikes", "pitch_family"]
-    counts = df.groupby(group_cols).size().unstack(fill_value=0)
-    
-    # Calculate percentages per count with Laplace Smoothing
-    totals = counts.sum(axis=1)
-    num_classes = counts.shape[1]
-    smoothed_counts = counts + 1.0
-    smoothed_totals = totals + num_classes
-    percentages = smoothed_counts.div(smoothed_totals, axis=0)
-    
-    # Rename columns to reflect they are league-count tendencies
-    percentages.columns = [
-        f"tendency_league_count_{col}_pct" for col in percentages.columns
-    ]
-    percentages["tendency_league_count_total_pitches"] = totals
-    
-    # Merge back to original dataframe (join on count only)
-    percentages = percentages.reset_index()
-    df = df.merge(percentages, on=["balls", "strikes"], how="left")
-    
-    return df
+    """League-wide pitch-family frequencies per count — baseline regardless of pitcher."""
+    return _compute_tendencies(df, ["balls", "strikes"], "tendency_league_count")
 
 
 def add_pitcher_out_pitch(df: pd.DataFrame) -> pd.DataFrame:
@@ -233,47 +164,17 @@ def add_pitcher_out_pitch(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_global_pitcher_tendencies(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Adds global (regardless of count) pitcher tendency features.
-    """
-    # Calculate pitch family counts per pitcher_id with Laplace Smoothing
+    """Global (count-agnostic) pitch-family frequencies per pitcher with Laplace smoothing."""
+    # Uses a non-standard total_pitches column name for historical compatibility
+    if df.empty:
+        return df
     if 'pitch_family' not in df.columns:
         df['pitch_family'] = df['pitch_type'].apply(_classify_pitch_family)
-    pitch_counts = df.groupby(["pitcher_id", "pitch_family"]).size().unstack(fill_value=0)
-    total_pitches = pitch_counts.sum(axis=1)
-    
-    num_classes = pitch_counts.shape[1]
-    smoothed_counts = pitch_counts + 1.0
-    smoothed_totals = total_pitches + num_classes
-    pitch_percentages = smoothed_counts.div(smoothed_totals, axis=0)
 
-    # Rename columns
-    pitch_percentages.columns = [
-        f"tendency_global_{col}_pct" for col in pitch_percentages.columns
-    ]
-    pitch_percentages["tendency_total_pitches"] = total_pitches
+    counts = df.groupby(["pitcher_id", "pitch_family"]).size().unstack(fill_value=0)
+    totals = counts.sum(axis=1)
+    smoothed = (counts + 1.0).div(totals + counts.shape[1], axis=0)
+    smoothed.columns = [f"tendency_global_{col}_pct" for col in smoothed.columns]
+    smoothed["tendency_total_pitches"] = totals  # note: no prefix — consumed by live_game_tracker
 
-    # Merge
-    pitch_percentages = pitch_percentages.reset_index()
-    df = df.merge(pitch_percentages, on="pitcher_id", how="left")
-    return df
-if __name__ == "__main__":
-    import statsapi
-    import pandas as pd
-
-    # Create a dummy dataframe to test the global tendency function
-    dummy_data = {
-        "pitcher": ["A", "A", "A", "B", "B", "B", "B"],
-        "pitch_type": ["FF", "FF", "SL", "FF", "SL", "CU", "FF"],
-        "batter": ["X", "Y", "X", "Y", "X", "Y", "X"],
-    }
-    dummy_df = pd.DataFrame(dummy_data)
-    print("Original DataFrame:")
-    print(dummy_df)
-
-    tendency_df = add_global_pitcher_tendencies(dummy_df)
-    print("\nDataFrame with Global Tendencies:")
-    print(tendency_df.to_string())
-
-    # Example: Pitcher A threw 3 pitches, 2 FF (66.7%) and 1 SL (33.3%)
-    # Example: Pitcher B threw 4 pitches, 2 FF (50%), 1 SL (25%), 1 CU (25%)
+    return df.merge(smoothed.reset_index(), on="pitcher_id", how="left")

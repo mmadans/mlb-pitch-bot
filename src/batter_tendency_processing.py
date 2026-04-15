@@ -4,8 +4,10 @@ advanced metrics (Whiff, Chase) from historically collected pitch data.
 """
 import pandas as pd
 import statsapi
-from collections import defaultdict
 from src.api_extractors import _classify_pitch_family
+
+_SWING_CALLS = {"swinging strike", "foul", "foul tip", "in play", "swinging strike (blocked)"}
+_WHIFF_CALLS = {"swinging strike", "swinging strike (blocked)"}
 
 def fetch_batter_season_stats(batter_id: int, season: int = 2024) -> dict:
     """
@@ -42,13 +44,9 @@ def calculate_advanced_metrics(df: pd.DataFrame) -> pd.DataFrame:
     if df.empty:
         return pd.DataFrame()
 
-    # Define Swings and Whiffs
-    swings = ["swinging strike", "foul", "foul tip", "in play", "swinging strike (blocked)"]
-    whiffs = ["swinging strike", "swinging strike (blocked)"]
-    
-    # Calculate Whiff totals by batter
-    df["is_swing"] = df["call"].str.lower().apply(lambda x: any(s in str(x).lower() for s in swings))
-    df["is_whiff"] = df["call"].str.lower().apply(lambda x: any(w in str(x).lower() for w in whiffs))
+    call_lower = df["call"].fillna("").str.lower()
+    df["is_swing"] = call_lower.apply(lambda x: any(s in x for s in _SWING_CALLS))
+    df["is_whiff"] = call_lower.apply(lambda x: any(w in x for w in _WHIFF_CALLS))
     
     # Chase Rate: zone > 9 is outside (11, 12, 13, 14, or null)
     # Note: StatsAPI zones 1-9 are strike zone. 11-14 are chase zones.
@@ -78,11 +76,9 @@ def calculate_whiff_by_pitch_family(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df["pitch_family"] = df["pitch_type"].apply(_classify_pitch_family)
     
-    swings = ["swinging strike", "foul", "foul tip", "in play", "swinging strike (blocked)"]
-    whiffs = ["swinging strike", "swinging strike (blocked)"]
-    
-    df["is_swing"] = df["call"].str.lower().apply(lambda x: any(s in str(x).lower() for s in swings))
-    df["is_whiff"] = df["call"].str.lower().apply(lambda x: any(w in str(x).lower() for w in whiffs))
+    call_lower = df["call"].fillna("").str.lower()
+    df["is_swing"] = call_lower.apply(lambda x: any(s in x for s in _SWING_CALLS))
+    df["is_whiff"] = call_lower.apply(lambda x: any(w in x for w in _WHIFF_CALLS))
     
     group = df.groupby(["batter_id", "pitch_family"]).agg(
         swings=("is_swing", "sum"),

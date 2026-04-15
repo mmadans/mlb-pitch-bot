@@ -14,32 +14,21 @@ def apply_baseline_to_df(df: pd.DataFrame, baseline: dict, is_train: bool = Fals
         'Fastball': 0.55, 'Breaking': 0.25, 'Offspeed': 0.20
     })
     
-    # Global
-    if baseline.get('global'):
-        df_global = pd.DataFrame.from_dict(baseline['global'], orient='index')
-        df_global.index.name = 'pitcher_id'
-        df = df.merge(df_global, on='pitcher_id', how='left')
-    
-    # Count
-    if baseline.get('count'):
-        df_count = pd.DataFrame.from_dict(baseline['count'], orient='index')
-        if not df_count.empty:
-            df_count.index.names = ['pitcher_id', 'balls', 'strikes']
-            df = df.merge(df_count, on=['pitcher_id', 'balls', 'strikes'], how='left')
-    
-    # Batter Count
-    if baseline.get('batter_count'):
-        df_bcount = pd.DataFrame.from_dict(baseline['batter_count'], orient='index')
-        if not df_bcount.empty:
-            df_bcount.index.names = ['batter_id', 'balls', 'strikes']
-            df = df.merge(df_bcount, on=['batter_id', 'balls', 'strikes'], how='left')
-    
-    # League count
-    if baseline.get('league_count'):
-        df_lcount = pd.DataFrame.from_dict(baseline['league_count'], orient='index')
-        if not df_lcount.empty:
-            df_lcount.index.names = ['balls', 'strikes']
-            df = df.merge(df_lcount, on=['balls', 'strikes'], how='left')
+    # Merge each tendency dict: (baseline_key, index_column_names)
+    _tendency_merges = [
+        ('global',       ['pitcher_id']),
+        ('count',        ['pitcher_id', 'balls', 'strikes']),
+        ('batter_count', ['batter_id',  'balls', 'strikes']),
+        ('league_count', ['balls', 'strikes']),
+    ]
+    for key, join_cols in _tendency_merges:
+        if not baseline.get(key):
+            continue
+        tendency_df = pd.DataFrame.from_dict(baseline[key], orient='index')
+        if tendency_df.empty:
+            continue
+        tendency_df.index.names = join_cols
+        df = df.merge(tendency_df, on=join_cols, how='left')
     
     # Out pitch
     if baseline.get('out_pitch'):
