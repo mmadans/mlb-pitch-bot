@@ -30,6 +30,8 @@ from src.constants import (
 
 load_dotenv()
 
+import wandb
+
 # Minimum number of historical pitches a pitcher must have in the baseline before
 # we trust the model's output. Below this threshold the global tendency features
 # are too noisy and the model falls back to league-average behaviour, which
@@ -201,6 +203,25 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
         except Exception as e:
             print(f"  Warning: Failed to log live prediction DB entry: {e}")
 
+        # W&B — per-pitch online logging
+        try:
+            predicted_family = max(probabilities, key=probabilities.get)
+            wandb.log({
+                "surprisal":        surprisal if surprisal != float("inf") else None,
+                "prob_fastball":    probabilities.get("Fastball", 0),
+                "prob_breaking":    probabilities.get("Breaking", 0),
+                "prob_offspeed":    probabilities.get("Offspeed", 0),
+                "actual_family":    actual_pitch_family,
+                "predicted_family": predicted_family,
+                "correct":          int(predicted_family == actual_pitch_family),
+                "pitcher_sample_n": pitcher_sample_n,
+                "count_sample_n":   count_sample_n,
+                "outcome":          outcome_str,
+                "game_pk":          game_pk,
+            })
+        except Exception as e:
+            print(f"  Warning: W&B log failed: {e}")
+
         # Determine Narrative based on situational context and tendencies
         expected_prob = probabilities.get(actual_pitch_family, 0)
         
@@ -318,6 +339,19 @@ def main():
     print("Starting MLB Live Game Tracker (Simulation Mode)...")
     processed_pitches.clear()
     create_live_predictions_table()
+
+    # Initialise W&B run for today's game session
+    wandb.init(
+        project=os.getenv("WANDB_PROJECT", "mlb-pitch-bot"),
+        name=f"live-{datetime.now().strftime('%Y-%m-%d')}",
+        config={
+            "surprisal_threshold": SURPRISAL_THRESHOLD,
+            "min_pitcher_sample":  MIN_PITCHER_SAMPLE,
+            "polling_interval_s":  POLLING_INTERVAL_SECONDS,
+        },
+        resume="allow",   # safe to restart mid-game without creating duplicate runs
+    )
+
     try:
         baseline = joblib.load(BASELINE_PATH)
         # Ensure model paths are correct
@@ -325,7 +359,7 @@ def main():
         print("Model and Baseline loaded.")
     except Exception as e:
         print(f"Error loading model: {e}. (Have you run src/train_model.py?)")
-        # predictor = None # Allow running for debug, but here we probably want to stop
+        wandb.finish(exit_code=1)
         return
 
     # --- Startup Skip Logic ---
@@ -347,30 +381,33 @@ def main():
     
     print(f"Initialization complete. Monitoring {len(live_game_pks)} games.")
 
-    while True:
-        # Removed pending tweets check Queue
+    try:
+        while True:
+            live_game_pks = get_live_game_pks()
+            if not live_game_pks:
+                print(f"Waiting for live games... (Interval: {POLLING_INTERVAL_SECONDS}s)")
+            else:
+                for game_pk in live_game_pks:
+                    try:
+                        game_data = statsapi.get("game", {"gamePk": game_pk})
+                        all_plays = game_data.get("liveData", {}).get("plays", {}).get("allPlays", [])
+                        for play in all_plays:
+                            at_bat_idx = play.get("about", {}).get("atBatIndex")
+                            for event in play.get("playEvents", []):
+                                if not event.get("isPitch"): continue
+                                pitch_idx = event.get("index")
+                                pitch_id = (game_pk, at_bat_idx, pitch_idx)
+                                if pitch_id not in processed_pitches:
+                                    processed_pitches.add(pitch_id)
+                                    process_new_pitch(pitch_id, game_data, predictor)
+                    except Exception as e:
+                        print(f"Error in game {game_pk}: {e}")
 
-        live_game_pks = get_live_game_pks()
-        if not live_game_pks:
-            print(f"Waiting for live games... (Interval: {POLLING_INTERVAL_SECONDS}s)")
-        else:
-            for game_pk in live_game_pks:
-                try:
-                    game_data = statsapi.get("game", {"gamePk": game_pk})
-                    all_plays = game_data.get("liveData", {}).get("plays", {}).get("allPlays", [])
-                    for play in all_plays:
-                        at_bat_idx = play.get("about", {}).get("atBatIndex")
-                        for event in play.get("playEvents", []):
-                            if not event.get("isPitch"): continue
-                            pitch_idx = event.get("index")
-                            pitch_id = (game_pk, at_bat_idx, pitch_idx)
-                            if pitch_id not in processed_pitches:
-                                processed_pitches.add(pitch_id)
-                                process_new_pitch(pitch_id, game_data, predictor)
-                except Exception as e:
-                    print(f"Error in game {game_pk}: {e}")
-
-        time.sleep(POLLING_INTERVAL_SECONDS)
+            time.sleep(POLLING_INTERVAL_SECONDS)
+    except KeyboardInterrupt:
+        print("\nTracker stopped.")
+    finally:
+        wandb.finish()
 
 if __name__ == "__main__":
     main()

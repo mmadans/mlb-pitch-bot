@@ -10,12 +10,15 @@ import argparse
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report, balanced_accuracy_score, confusion_matrix
 from xgboost import XGBClassifier
+from dotenv import load_dotenv
 from src.constants import (
     DATABASE_PATH, MODEL_PATH, TARGET_ENCODER_PATH, CATEGORICAL_ENCODER_PATH, FEATURE_COLS_PATH
 )
 from src.database import query_all_pitches
 from src.dataset_generator import add_features
 from src.batter_tendency_processing import get_batter_features
+
+load_dotenv()
 
 
 
@@ -133,9 +136,30 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
 
 
 def main(tune: bool = False) -> None:
+    import wandb
+
     root = Path(__file__).resolve().parent.parent
     models_dir = root / "models"
     models_dir.mkdir(parents=True, exist_ok=True)
+
+    wandb_run = None
+    try:
+        wandb_run = wandb.init(
+            project=os.getenv("WANDB_PROJECT", "mlb-pitch-bot"),
+            job_type="training",
+            config={
+                "n_estimators": 150,
+                "max_depth": 5,
+                "learning_rate": 0.1,
+                "objective": "multi:softprob",
+                "tune": tune,
+                "class_balancing": "inverse_frequency",
+                "leverage_weight": 2.0,
+                "train_test_split": "chronological_80_20",
+            },
+        )
+    except Exception as e:
+        print(f"W&B init failed (training will continue): {e}")
 
     if not os.path.exists(DATABASE_PATH):
         print(f"Database not found at {DATABASE_PATH}. Run dataset_generator first.")
@@ -261,14 +285,38 @@ def main(tune: bool = False) -> None:
     print(f"Balanced Accuracy: {bal_acc:.4f} (Better for class imbalance)")
     print(f"Probability RMSE: {rmse:.4f}")
     print(f"Brier Score (MSE): {brier:.4f}\n")
-    
+
     print("Detailed Classification Report (Checking if we over-predict Fastballs):")
+    report_dict = classification_report(y_test, y_pred, target_names=le.classes_, output_dict=True)
     print(classification_report(y_test, y_pred, target_names=le.classes_))
-    
+
     print("\nText-based Confusion Matrix (Rows=Actual, Cols=Predicted):")
     cm = confusion_matrix(y_test, y_pred)
     cm_df = pd.DataFrame(cm, index=le.classes_, columns=le.classes_)
     print(cm_df)
+
+    if wandb_run is not None:
+        try:
+            wandb_metrics = {
+                "accuracy":          acc,
+                "balanced_accuracy": bal_acc,
+                "brier_score":       brier,
+                "prob_rmse":         rmse,
+                "train_pitches":     len(X_train),
+                "test_pitches":      len(X_test),
+                "n_features":        len(feature_cols),
+            }
+            for cls in le.classes_:
+                cls_key = cls.lower()
+                wandb_metrics[f"precision_{cls_key}"] = report_dict[cls]["precision"]
+                wandb_metrics[f"recall_{cls_key}"]    = report_dict[cls]["recall"]
+                wandb_metrics[f"f1_{cls_key}"]        = report_dict[cls]["f1-score"]
+            if tune and hasattr(best_estimator, "best_params_"):
+                wandb_run.config.update(grid_search.best_params_)
+            wandb_run.log(wandb_metrics)
+            wandb_run.log({"confusion_matrix": wandb.Table(dataframe=cm_df.reset_index().rename(columns={"index": "actual"}))})
+        except Exception as e:
+            print(f"W&B metric logging failed: {e}")
 
     joblib.dump(model, MODEL_PATH)
     joblib.dump(le, TARGET_ENCODER_PATH)
@@ -287,7 +335,21 @@ def main(tune: bool = False) -> None:
     if not X_test_lev.empty:
         y_pred_lev = model.predict(X_test_lev)
         print("\n--- PERFORMANCE ON HIGH-LEVERAGE COUNTS (2 Strikes or 3 Balls) ---")
+        lev_report_dict = classification_report(y_test_lev, y_pred_lev, target_names=le.classes_, output_dict=True)
         print(classification_report(y_test_lev, y_pred_lev, target_names=le.classes_))
+        if wandb_run is not None:
+            try:
+                for cls in le.classes_:
+                    cls_key = cls.lower()
+                    wandb_run.log({
+                        f"leverage_recall_{cls_key}":    lev_report_dict[cls]["recall"],
+                        f"leverage_precision_{cls_key}": lev_report_dict[cls]["precision"],
+                    })
+            except Exception as e:
+                print(f"W&B leverage logging failed: {e}")
+
+    if wandb_run is not None:
+        wandb_run.finish()
 
 
 if __name__ == "__main__":
