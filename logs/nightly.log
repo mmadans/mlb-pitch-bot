@@ -1,0 +1,260 @@
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: offscriptpitch (offscriptpitch-) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run rxv53lv0
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /Users/michael/Documents/Data Projects/mlb-pitch-bot/wandb/run-20260415_072609-rxv53lv0
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run nightly-2026-04-15
+wandb: ⭐️ View project at https://wandb.ai/offscriptpitch-/PitchBot
+wandb: 🚀 View run at https://wandb.ai/offscriptpitch-/PitchBot/runs/rxv53lv0
+wandb: updating run metadata; uploading artifact run-rxv53lv0-predictions
+wandb: uploading artifact run-rxv53lv0-predictions
+wandb: uploading history steps 0-1, summary
+wandb: 
+wandb: Run history:
+wandb:        accuracy_breaking ▁
+wandb:        accuracy_fastball ▁
+wandb:        accuracy_offspeed ▁
+wandb: calibration_gap_breaking ▁
+wandb: calibration_gap_fastball ▁
+wandb: calibration_gap_offspeed ▁
+wandb:    finite_surprisal_rate ▁
+wandb:  mean_pred_prob_breaking ▁
+wandb:  mean_pred_prob_fastball ▁
+wandb:  mean_pred_prob_offspeed ▁
+wandb:                       +5 ...
+wandb: 
+wandb: Run summary:
+wandb:        accuracy_breaking 0.61972
+wandb:        accuracy_fastball 0.44118
+wandb:        accuracy_offspeed 0.56757
+wandb: calibration_gap_breaking -0.02929
+wandb: calibration_gap_fastball -0.01582
+wandb: calibration_gap_offspeed 0.04511
+wandb:    finite_surprisal_rate 1
+wandb:  mean_pred_prob_breaking 0.37412
+wandb:  mean_pred_prob_fastball 0.37055
+wandb:  mean_pred_prob_offspeed 0.25533
+wandb:                       +5 ...
+wandb: 
+wandb: 🚀 View run nightly-2026-04-15 at: https://wandb.ai/offscriptpitch-/PitchBot/runs/rxv53lv0
+wandb: ⭐️ View project at: https://wandb.ai/offscriptpitch-/PitchBot
+wandb: Synced 4 W&B file(s), 1 media file(s), 2 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260415_072609-rxv53lv0/logs
+Logging date  : 2026-04-15
+W&B project   : PitchBot
+Dry run       : False
+
+Metrics:
+  total_predictions                   176
+  valid_prob_rate                     1.0000
+  finite_surprisal_rate               1.0000
+  overall_accuracy                    0.5398
+  tweet_rate                          0.0852
+  mean_surprisal                      1.3722
+  accuracy_fastball                   0.4412
+  mean_pred_prob_fastball             0.3705
+  calibration_gap_fastball            -0.0158
+  accuracy_breaking                   0.6197
+  mean_pred_prob_breaking             0.3741
+  calibration_gap_breaking            -0.0293
+  accuracy_offspeed                   0.5676
+  mean_pred_prob_offspeed             0.2553
+  calibration_gap_offspeed            0.0451
+
+Logged to W&B: nightly-2026-04-15
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: offscriptpitch (offscriptpitch-) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run 285kruyh
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /Users/michael/Documents/Data Projects/mlb-pitch-bot/wandb/run-20260416_010002-285kruyh
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run nightly-2026-04-16
+wandb: ⭐️ View project at https://wandb.ai/offscriptpitch-/PitchBot
+wandb: 🚀 View run at https://wandb.ai/offscriptpitch-/PitchBot/runs/285kruyh
+wandb: updating run metadata; uploading artifact run-285kruyh-predictions
+wandb: uploading artifact run-285kruyh-predictions
+wandb: uploading history steps 0-1, summary
+wandb: 
+wandb: Run history:
+wandb:        accuracy_breaking ▁
+wandb:        accuracy_fastball ▁
+wandb:        accuracy_offspeed ▁
+wandb: calibration_gap_breaking ▁
+wandb: calibration_gap_fastball ▁
+wandb: calibration_gap_offspeed ▁
+wandb:    finite_surprisal_rate ▁
+wandb:  mean_pred_prob_breaking ▁
+wandb:  mean_pred_prob_fastball ▁
+wandb:  mean_pred_prob_offspeed ▁
+wandb:                       +5 ...
+wandb: 
+wandb: Run summary:
+wandb:        accuracy_breaking 0.51786
+wandb:        accuracy_fastball 0.33962
+wandb:        accuracy_offspeed 0.7619
+wandb: calibration_gap_breaking -0.08416
+wandb: calibration_gap_fastball -0.04489
+wandb: calibration_gap_offspeed 0.12905
+wandb:    finite_surprisal_rate 1
+wandb:  mean_pred_prob_breaking 0.34661
+wandb:  mean_pred_prob_fastball 0.3628
+wandb:  mean_pred_prob_offspeed 0.29059
+wandb:                       +5 ...
+wandb: 
+wandb: 🚀 View run nightly-2026-04-16 at: https://wandb.ai/offscriptpitch-/PitchBot/runs/285kruyh
+wandb: ⭐️ View project at: https://wandb.ai/offscriptpitch-/PitchBot
+wandb: Synced 4 W&B file(s), 1 media file(s), 2 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260416_010002-285kruyh/logs
+Logging date  : 2026-04-16
+W&B project   : PitchBot
+Dry run       : False
+
+Metrics:
+  total_predictions                   130
+  valid_prob_rate                     1.0000
+  finite_surprisal_rate               1.0000
+  overall_accuracy                    0.4846
+  tweet_rate                          0.0923
+  mean_surprisal                      1.4188
+  accuracy_fastball                   0.3396
+  mean_pred_prob_fastball             0.3628
+  calibration_gap_fastball            -0.0449
+  accuracy_breaking                   0.5179
+  mean_pred_prob_breaking             0.3466
+  calibration_gap_breaking            -0.0842
+  accuracy_offspeed                   0.7619
+  mean_pred_prob_offspeed             0.2906
+  calibration_gap_offspeed            0.1291
+
+Logged to W&B: nightly-2026-04-16
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: offscriptpitch (offscriptpitch-) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run oksp4gc6
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /Users/michael/Documents/Data Projects/mlb-pitch-bot/wandb/run-20260417_010002-oksp4gc6
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run nightly-2026-04-17
+wandb: ⭐️ View project at https://wandb.ai/offscriptpitch-/PitchBot
+wandb: 🚀 View run at https://wandb.ai/offscriptpitch-/PitchBot/runs/oksp4gc6
+wandb: updating run metadata; uploading artifact run-oksp4gc6-predictions
+wandb: uploading artifact run-oksp4gc6-predictions
+wandb: uploading config.yaml; uploading wandb-metadata.json; uploading requirements.txt; uploading media/table/predictions_1_427da87034c8d551b8ae.table.json; uploading wandb-summary.json
+wandb: uploading history steps 0-1, summary
+wandb: 
+wandb: Run history:
+wandb:        accuracy_breaking ▁
+wandb:        accuracy_fastball ▁
+wandb:        accuracy_offspeed ▁
+wandb: calibration_gap_breaking ▁
+wandb: calibration_gap_fastball ▁
+wandb: calibration_gap_offspeed ▁
+wandb:    finite_surprisal_rate ▁
+wandb:  mean_pred_prob_breaking ▁
+wandb:  mean_pred_prob_fastball ▁
+wandb:  mean_pred_prob_offspeed ▁
+wandb:                       +5 ...
+wandb: 
+wandb: Run summary:
+wandb:        accuracy_breaking 0.27273
+wandb:        accuracy_fastball 0.47059
+wandb:        accuracy_offspeed 0
+wandb: calibration_gap_breaking -0.01922
+wandb: calibration_gap_fastball -0.08904
+wandb: calibration_gap_offspeed 0.10825
+wandb:    finite_surprisal_rate 1
+wandb:  mean_pred_prob_breaking 0.34745
+wandb:  mean_pred_prob_fastball 0.47763
+wandb:  mean_pred_prob_offspeed 0.17492
+wandb:                       +5 ...
+wandb: 
+wandb: 🚀 View run nightly-2026-04-17 at: https://wandb.ai/offscriptpitch-/PitchBot/runs/oksp4gc6
+wandb: ⭐️ View project at: https://wandb.ai/offscriptpitch-/PitchBot
+wandb: Synced 4 W&B file(s), 1 media file(s), 2 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260417_010002-oksp4gc6/logs
+Logging date  : 2026-04-17
+W&B project   : PitchBot
+Dry run       : False
+
+Metrics:
+  total_predictions                   30
+  valid_prob_rate                     1.0000
+  finite_surprisal_rate               1.0000
+  overall_accuracy                    0.3667
+  tweet_rate                          0.1667
+  mean_surprisal                      1.6736
+  accuracy_fastball                   0.4706
+  mean_pred_prob_fastball             0.4776
+  calibration_gap_fastball            -0.0890
+  accuracy_breaking                   0.2727
+  mean_pred_prob_breaking             0.3475
+  calibration_gap_breaking            -0.0192
+  accuracy_offspeed                   0.0000
+  mean_pred_prob_offspeed             0.1749
+  calibration_gap_offspeed            0.1083
+
+Logged to W&B: nightly-2026-04-17
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: offscriptpitch (offscriptpitch-) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run s9wehngm
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /Users/michael/Documents/Data Projects/mlb-pitch-bot/wandb/run-20260418_010002-s9wehngm
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run nightly-2026-04-18
+wandb: ⭐️ View project at https://wandb.ai/offscriptpitch-/PitchBot
+wandb: 🚀 View run at https://wandb.ai/offscriptpitch-/PitchBot/runs/s9wehngm
+wandb: updating run metadata; uploading artifact run-s9wehngm-predictions
+wandb: uploading artifact run-s9wehngm-predictions
+wandb: 
+wandb: Run history:
+wandb:        accuracy_breaking ▁
+wandb:        accuracy_fastball ▁
+wandb:        accuracy_offspeed ▁
+wandb: calibration_gap_breaking ▁
+wandb: calibration_gap_fastball ▁
+wandb: calibration_gap_offspeed ▁
+wandb:    finite_surprisal_rate ▁
+wandb:  mean_pred_prob_breaking ▁
+wandb:  mean_pred_prob_fastball ▁
+wandb:  mean_pred_prob_offspeed ▁
+wandb:                       +5 ...
+wandb: 
+wandb: Run summary:
+wandb:        accuracy_breaking 0.58929
+wandb:        accuracy_fastball 0.59259
+wandb:        accuracy_offspeed 0.52174
+wandb: calibration_gap_breaking -0.03787
+wandb: calibration_gap_fastball 0.00643
+wandb: calibration_gap_offspeed 0.03144
+wandb:    finite_surprisal_rate 1
+wandb:  mean_pred_prob_breaking 0.38318
+wandb:  mean_pred_prob_fastball 0.41244
+wandb:  mean_pred_prob_offspeed 0.20437
+wandb:                       +5 ...
+wandb: 
+wandb: 🚀 View run nightly-2026-04-18 at: https://wandb.ai/offscriptpitch-/PitchBot/runs/s9wehngm
+wandb: ⭐️ View project at: https://wandb.ai/offscriptpitch-/PitchBot
+wandb: Synced 4 W&B file(s), 1 media file(s), 2 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260418_010002-s9wehngm/logs
+Logging date  : 2026-04-18
+W&B project   : PitchBot
+Dry run       : False
+
+Metrics:
+  total_predictions                   133
+  valid_prob_rate                     1.0000
+  finite_surprisal_rate               1.0000
+  overall_accuracy                    0.5789
+  tweet_rate                          0.0752
+  mean_surprisal                      1.3304
+  accuracy_fastball                   0.5926
+  mean_pred_prob_fastball             0.4124
+  calibration_gap_fastball            0.0064
+  accuracy_breaking                   0.5893
+  mean_pred_prob_breaking             0.3832
+  calibration_gap_breaking            -0.0379
+  accuracy_offspeed                   0.5217
+  mean_pred_prob_offspeed             0.2044
+  calibration_gap_offspeed            0.0314
+
+Logged to W&B: nightly-2026-04-18

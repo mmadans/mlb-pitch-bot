@@ -1,0 +1,3220 @@
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: offscriptpitch (offscriptpitch-) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run pdshjiy9
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /Users/michael/Documents/Data Projects/mlb-pitch-bot/wandb/run-20260415_182515-pdshjiy9
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run live-2026-04-15
+wandb: ⭐️ View project at https://wandb.ai/offscriptpitch-/PitchBot
+wandb: 🚀 View run at https://wandb.ai/offscriptpitch-/PitchBot/runs/pdshjiy9
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: offscriptpitch (offscriptpitch-) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run phkemhtd
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /Users/michael/Documents/Data Projects/mlb-pitch-bot/wandb/run-20260416_130844-phkemhtd
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run live-2026-04-16
+wandb: ⭐️ View project at https://wandb.ai/offscriptpitch-/PitchBot
+wandb: 🚀 View run at https://wandb.ai/offscriptpitch-/PitchBot/runs/phkemhtd
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: offscriptpitch (offscriptpitch-) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run 5hbiguan
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /Users/michael/Documents/Data Projects/mlb-pitch-bot/wandb/run-20260416_130850-5hbiguan
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run live-2026-04-16
+wandb: ⭐️ View project at https://wandb.ai/offscriptpitch-/PitchBot
+wandb: 🚀 View run at https://wandb.ai/offscriptpitch-/PitchBot/runs/5hbiguan
+Starting MLB Live Game Tracker (Simulation Mode)...
+Model and Baseline loaded.
+Initializing: Skipping already completed pitches in live games...
+Initialization complete. Monitoring 2 games.
+Analyzing interesting outcome: strikeout in game 823396
+  Pitch: CU, Prob: 0.41, Surprisal: 1.28, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823396
+  Pitch: CU, Prob: 0.82, Surprisal: 0.28, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824530
+  Pitch: CU, Prob: 0.17, Surprisal: 2.59, Desc: called strike
+  Generating infographic: output/live_tweet_824530_23.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🤯 Unbelievable K! Landen Roupp (R) freezes Elly De La Cruz (L) with a Curveball.
+Prob: 16.6% of Breaking Ball.
+
+#SFGiants #ATOBTTR
+==================================================
+
+Successfully uploaded image output/live_tweet_824530_23.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 823396
+  Skipping pitcher 656492: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823560
+  Pitch: CH, Prob: 0.29, Surprisal: 1.78, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823801
+  Pitch: CU, Prob: 0.33, Surprisal: 1.62, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824530
+  Pitch: FC, Prob: 0.28, Surprisal: 1.85, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823801
+  Pitch: ST, Prob: 0.86, Surprisal: 0.22, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824530
+  Pitch: CU, Prob: 0.29, Surprisal: 1.79, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823801
+  Pitch: SL, Prob: 0.39, Surprisal: 1.34, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823396
+  Skipping pitcher 656492: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824530
+  Pitch: CU, Prob: 0.20, Surprisal: 2.32, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823560
+  Pitch: SI, Prob: 0.87, Surprisal: 0.20, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823396
+  Skipping pitcher 656492: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823396
+  Pitch: SL, Prob: 0.76, Surprisal: 0.39, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823396
+  Pitch: FF, Prob: 0.85, Surprisal: 0.24, Desc: swinging strike
+  Generating infographic: output/live_tweet_823396_49.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+😤 Pure Dominance. Evan Sisk (L) whiffs Nasim Nuñez (R) with a Four-Seam Fastball.
+Prob: 84.8% of Fastball.
+
+#Natitude #LetsGoBucs
+==================================================
+
+Successfully uploaded image output/live_tweet_823396_49.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 824530
+  Pitch: SL, Prob: 0.29, Surprisal: 1.76, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824530
+  Pitch: FF, Prob: 0.27, Surprisal: 1.91, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824530
+  Pitch: ST, Prob: 0.84, Surprisal: 0.25, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824530
+  Pitch: SL, Prob: 0.57, Surprisal: 0.80, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824289
+  Pitch: SL, Prob: 0.41, Surprisal: 1.27, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824289
+  Pitch: CH, Prob: 0.42, Surprisal: 1.23, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823560
+  Pitch: SI, Prob: 0.33, Surprisal: 1.61, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823560
+  Pitch: FC, Prob: 0.44, Surprisal: 1.20, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823801
+  Pitch: SL, Prob: 0.43, Surprisal: 1.22, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823801
+  Pitch: FF, Prob: 0.33, Surprisal: 1.59, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823801
+  Pitch: ST, Prob: 0.66, Surprisal: 0.59, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823801
+  Pitch: FF, Prob: 0.30, Surprisal: 1.72, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824530
+  Pitch: FF, Prob: 0.57, Surprisal: 0.80, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824614
+  Skipping pitcher 641743: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823396
+  Pitch: SL, Prob: 0.70, Surprisal: 0.52, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823396
+  Pitch: FF, Prob: 0.36, Surprisal: 1.46, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824530
+  Pitch: FF, Prob: 0.24, Surprisal: 2.06, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824530
+  Pitch: FS, Prob: 0.69, Surprisal: 0.53, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824530
+  Pitch: SI, Prob: 0.42, Surprisal: 1.27, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823560
+  Pitch: FC, Prob: 0.43, Surprisal: 1.23, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823560
+  Skipping pitcher 680704: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823801
+  Pitch: FF, Prob: 0.29, Surprisal: 1.80, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823801
+  Pitch: CU, Prob: 0.28, Surprisal: 1.86, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823801
+  Pitch: SL, Prob: 0.43, Surprisal: 1.21, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823801
+  Pitch: SL, Prob: 0.45, Surprisal: 1.17, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824289
+  Pitch: CH, Prob: 0.32, Surprisal: 1.67, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824530
+  Skipping pitcher 669062: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824289
+  Pitch: SL, Prob: 0.24, Surprisal: 2.04, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823560
+  Pitch: FF, Prob: 0.27, Surprisal: 1.89, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824289
+  Skipping pitcher 663460: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823801
+  Pitch: SL, Prob: 0.57, Surprisal: 0.81, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824614
+  Pitch: SI, Prob: 0.26, Surprisal: 1.94, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824614
+  Pitch: CH, Prob: 0.12, Surprisal: 3.05, Desc: swinging strike
+  Generating infographic: output/live_tweet_824614_24.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🔀 Fooled him! Steven Matz (L) whiffs Munetaka Murakami (L) with a Changeup.
+Prob: 12.0% of Offspeed.
+
+#RaysUp #WhiteSox
+==================================================
+
+Successfully uploaded image output/live_tweet_824614_24.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 824530
+  Skipping pitcher 669062: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824530
+  Skipping pitcher 669062: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824289
+  Pitch: KC, Prob: 0.36, Surprisal: 1.46, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823560
+  Pitch: FF, Prob: 0.37, Surprisal: 1.43, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824289
+  Skipping pitcher 663460: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823396
+  Skipping pitcher 672335: insufficient sample (12 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 825023
+  Pitch: FF, Prob: 0.36, Surprisal: 1.46, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823396
+  Skipping pitcher 672335: insufficient sample (12 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824289
+  Skipping pitcher 663460: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 825023
+  Pitch: SL, Prob: 0.59, Surprisal: 0.76, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824614
+  Pitch: CH, Prob: 0.53, Surprisal: 0.92, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824614
+  Pitch: CH, Prob: 0.45, Surprisal: 1.16, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825023
+  Pitch: FF, Prob: 0.46, Surprisal: 1.12, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823801
+  Skipping pitcher 573009: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823560
+  Pitch: FS, Prob: 0.83, Surprisal: 0.27, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825023
+  Pitch: SL, Prob: 0.79, Surprisal: 0.34, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823801
+  Pitch: FF, Prob: 0.61, Surprisal: 0.72, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823560
+  Pitch: FS, Prob: 0.85, Surprisal: 0.23, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823801
+  Pitch: KC, Prob: 0.65, Surprisal: 0.62, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824614
+  Pitch: SI, Prob: 0.30, Surprisal: 1.74, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824289
+  Pitch: CH, Prob: 0.25, Surprisal: 2.00, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823396
+  Pitch: SL, Prob: 0.85, Surprisal: 0.24, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824614
+  Pitch: SI, Prob: 0.64, Surprisal: 0.64, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824289
+  Skipping pitcher 656638: insufficient sample (20 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824289
+  Skipping pitcher 656638: insufficient sample (20 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823560
+  Pitch: CH, Prob: 0.68, Surprisal: 0.56, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823560
+  Pitch: CH, Prob: 0.55, Surprisal: 0.87, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824614
+  Pitch: FF, Prob: 0.67, Surprisal: 0.58, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824614
+  Pitch: SL, Prob: 0.28, Surprisal: 1.82, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825023
+  Pitch: SL, Prob: 0.44, Surprisal: 1.17, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823396
+  Pitch: FF, Prob: 0.35, Surprisal: 1.53, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823560
+  Pitch: SL, Prob: 0.61, Surprisal: 0.72, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825023
+  Pitch: FC, Prob: 0.52, Surprisal: 0.94, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824614
+  Pitch: CU, Prob: 0.42, Surprisal: 1.23, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823560
+  Pitch: SL, Prob: 0.48, Surprisal: 1.05, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824614
+  Pitch: SL, Prob: 0.22, Surprisal: 2.21, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825023
+  Pitch: FF, Prob: 0.32, Surprisal: 1.66, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824614
+  Pitch: FF, Prob: 0.13, Surprisal: 2.89, Desc: called strike
+  Generating infographic: output/live_tweet_824614_59.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🥶 Frozen! Sean Newcomb (L) freezes Jake Fraley (L) with a Four-Seam Fastball.
+Prob: 13.5% of Fastball.
+
+#RaysUp #WhiteSox
+==================================================
+
+Successfully uploaded image output/live_tweet_824614_59.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 824614
+  Pitch: ST, Prob: 0.34, Surprisal: 1.57, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824614
+  Pitch: SI, Prob: 0.75, Surprisal: 0.42, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825023
+  Skipping pitcher 665622: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 825023
+  Skipping pitcher 665622: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824614
+  Pitch: SI, Prob: 0.52, Surprisal: 0.93, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823560
+  Pitch: FS, Prob: 0.49, Surprisal: 1.04, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825023
+  Pitch: FF, Prob: 0.43, Surprisal: 1.22, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824614
+  Pitch: FF, Prob: 0.38, Surprisal: 1.40, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824614
+  Skipping pitcher 608371: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824289
+  Skipping pitcher 646241: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824289
+  Pitch: CH, Prob: 0.62, Surprisal: 0.69, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824289
+  Pitch: FF, Prob: 0.40, Surprisal: 1.31, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824289
+  Pitch: SL, Prob: 0.08, Surprisal: 3.74, Desc: swinging strike
+  Generating infographic: output/live_tweet_824289_75.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🔀 Fooled him! Connor Seabold (R) whiffs Salvador Perez (R) with a Slider.
+Prob: 7.5% of Breaking Ball.
+
+#FountainsUp #RepDetroit
+==================================================
+
+Successfully uploaded image output/live_tweet_824289_75.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 824289
+  Pitch: SL, Prob: 0.09, Surprisal: 3.54, Desc: swinging strike
+  Generating infographic: output/live_tweet_824289_79.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🔀 Fooled him! Lucas Erceg (R) whiffs Kerry Carpenter (L) with a Slider.
+Prob: 8.6% of Breaking Ball.
+
+#FountainsUp #RepDetroit
+==================================================
+
+Successfully uploaded image output/live_tweet_824289_79.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 825023
+  Pitch: FF, Prob: 0.77, Surprisal: 0.37, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824453
+  Pitch: FF, Prob: 0.31, Surprisal: 1.68, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824453
+  Pitch: FF, Prob: 0.50, Surprisal: 1.00, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824453
+  Pitch: KC, Prob: 0.36, Surprisal: 1.46, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824453
+  Pitch: CH, Prob: 0.63, Surprisal: 0.68, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824453
+  Pitch: FC, Prob: 0.69, Surprisal: 0.53, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824453
+  Pitch: CH, Prob: 0.50, Surprisal: 1.01, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824453
+  Pitch: SI, Prob: 0.35, Surprisal: 1.50, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824453
+  Pitch: KC, Prob: 0.29, Surprisal: 1.78, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824453
+  Pitch: CH, Prob: 0.57, Surprisal: 0.81, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824453
+  Pitch: KC, Prob: 0.23, Surprisal: 2.14, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Analyzing interesting outcome: strikeout in game 824453
+  Pitch: CH, Prob: 0.55, Surprisal: 0.86, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824453
+  Pitch: FF, Prob: 0.45, Surprisal: 1.16, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824453
+  Pitch: KC, Prob: 0.34, Surprisal: 1.54, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824453
+  Skipping pitcher 671382: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824453
+  Pitch: SL, Prob: 0.28, Surprisal: 1.85, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824208
+  Skipping pitcher 680802: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824453
+  Skipping pitcher 671382: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824453
+  Skipping pitcher 671382: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824453
+  Pitch: FC, Prob: 0.51, Surprisal: 0.97, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824208
+  Pitch: FF, Prob: 0.70, Surprisal: 0.51, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824208
+  Pitch: ST, Prob: 0.34, Surprisal: 1.55, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823313
+  Pitch: FF, Prob: 0.46, Surprisal: 1.13, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824208
+  Skipping pitcher 680802: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823313
+  Pitch: ST, Prob: 0.58, Surprisal: 0.78, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823313
+  Pitch: FF, Prob: 0.63, Surprisal: 0.67, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824208
+  Pitch: FF, Prob: 0.37, Surprisal: 1.43, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823313
+  Pitch: KC, Prob: 0.26, Surprisal: 1.92, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824208
+  Pitch: SL, Prob: 0.36, Surprisal: 1.47, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824208
+  Pitch: CH, Prob: 0.03, Surprisal: 4.87, Desc: swinging strike
+  Generating infographic: output/live_tweet_824208_23.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🔀 Fooled him! Chase Dollander (R) whiffs Isaac Paredes (R) with a Changeup.
+Prob: 3.4% of Offspeed.
+
+#Rockies #ChaseTheFight
+==================================================
+
+Successfully uploaded image output/live_tweet_824208_23.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 824208
+  Pitch: FF, Prob: 0.57, Surprisal: 0.80, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823313
+  Pitch: KC, Prob: 0.37, Surprisal: 1.44, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824208
+  Skipping pitcher 680802: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824208
+  Pitch: FF, Prob: 0.60, Surprisal: 0.74, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823313
+  Pitch: ST, Prob: 0.15, Surprisal: 2.73, Desc: swinging strike
+  Generating infographic: output/live_tweet_823313_27.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🤯 Unbelievable K! Walker Buehler (R) whiffs Julio Rodríguez (R) with a Sweeper.
+Prob: 15.1% of Breaking Ball.
+
+#TridentsUp #ForTheFaithful
+==================================================
+
+Successfully uploaded image output/live_tweet_823313_27.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 824208
+  Pitch: FF, Prob: 0.59, Surprisal: 0.77, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824208
+  Pitch: CH, Prob: 0.06, Surprisal: 4.01, Desc: swinging strike
+  Generating infographic: output/live_tweet_824208_40.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🔀 Fooled him! Chase Dollander (R) whiffs Jose Altuve (R) with a Changeup.
+Prob: 6.2% of Offspeed.
+
+#Rockies #ChaseTheFight
+==================================================
+
+Successfully uploaded image output/live_tweet_824208_40.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 823313
+  Pitch: FC, Prob: 0.32, Surprisal: 1.66, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823313
+  Pitch: KC, Prob: 0.41, Surprisal: 1.28, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823313
+  Pitch: FF, Prob: 0.80, Surprisal: 0.33, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824208
+  Pitch: CU, Prob: 0.05, Surprisal: 4.25, Desc: swinging strike
+  Generating infographic: output/live_tweet_824208_49.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🔀 Fooled him! Chase Dollander (R) whiffs Joey Loperfido (L) with a Curveball.
+Prob: 5.3% of Breaking Ball.
+
+#Rockies #ChaseTheFight
+==================================================
+
+Successfully uploaded image output/live_tweet_824208_49.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 824208
+  Pitch: FF, Prob: 0.41, Surprisal: 1.30, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824208
+  Pitch: FF, Prob: 0.30, Surprisal: 1.73, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823313
+  Pitch: FF, Prob: 0.35, Surprisal: 1.52, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824208
+  Pitch: FF, Prob: 0.19, Surprisal: 2.39, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823313
+  Skipping pitcher 677961: insufficient sample (39 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823313
+  Pitch: FF, Prob: 0.34, Surprisal: 1.56, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823313
+  Skipping pitcher 677961: insufficient sample (39 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824208
+  Pitch: FF, Prob: 0.30, Surprisal: 1.73, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823313
+  Pitch: SL, Prob: 0.49, Surprisal: 1.03, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823313
+  Pitch: FF, Prob: 0.16, Surprisal: 2.63, Desc: called strike
+  Generating infographic: output/live_tweet_823313_71.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🤯 Unbelievable K! Mason Miller (R) freezes Mitch Garver (R) with a Four-Seam Fastball.
+Prob: 16.1% of Fastball.
+
+#TridentsUp #ForTheFaithful
+==================================================
+
+Successfully uploaded image output/live_tweet_823313_71.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 823313
+  Pitch: SL, Prob: 0.44, Surprisal: 1.18, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: offscriptpitch (offscriptpitch-) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run 45cdtj94
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /Users/michael/Documents/Data Projects/mlb-pitch-bot/wandb/run-20260417_144820-45cdtj94
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run live-2026-04-17
+wandb: ⭐️ View project at https://wandb.ai/offscriptpitch-/PitchBot
+wandb: 🚀 View run at https://wandb.ai/offscriptpitch-/PitchBot/runs/45cdtj94
+Starting MLB Live Game Tracker (Simulation Mode)...
+Model and Baseline loaded.
+Initializing: Skipping already completed pitches in live games...
+Initialization complete. Monitoring 1 games.
+Analyzing interesting outcome: strikeout in game 824693
+  Pitch: CH, Prob: 0.61, Surprisal: 0.70, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824693
+  Pitch: FF, Prob: 0.22, Surprisal: 2.16, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824693
+  Pitch: FC, Prob: 0.39, Surprisal: 1.36, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Analyzing interesting outcome: strikeout in game 824693
+  Pitch: SI, Prob: 0.34, Surprisal: 1.56, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824693
+  Pitch: SL, Prob: 0.39, Surprisal: 1.38, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824693
+  Pitch: FF, Prob: 0.60, Surprisal: 0.74, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824693
+  Pitch: ST, Prob: 0.31, Surprisal: 1.67, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Analyzing interesting outcome: strikeout in game 824693
+  Skipping pitcher 702303: insufficient sample (None pitches, need 75).
+Waiting for live games... (Interval: 30s)
+Analyzing interesting outcome: strikeout in game 824693
+  Pitch: FF, Prob: 0.17, Surprisal: 2.55, Desc: swinging strike
+  Generating infographic: output/live_tweet_824693_69.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🤯 Unbelievable K! Jacob Webb (R) whiffs MJ Melendez (L) with a Four-Seam Fastball.
+Prob: 17.1% of Fastball.
+
+#LGM #Cubs
+==================================================
+
+Successfully uploaded image output/live_tweet_824693_69.png
+Tweet posted successfully!
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Analyzing interesting outcome: strikeout in game 824454
+  Pitch: CH, Prob: 0.51, Surprisal: 0.97, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824454
+  Pitch: CU, Prob: 0.14, Surprisal: 2.80, Desc: swinging strike
+  Generating infographic: output/live_tweet_824454_12.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🔀 Fooled him! Tanner Bibee (R) whiffs Colton Cowser (L) with a Curveball.
+Prob: 14.4% of Breaking Ball.
+
+#Birdland #GuardsBall
+==================================================
+
+Successfully uploaded image output/live_tweet_824454_12.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 824454
+  Pitch: CU, Prob: 0.23, Surprisal: 2.11, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823476
+  Pitch: SI, Prob: 0.44, Surprisal: 1.19, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823397
+  Pitch: ST, Prob: 0.13, Surprisal: 2.91, Desc: swinging strike
+  Generating infographic: output/live_tweet_823397_1.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🔀 Fooled him! Bubba Chandler (R) whiffs Junior Caminero (R) with a Sweeper.
+Prob: 13.3% of Breaking Ball.
+
+#RaysUp #LetsGoBucs
+==================================================
+
+Successfully uploaded image output/live_tweet_823397_1.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 823397
+  Pitch: FF, Prob: 0.75, Surprisal: 0.41, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822752
+  Pitch: FS, Prob: 0.29, Surprisal: 1.77, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823397
+  Pitch: CH, Prob: 0.62, Surprisal: 0.69, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823397
+  Pitch: SI, Prob: 0.41, Surprisal: 1.29, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822752
+  Pitch: SI, Prob: 0.26, Surprisal: 1.97, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823476
+  Pitch: SI, Prob: 0.33, Surprisal: 1.60, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823559
+  Pitch: FC, Prob: 0.62, Surprisal: 0.70, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823476
+  Pitch: FS, Prob: 0.37, Surprisal: 1.45, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823559
+  Pitch: CH, Prob: 0.42, Surprisal: 1.24, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822752
+  Pitch: CH, Prob: 0.50, Surprisal: 1.01, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824778
+  Pitch: CH, Prob: 0.26, Surprisal: 1.95, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823559
+  Pitch: FF, Prob: 0.80, Surprisal: 0.32, Desc: swinging strike
+  Generating infographic: output/live_tweet_823559_8.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+😤 Pure Dominance. Cam Schlittler (R) whiffs Carter Jensen (L) with a Four-Seam Fastball.
+Prob: 80.2% of Fastball.
+
+#FountainsUp #RepBX
+==================================================
+
+Successfully uploaded image output/live_tweet_823559_8.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 822752
+  Pitch: FS, Prob: 0.34, Surprisal: 1.58, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824778
+  Pitch: FF, Prob: 0.64, Surprisal: 0.64, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824454
+  Pitch: FF, Prob: 0.37, Surprisal: 1.42, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823883
+  Pitch: SL, Prob: 0.36, Surprisal: 1.49, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823476
+  Pitch: FC, Prob: 0.39, Surprisal: 1.34, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823559
+  Pitch: CH, Prob: 0.26, Surprisal: 1.93, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823559
+  Pitch: FF, Prob: 0.43, Surprisal: 1.21, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824454
+  Pitch: CU, Prob: 0.10, Surprisal: 3.34, Desc: swinging strike
+  Generating infographic: output/live_tweet_824454_35.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🔀 Fooled him! Tanner Bibee (R) whiffs Gunnar Henderson (L) with a Curveball.
+Prob: 9.9% of Breaking Ball.
+
+#Birdland #GuardsBall
+==================================================
+
+Successfully uploaded image output/live_tweet_824454_35.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 822752
+  Pitch: SI, Prob: 0.30, Surprisal: 1.73, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824778
+  Pitch: FF, Prob: 0.34, Surprisal: 1.54, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823476
+  Pitch: CH, Prob: 0.58, Surprisal: 0.78, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823559
+  Pitch: CU, Prob: 0.33, Surprisal: 1.60, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824778
+  Pitch: FS, Prob: 0.56, Surprisal: 0.83, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824454
+  Pitch: CU, Prob: 0.09, Surprisal: 3.52, Desc: swinging strike
+  Generating infographic: output/live_tweet_824454_38.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🔀 Fooled him! Tanner Bibee (R) whiffs Dylan Beavers (L) with a Curveball.
+Prob: 8.7% of Breaking Ball.
+
+#Birdland #GuardsBall
+==================================================
+
+Successfully uploaded image output/live_tweet_824454_38.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 823397
+  Pitch: SI, Prob: 0.38, Surprisal: 1.41, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823883
+  Skipping pitcher 689441: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823559
+  Pitch: SI, Prob: 0.69, Surprisal: 0.53, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823476
+  Pitch: FS, Prob: 0.31, Surprisal: 1.68, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822752
+  Pitch: ST, Prob: 0.15, Surprisal: 2.70, Desc: swinging strike
+  Generating infographic: output/live_tweet_822752_34.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🤯 Unbelievable K! Zack Littell (R) whiffs Rafael Devers (L) with a Sweeper.
+Prob: 15.4% of Breaking Ball.
+
+#SFGiants #Natitude
+==================================================
+
+Successfully uploaded image output/live_tweet_822752_34.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 824778
+  Pitch: FS, Prob: 0.64, Surprisal: 0.64, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824454
+  Pitch: SI, Prob: 0.49, Surprisal: 1.03, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822752
+  Pitch: FS, Prob: 0.46, Surprisal: 1.12, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824778
+  Pitch: CU, Prob: 0.48, Surprisal: 1.07, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823476
+  Pitch: FC, Prob: 0.20, Surprisal: 2.30, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823559
+  Pitch: FF, Prob: 0.67, Surprisal: 0.58, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823476
+  Pitch: FC, Prob: 0.70, Surprisal: 0.51, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823883
+  Skipping pitcher 689441: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 822752
+  Pitch: CH, Prob: 0.47, Surprisal: 1.10, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823559
+  Pitch: SI, Prob: 0.43, Surprisal: 1.22, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823883
+  Skipping pitcher 689441: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 822752
+  Pitch: ST, Prob: 0.19, Surprisal: 2.42, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824454
+  Pitch: SI, Prob: 0.19, Surprisal: 2.42, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823559
+  Pitch: CU, Prob: 0.32, Surprisal: 1.65, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824454
+  Pitch: CU, Prob: 0.69, Surprisal: 0.54, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823720
+  Pitch: SI, Prob: 0.38, Surprisal: 1.41, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824454
+  Pitch: SL, Prob: 0.75, Surprisal: 0.42, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824454
+  Pitch: SL, Prob: 0.89, Surprisal: 0.16, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824454
+  Pitch: SL, Prob: 0.44, Surprisal: 1.17, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824778
+  Pitch: FF, Prob: 0.32, Surprisal: 1.62, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823883
+  Skipping pitcher 689441: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824454
+  Pitch: ST, Prob: 0.75, Surprisal: 0.41, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823476
+  Pitch: ST, Prob: 0.52, Surprisal: 0.94, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823883
+  Pitch: CU, Prob: 0.43, Surprisal: 1.23, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824454
+  Skipping pitcher 689296: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824207
+  Pitch: FF, Prob: 0.31, Surprisal: 1.68, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824207
+  Pitch: ST, Prob: 0.71, Surprisal: 0.50, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822752
+  Skipping pitcher 687606: insufficient sample (14 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823559
+  Pitch: FF, Prob: 0.63, Surprisal: 0.67, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824778
+  Pitch: FF, Prob: 0.47, Surprisal: 1.08, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823476
+  Pitch: CH, Prob: 0.60, Surprisal: 0.75, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823559
+  Pitch: SL, Prob: 0.30, Surprisal: 1.76, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824207
+  Pitch: SI, Prob: 0.33, Surprisal: 1.59, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824778
+  Pitch: CU, Prob: 0.16, Surprisal: 2.65, Desc: called strike
+  Generating infographic: output/live_tweet_824778_40.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🤯 Unbelievable K! Ranger Suarez (L) freezes Jahmai Jones (R) with a Curveball.
+Prob: 15.9% of Breaking Ball.
+
+#RepDetroit #DirtyWater
+==================================================
+
+Successfully uploaded image output/live_tweet_824778_40.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 823397
+  Pitch: FF, Prob: 0.43, Surprisal: 1.22, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823883
+  Pitch: SI, Prob: 0.51, Surprisal: 0.96, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824207
+  Pitch: CU, Prob: 0.57, Surprisal: 0.82, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823883
+  Pitch: CH, Prob: 0.58, Surprisal: 0.79, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823397
+  Pitch: CU, Prob: 0.54, Surprisal: 0.89, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824454
+  Pitch: FF, Prob: 0.63, Surprisal: 0.67, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823397
+  Pitch: FF, Prob: 0.30, Surprisal: 1.75, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823559
+  Pitch: SL, Prob: 0.77, Surprisal: 0.37, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824373
+  Pitch: FS, Prob: 0.12, Surprisal: 3.10, Desc: swinging strike
+  Generating infographic: output/live_tweet_824373_4.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🔀 Fooled him! Tomoyuki Sugano (R) whiffs Teoscar Hernández (R) with a Splitter.
+Prob: 11.7% of Offspeed.
+
+#Dodgers #Rockies
+==================================================
+
+Successfully uploaded image output/live_tweet_824373_4.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 822752
+  Pitch: CH, Prob: 0.04, Surprisal: 4.77, Desc: swinging strike
+  Generating infographic: output/live_tweet_822752_64.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🔀 Fooled him! Matt Gage (L) whiffs CJ Abrams (L) with a Changeup.
+Prob: 3.7% of Offspeed.
+
+#SFGiants #Natitude
+==================================================
+
+Successfully uploaded image output/live_tweet_822752_64.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 823883
+  Pitch: ST, Prob: 0.02, Surprisal: 5.79, Desc: swinging strike (blocked)
+  Generating infographic: output/live_tweet_823883_49.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🔀 Fooled him! DL Hall (L) whiffs Owen Caissie (L) with a Sweeper.
+Prob: 1.8% of Breaking Ball.
+
+#ThisIsMyCrew #FightinFish
+==================================================
+
+Successfully uploaded image output/live_tweet_823883_49.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 824207
+  Skipping pitcher 663567: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823720
+  Skipping pitcher 682227: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824207
+  Skipping pitcher 663567: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823720
+  Pitch: ST, Prob: 0.56, Surprisal: 0.83, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822752
+  Pitch: ST, Prob: 0.84, Surprisal: 0.25, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824373
+  Pitch: SL, Prob: 0.75, Surprisal: 0.41, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824373
+  Pitch: CU, Prob: 0.78, Surprisal: 0.36, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824454
+  Pitch: FF, Prob: 0.31, Surprisal: 1.67, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824778
+  Pitch: SI, Prob: 0.32, Surprisal: 1.64, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822752
+  Skipping pitcher 668873: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823883
+  Pitch: FS, Prob: 0.30, Surprisal: 1.72, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823720
+  Pitch: FF, Prob: 0.58, Surprisal: 0.78, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822752
+  Skipping pitcher 668873: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824207
+  Skipping pitcher 663567: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824207
+  Skipping pitcher 663567: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824454
+  Pitch: FS, Prob: 0.37, Surprisal: 1.44, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824373
+  Pitch: FF, Prob: 0.18, Surprisal: 2.44, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822752
+  Skipping pitcher 663992: insufficient sample (47 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823559
+  Pitch: SL, Prob: 0.61, Surprisal: 0.72, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824373
+  Pitch: FF, Prob: 0.32, Surprisal: 1.63, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823720
+  Skipping pitcher 682227: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823397
+  Pitch: SL, Prob: 0.29, Surprisal: 1.80, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824373
+  Pitch: CU, Prob: 0.59, Surprisal: 0.75, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823720
+  Pitch: SI, Prob: 0.29, Surprisal: 1.78, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823883
+  Pitch: FS, Prob: 0.33, Surprisal: 1.61, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823720
+  Pitch: FS, Prob: 0.26, Surprisal: 1.93, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823559
+  Skipping pitcher 656638: insufficient sample (20 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823883
+  Pitch: FS, Prob: 0.32, Surprisal: 1.63, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824778
+  Pitch: SI, Prob: 0.41, Surprisal: 1.29, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824373
+  Pitch: FS, Prob: 0.38, Surprisal: 1.39, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823559
+  Skipping pitcher 656638: insufficient sample (20 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824207
+  Pitch: FF, Prob: 0.51, Surprisal: 0.97, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824778
+  Pitch: FF, Prob: 0.24, Surprisal: 2.08, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824207
+  Skipping pitcher 663567: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824048
+  Pitch: KC, Prob: 0.28, Surprisal: 1.84, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823559
+  Pitch: FS, Prob: 0.53, Surprisal: 0.91, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825101
+  Pitch: SV, Prob: 0.32, Surprisal: 1.64, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823559
+  Pitch: FS, Prob: 0.39, Surprisal: 1.35, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824778
+  Pitch: CH, Prob: 0.59, Surprisal: 0.75, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824048
+  Pitch: KC, Prob: 0.45, Surprisal: 1.14, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825019
+  Pitch: CU, Prob: 0.46, Surprisal: 1.11, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823152
+  Pitch: CH, Prob: 0.58, Surprisal: 0.79, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823720
+  Pitch: FF, Prob: 0.54, Surprisal: 0.88, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824373
+  Pitch: SL, Prob: 0.75, Surprisal: 0.42, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823152
+  Pitch: FF, Prob: 0.15, Surprisal: 2.72, Desc: foul tip
+  Generating infographic: output/live_tweet_823152_5.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🤯 Unbelievable K! Logan Gilbert (R) whiffs Joc Pederson (L) with a Four-Seam Fastball.
+Prob: 15.2% of Fastball.
+
+#AllForTX #TridentsUp
+==================================================
+
+Successfully uploaded image output/live_tweet_823152_5.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 823883
+  Pitch: SI, Prob: 0.37, Surprisal: 1.44, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824778
+  Pitch: SI, Prob: 0.67, Surprisal: 0.59, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825019
+  Pitch: SI, Prob: 0.78, Surprisal: 0.36, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823883
+  Pitch: SL, Prob: 0.35, Surprisal: 1.53, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823720
+  Pitch: FF, Prob: 0.18, Surprisal: 2.44, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823883
+  Pitch: SL, Prob: 0.49, Surprisal: 1.02, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823152
+  Pitch: CU, Prob: 0.42, Surprisal: 1.25, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825101
+  Pitch: CH, Prob: 0.16, Surprisal: 2.66, Desc: swinging strike
+  Generating infographic: output/live_tweet_825101_12.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🤯 Unbelievable K! Eric Lauer (L) whiffs James McCann (R) with a Changeup.
+Prob: 15.8% of Offspeed.
+
+#BlueJays50 #DBacks
+==================================================
+
+Successfully uploaded image output/live_tweet_825101_12.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 823152
+  Pitch: FF, Prob: 0.84, Surprisal: 0.24, Desc: swinging strike
+  Generating infographic: output/live_tweet_823152_11.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+😤 Pure Dominance. Jacob deGrom (R) whiffs Luke Raley (L) with a Four-Seam Fastball.
+Prob: 84.4% of Fastball.
+
+#AllForTX #TridentsUp
+==================================================
+
+Successfully uploaded image output/live_tweet_823152_11.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 824207
+  Pitch: FF, Prob: 0.51, Surprisal: 0.97, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824048
+  Skipping pitcher 663362: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824373
+  Skipping pitcher 688642: insufficient sample (25 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 825101
+  Pitch: FF, Prob: 0.71, Surprisal: 0.50, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824373
+  Skipping pitcher 688642: insufficient sample (25 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824048
+  Pitch: KC, Prob: 0.65, Surprisal: 0.61, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823883
+  Pitch: CU, Prob: 0.34, Surprisal: 1.55, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825101
+  Pitch: SV, Prob: 0.35, Surprisal: 1.50, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824373
+  Skipping pitcher 688642: insufficient sample (25 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824207
+  Pitch: CU, Prob: 0.41, Surprisal: 1.30, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823883
+  Pitch: KC, Prob: 0.57, Surprisal: 0.82, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825019
+  Pitch: SL, Prob: 0.31, Surprisal: 1.67, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825101
+  Pitch: FC, Prob: 0.55, Surprisal: 0.85, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824048
+  Skipping pitcher 663362: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 825101
+  Pitch: FF, Prob: 0.47, Surprisal: 1.08, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825019
+  Pitch: FF, Prob: 0.44, Surprisal: 1.18, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823883
+  Pitch: KC, Prob: 0.58, Surprisal: 0.78, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823152
+  Pitch: SL, Prob: 0.49, Surprisal: 1.03, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824373
+  Pitch: CU, Prob: 0.80, Surprisal: 0.32, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823720
+  Pitch: FC, Prob: 0.52, Surprisal: 0.94, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824048
+  Skipping pitcher 663362: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824207
+  Pitch: SL, Prob: 0.38, Surprisal: 1.39, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824207
+  Pitch: FF, Prob: 0.68, Surprisal: 0.56, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823720
+  Pitch: FC, Prob: 0.37, Surprisal: 1.45, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825101
+  Pitch: SV, Prob: 0.30, Surprisal: 1.73, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824373
+  Pitch: CU, Prob: 0.80, Surprisal: 0.33, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824048
+  Pitch: FF, Prob: 0.63, Surprisal: 0.67, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823720
+  Pitch: FF, Prob: 0.70, Surprisal: 0.51, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824207
+  Pitch: FS, Prob: 0.21, Surprisal: 2.27, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824373
+  Pitch: SL, Prob: 0.89, Surprisal: 0.16, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824048
+  Skipping pitcher 663362: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823152
+  Pitch: FS, Prob: 0.46, Surprisal: 1.11, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824373
+  Pitch: SL, Prob: 0.23, Surprisal: 2.12, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823152
+  Pitch: FS, Prob: 0.47, Surprisal: 1.10, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824207
+  Pitch: ST, Prob: 0.39, Surprisal: 1.36, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824373
+  Pitch: SI, Prob: 0.39, Surprisal: 1.36, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823152
+  Pitch: SL, Prob: 0.37, Surprisal: 1.45, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824048
+  Pitch: SI, Prob: 0.38, Surprisal: 1.39, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824048
+  Pitch: KC, Prob: 0.32, Surprisal: 1.63, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825019
+  Pitch: FF, Prob: 0.73, Surprisal: 0.46, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823152
+  Pitch: FS, Prob: 0.67, Surprisal: 0.58, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824373
+  Pitch: FF, Prob: 0.71, Surprisal: 0.50, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823152
+  Skipping pitcher 686560: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823152
+  Skipping pitcher 686560: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 825019
+  Pitch: FS, Prob: 0.11, Surprisal: 3.21, Desc: swinging strike
+  Generating infographic: output/live_tweet_825019_46.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🔀 Fooled him! Elvis Alvarado (R) whiffs Colson Montgomery (L) with a Splitter.
+Prob: 10.8% of Offspeed.
+
+#WhiteSox
+==================================================
+
+Successfully uploaded image output/live_tweet_825019_46.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 825101
+  Pitch: FC, Prob: 0.23, Surprisal: 2.12, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825019
+  Pitch: CU, Prob: 0.19, Surprisal: 2.37, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825019
+  Pitch: SL, Prob: 0.32, Surprisal: 1.64, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825101
+  Skipping pitcher 693686: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 825101
+  Pitch: FC, Prob: 0.23, Surprisal: 2.12, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825019
+  Pitch: FF, Prob: 0.73, Surprisal: 0.46, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823152
+  Pitch: SI, Prob: 0.67, Surprisal: 0.57, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823152
+  Pitch: SI, Prob: 0.47, Surprisal: 1.08, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824048
+  Pitch: SI, Prob: 0.57, Surprisal: 0.80, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824048
+  Pitch: FS, Prob: 0.58, Surprisal: 0.79, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825101
+  Skipping pitcher 642528: insufficient sample (22 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823152
+  Pitch: SI, Prob: 0.77, Surprisal: 0.38, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824048
+  Pitch: SI, Prob: 0.17, Surprisal: 2.57, Desc: called strike
+  Generating infographic: output/live_tweet_824048_58.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🤯 Unbelievable K! Wandy Peralta (L) freezes Logan O'Hoppe (R) with a Sinker.
+Prob: 16.9% of Fastball.
+
+#ForTheFaithful #RepTheHalo
+==================================================
+
+Successfully uploaded image output/live_tweet_824048_58.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 824048
+  Pitch: CH, Prob: 0.56, Surprisal: 0.83, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825019
+  Pitch: FC, Prob: 0.70, Surprisal: 0.52, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825101
+  Skipping pitcher 573009: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824048
+  Skipping pitcher 641312: insufficient sample (23 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 825101
+  Skipping pitcher 623149: insufficient sample (68 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823152
+  Pitch: ST, Prob: 0.31, Surprisal: 1.68, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824048
+  Skipping pitcher 641312: insufficient sample (23 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 825019
+  Pitch: FF, Prob: 0.70, Surprisal: 0.51, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825019
+  Pitch: FC, Prob: 0.79, Surprisal: 0.34, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824048
+  Pitch: ST, Prob: 0.31, Surprisal: 1.67, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825019
+  Pitch: FC, Prob: 0.93, Surprisal: 0.11, Desc: swinging strike
+  Generating infographic: output/live_tweet_825019_74.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+😤 Pure Dominance. Justin Sterner (R) whiffs Andrew Benintendi (L) with a Cutter.
+Prob: 92.9% of Fastball.
+
+#WhiteSox
+==================================================
+
+Successfully uploaded image output/live_tweet_825019_74.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 823152
+  Pitch: SL, Prob: 0.20, Surprisal: 2.36, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825019
+  Skipping pitcher 680951: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824048
+  Pitch: SL, Prob: 0.64, Surprisal: 0.65, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824048
+  Pitch: FS, Prob: 0.01, Surprisal: 6.47, Desc: called strike
+  Generating infographic: output/live_tweet_824048_73.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🥶 Frozen! Jordan Romano (R) freezes Bryce Johnson (L) with a Splitter.
+Prob: 1.1% of Offspeed.
+
+#ForTheFaithful #RepTheHalo
+==================================================
+
+Successfully uploaded image output/live_tweet_824048_73.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 824048
+  Pitch: SL, Prob: 0.59, Surprisal: 0.77, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823152
+  Pitch: ST, Prob: 0.06, Surprisal: 4.07, Desc: swinging strike
+  Generating infographic: output/live_tweet_823152_78.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🔀 Fooled him! Casey Legumina (R) whiffs Danny Jansen (R) with a Sweeper.
+Prob: 5.9% of Breaking Ball.
+
+#AllForTX #TridentsUp
+==================================================
+
+Successfully uploaded image output/live_tweet_823152_78.png
+Tweet posted successfully!
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
