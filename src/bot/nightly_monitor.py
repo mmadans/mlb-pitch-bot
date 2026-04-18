@@ -55,29 +55,91 @@ def load_predictions(db_path: str) -> pd.DataFrame:
     return lp
 
 
-def compute_metrics(lp: pd.DataFrame, log_date: str) -> dict:
+FAMILIES = ["Fastball", "Breaking", "Offspeed"]
+PROB_COLS = ["prob_fastball", "prob_breaking", "prob_offspeed"]
+N_CAL_BINS = 5  # keep bins wide enough to have data on a single game day
+
+
+def compute_error_breakdown(valid_day: pd.DataFrame) -> pd.DataFrame:
+    """
+    For each actual pitch family, compute what fraction the model predicted
+    as each family. Rows = actual, columns = predicted_as_*.
+    Perfect model = 100% on the diagonal.
+    """
+    rows = []
+    for actual in FAMILIES:
+        actual_rows = valid_day[valid_day["actual_pitch_family"] == actual]
+        total = len(actual_rows)
+        row = {"actual_family": actual, "n": total}
+        for pred in FAMILIES:
+            frac = (actual_rows["predicted_family"] == pred).sum() / total if total else float("nan")
+            row[f"predicted_as_{pred.lower()}_pct"] = round(frac * 100, 1)
+        rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def compute_calibration(valid_day: pd.DataFrame) -> pd.DataFrame:
+    """
+    Reliability diagram data: for each pitch family, bin the predicted
+    probability into N_CAL_BINS buckets and compute actual frequency per bucket.
+    Perfect calibration = predicted_prob ≈ actual_freq (points on the diagonal).
+    """
+    bins = np.linspace(0, 1, N_CAL_BINS + 1)
+    bin_midpoints = (bins[:-1] + bins[1:]) / 2
+    rows = []
+    for fam, col in zip(FAMILIES, PROB_COLS):
+        y_true = (valid_day["actual_pitch_family"] == fam).astype(float)
+        y_pred = valid_day[col]
+        bin_indices = np.digitize(y_pred, bins, right=True).clip(1, N_CAL_BINS) - 1
+        for i, mid in enumerate(bin_midpoints):
+            mask = bin_indices == i
+            count = mask.sum()
+            rows.append({
+                "family":         fam,
+                "bin_midpoint":   round(float(mid), 2),
+                "mean_predicted": round(float(y_pred[mask].mean()), 4) if count else float("nan"),
+                "actual_freq":    round(float(y_true[mask].mean()), 4) if count else float("nan"),
+                "count":          int(count),
+            })
+    return pd.DataFrame(rows)
+
+
+def compute_metrics(lp: pd.DataFrame, log_date: str) -> tuple[dict, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     day = lp[lp["date"] == log_date].copy()
     valid_day = day[day["probs_valid"]]
     finite_day = valid_day[valid_day["surprisal_finite"]]
+
+    # Brier score: sum of per-class MSE (standard multi-class Brier)
+    brier = float("nan")
+    if len(valid_day):
+        brier = sum(
+            ((valid_day[col] - (valid_day["actual_pitch_family"] == fam).astype(float)) ** 2).mean()
+            for fam, col in zip(FAMILIES, PROB_COLS)
+        )
 
     metrics = {
         "total_predictions":    len(day),
         "valid_prob_rate":       day["probs_valid"].mean(),
         "finite_surprisal_rate": day["surprisal_finite"].mean() if len(day) else float("nan"),
         "overall_accuracy":      valid_day["correct"].mean() if len(valid_day) else float("nan"),
+        "brier_score":           brier,
         "tweet_rate":            (finite_day["surprisal"] > SURPRISAL_THRESHOLD).mean() if len(finite_day) else float("nan"),
         "mean_surprisal":        finite_day["surprisal"].mean() if len(finite_day) else float("nan"),
     }
 
-    for fam, prob_col in [("Fastball", "prob_fastball"), ("Breaking", "prob_breaking"), ("Offspeed", "prob_offspeed")]:
-        fam_rows = valid_day[valid_day["actual_pitch_family"] == fam]
-        actual_freq = (valid_day["actual_pitch_family"] == fam).mean() if len(valid_day) else float("nan")
-        mean_pred = valid_day[prob_col].mean() if len(valid_day) else float("nan")
-        metrics[f"accuracy_{fam.lower()}"]        = fam_rows["correct"].mean() if len(fam_rows) else float("nan")
-        metrics[f"mean_pred_prob_{fam.lower()}"]  = mean_pred
-        metrics[f"calibration_gap_{fam.lower()}"] = mean_pred - actual_freq
+    for fam, col in zip(FAMILIES, PROB_COLS):
+        cls = fam.lower()
+        actual_rows = valid_day[valid_day["actual_pitch_family"] == fam]
+        actual_freq = len(actual_rows) / len(valid_day) if len(valid_day) else float("nan")
+        mean_pred   = valid_day[col].mean() if len(valid_day) else float("nan")
+        metrics[f"recall_{cls}"]          = actual_rows["correct"].mean() if len(actual_rows) else float("nan")
+        metrics[f"mean_pred_prob_{cls}"]  = mean_pred
+        metrics[f"calibration_gap_{cls}"] = mean_pred - actual_freq
 
-    return metrics, day
+    error_df = compute_error_breakdown(valid_day) if len(valid_day) else pd.DataFrame()
+    cal_df   = compute_calibration(valid_day)     if len(valid_day) else pd.DataFrame()
+
+    return metrics, day, error_df, cal_df
 
 
 def main():
@@ -99,11 +161,19 @@ def main():
     print(f"W&B project   : {os.getenv('WANDB_PROJECT')}")
     print(f"Dry run       : {dry_run}")
 
-    metrics, day = compute_metrics(lp, log_date)
+    metrics, day, error_df, cal_df = compute_metrics(lp, log_date)
 
     print("\nMetrics:")
     for k, v in metrics.items():
         print(f"  {k:<35} {v:.4f}" if isinstance(v, float) else f"  {k:<35} {v}")
+
+    if not error_df.empty:
+        print("\nError breakdown (% predicted as each family):")
+        print(error_df.to_string(index=False))
+
+    if not cal_df.empty:
+        print("\nCalibration (predicted prob vs actual frequency):")
+        print(cal_df.to_string(index=False))
 
     if len(day) == 0:
         print(f"\nNo predictions found for {log_date}. Nothing to log.")
@@ -122,7 +192,11 @@ def main():
                       "predicted_family", "prob_fastball", "prob_breaking", "prob_offspeed",
                       "surprisal", "correct", "pitcher_sample_n", "count_sample_n"]
         available = [c for c in table_cols if c in day.columns]
-        run.log({"predictions": wandb.Table(dataframe=day[available].reset_index(drop=True))})
+        run.log({
+            "predictions":    wandb.Table(dataframe=day[available].reset_index(drop=True)),
+            "error_breakdown": wandb.Table(dataframe=error_df),
+            "calibration":    wandb.Table(dataframe=cal_df),
+        })
         run.finish()
         print(f"\nLogged to W&B: {run_name}")
     else:
