@@ -1,7 +1,7 @@
 import pandas as pd
 import joblib
 import os
-from src.features import (
+from src.features.features import (
     add_global_pitcher_tendencies, 
     add_pitcher_count_tendencies,
     add_batter_count_tendencies,
@@ -9,7 +9,7 @@ from src.features import (
     add_pitcher_out_pitch
 )
 from src.constants import BASELINE_PATH, DATABASE_PATH
-from src.database import query_all_pitches
+from src.data.database import query_all_pitches
 
 def build_baseline(df: pd.DataFrame, output_path: str = BASELINE_PATH):
     """

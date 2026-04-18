@@ -14,17 +14,17 @@ from dotenv import load_dotenv
 from src.constants import (
     DATABASE_PATH, MODEL_PATH, TARGET_ENCODER_PATH, CATEGORICAL_ENCODER_PATH, FEATURE_COLS_PATH
 )
-from src.database import query_all_pitches
-from src.dataset_generator import add_features
-from src.batter_tendency_processing import get_batter_features
+from src.data.database import query_all_pitches
+from src.data.dataset_generator import add_features
+from src.features.batter_tendency_processing import get_batter_features
 
 load_dotenv()
 
 
 
-from src.api_extractors import _classify_pitch_family
-from src.baseline_manager import apply_baseline_to_df
-from src.build_baseline_tendencies import build_baseline
+from src.data.api_extractors import _classify_pitch_family
+from src.features.baseline_manager import apply_baseline_to_df
+from src.features.build_baseline_tendencies import build_baseline
 
 
 def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = True):

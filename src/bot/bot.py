@@ -59,7 +59,7 @@ def post_tweet(tweet_text: str, image_path: str = None):
         print(f"Error posting tweet: {e}")
 
 
-from src.utils import get_pitch_abbr
+from src.bot.utils import get_pitch_abbr
 from src.constants import TEAM_HASHTAGS
 
 def format_surprise_strikeout_tweet(

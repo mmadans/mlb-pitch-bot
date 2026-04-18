@@ -7,7 +7,7 @@ from src.constants import (
     BATTER_FEATURES_PATH
 )
 
-from src.api_extractors import _classify_pitch_family
+from src.data.api_extractors import _classify_pitch_family
 
 class PitchPredictor:
     """
@@ -156,8 +156,8 @@ class PitchPredictor:
         (probabilities, surprisal, actual_family, hydrated_row).
         hydrated_row contains all tendency columns needed for visualization.
         """
-        from src.baseline_manager import apply_baseline_to_df
-        from src.api_extractors import _classify_pitch_family
+        from src.features.baseline_manager import apply_baseline_to_df
+        from src.data.api_extractors import _classify_pitch_family
 
         # Apply strict fallbacks using the dedicated scaler
         hydrated_row = apply_baseline_to_df(inference_row.copy(), baseline, is_train=False)

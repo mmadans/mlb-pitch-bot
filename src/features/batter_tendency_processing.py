@@ -4,7 +4,7 @@ advanced metrics (Whiff, Chase) from historically collected pitch data.
 """
 import pandas as pd
 import statsapi
-from src.api_extractors import _classify_pitch_family
+from src.data.api_extractors import _classify_pitch_family
 
 _SWING_CALLS = {"swinging strike", "foul", "foul tip", "in play", "swinging strike (blocked)"}
 _WHIFF_CALLS = {"swinging strike", "swinging strike (blocked)"}

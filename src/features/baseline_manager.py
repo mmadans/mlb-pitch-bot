@@ -2,8 +2,8 @@
 Machine learning feature scaling and baseline fallback logic.
 """
 import pandas as pd
-from src.api_extractors import _classify_pitch_family
-from src.features import add_contextual_features
+from src.data.api_extractors import _classify_pitch_family
+from src.features.features import add_contextual_features
 
 def apply_baseline_to_df(df: pd.DataFrame, baseline: dict, is_train: bool = False) -> pd.DataFrame:
     """Applies baseline tendency dictionaries to a DataFrame securely, unifying offline and online features."""

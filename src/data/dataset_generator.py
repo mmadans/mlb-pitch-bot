@@ -11,7 +11,7 @@ import os
 import pandas as pd
 import statsapi
 
-from src.features import (
+from src.features.features import (
     add_contextual_features,
     add_global_pitcher_tendencies,
     add_pitcher_count_tendencies,
@@ -19,8 +19,8 @@ from src.features import (
     add_league_count_tendencies,
     add_pitcher_out_pitch,
 )
-from src.api_extractors import extract_pitches_with_context
-from src.database import save_pitches_to_db
+from src.data.api_extractors import extract_pitches_with_context
+from src.data.database import save_pitches_to_db
 
 
 def get_date_range(days: int) -> tuple[str, str]:

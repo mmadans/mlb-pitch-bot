@@ -12,12 +12,12 @@ import os
 import joblib
 from dotenv import load_dotenv
 
-from src.api_extractors import extract_pitches_with_context, _classify_pitch_family
-from src.features import add_contextual_features
-from src.inference import PitchPredictor
-from src.bot import post_tweet, format_tweet, format_surprise_strikeout_tweet
-from src.database import create_live_predictions_table, insert_live_prediction
-from src.visualization import generate_pitch_infographic
+from src.data.api_extractors import extract_pitches_with_context, _classify_pitch_family
+from src.features.features import add_contextual_features
+from src.model.inference import PitchPredictor
+from src.bot.bot import post_tweet, format_tweet, format_surprise_strikeout_tweet
+from src.data.database import create_live_predictions_table, insert_live_prediction
+from src.bot.visualization import generate_pitch_infographic
 from src.constants import (
     POLLING_INTERVAL_SECONDS,
     SURPRISAL_THRESHOLD,
@@ -161,7 +161,7 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             probabilities, surprisal, actual_pitch_family, hydrated_row = predictor.hydrate_and_predict(row, baseline)
         else:
             print("  Warning: Baseline tendencies not loaded. Expect surprises in predictions.")
-            from src.features import add_contextual_features
+            from src.features.features import add_contextual_features
             row = add_contextual_features(row)
             actual_pitch_family = _classify_pitch_family(actual_pitch_code)
             probabilities = predictor.predict_probabilities(row)
