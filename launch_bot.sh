@@ -2,4 +2,4 @@
 # MLB Pitch Bot Launch Script
 
 echo "🚀 Launching MLB Pitch Bot..."
-./.venv/bin/python3 -m src.live_game_tracker
+uv run python -m src.live_game_tracker

@@ -13,5 +13,8 @@ data/
 models/
 .ipynb_checkpoints/
 /.cursor
-output/*.png
+output/
+logs/
 wandb/
+*.log
+mlb_pitches.db
