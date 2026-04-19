@@ -44,6 +44,13 @@ matchup_tracker = {} # (game_pk, pitcher_id, batter_id) -> count
 pending_tweets = [] # list of dicts: {'post_at': timestamp, 'text': string, 'game_pk': int, 'play_id': str}
 baseline = None # Global baseline to be loaded in main()
 
+# --- Session counters (reset each run in main()) ---
+_session_predictions = 0
+_session_tweets = 0
+_session_games: set = set()
+_pitch_type_counts: dict = {"Fastball": 0, "Breaking": 0, "Offspeed": 0}
+_error_counts: dict     = {"Fastball": 0, "Breaking": 0, "Offspeed": 0}
+
 def get_live_game_pks():
     """Fetches gamePks for games that are currently live."""
     try:
@@ -205,19 +212,31 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
 
         # W&B — per-pitch online logging
         try:
+            global _session_predictions, _session_games, _pitch_type_counts, _error_counts
             predicted_family = max(probabilities, key=probabilities.get)
+            is_correct = int(predicted_family == actual_pitch_family)
+
+            _session_predictions += 1
+            _session_games.add(game_pk)
+            if actual_pitch_family in _pitch_type_counts:
+                _pitch_type_counts[actual_pitch_family] += 1
+            if not is_correct and actual_pitch_family in _error_counts:
+                _error_counts[actual_pitch_family] += 1
+
             wandb.log({
-                "surprisal":        surprisal if surprisal != float("inf") else None,
-                "prob_fastball":    probabilities.get("Fastball", 0),
-                "prob_breaking":    probabilities.get("Breaking", 0),
-                "prob_offspeed":    probabilities.get("Offspeed", 0),
-                "actual_family":    actual_pitch_family,
-                "predicted_family": predicted_family,
-                "correct":          int(predicted_family == actual_pitch_family),
-                "pitcher_sample_n": pitcher_sample_n,
-                "count_sample_n":   count_sample_n,
-                "outcome":          outcome_str,
-                "game_pk":          game_pk,
+                "surprisal":              surprisal if surprisal != float("inf") else None,
+                "prob_fastball":          probabilities.get("Fastball", 0),
+                "prob_breaking":          probabilities.get("Breaking", 0),
+                "prob_offspeed":          probabilities.get("Offspeed", 0),
+                "actual_family":          actual_pitch_family,
+                "predicted_family":       predicted_family,
+                "correct":                is_correct,
+                "error":                  1 - is_correct,
+                "cumulative_predictions": _session_predictions,
+                "pitcher_sample_n":       pitcher_sample_n,
+                "count_sample_n":         count_sample_n,
+                "outcome":                outcome_str,
+                "game_pk":                game_pk,
             })
         except Exception as e:
             print(f"  Warning: W&B log failed: {e}")
@@ -310,7 +329,13 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             print("🚀 [POSTING LIVE TWEET]")
             print(tweet_text)
             print("="*50 + "\n")
-            post_tweet(tweet_text, image_path=image_path) # Enable for production
+            post_tweet(tweet_text, image_path=image_path)
+            global _session_tweets
+            _session_tweets += 1
+            try:
+                wandb.log({"cumulative_tweets": _session_tweets})
+            except Exception:
+                pass
 
         elif tweet_logic: # Fallback for non-strikeout surprises (hard hits)
             pitcher_name = current_play.get('matchup', {}).get('pitcher', {}).get('fullName')
@@ -335,9 +360,14 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
 
 
 def main():
-    global baseline
+    global baseline, _session_predictions, _session_tweets, _session_games, _pitch_type_counts, _error_counts
     print("Starting MLB Live Game Tracker (Simulation Mode)...")
     processed_pitches.clear()
+    _session_predictions = 0
+    _session_tweets = 0
+    _session_games = set()
+    _pitch_type_counts = {"Fastball": 0, "Breaking": 0, "Offspeed": 0}
+    _error_counts      = {"Fastball": 0, "Breaking": 0, "Offspeed": 0}
     create_live_predictions_table()
 
     # Initialise W&B run for today's game session
@@ -408,6 +438,31 @@ def main():
     except KeyboardInterrupt:
         print("\nTracker stopped.")
     finally:
+        try:
+            tweet_pct = _session_tweets / _session_predictions if _session_predictions else 0.0
+            wandb.summary.update({
+                "total_games":       len(_session_games),
+                "total_predictions": _session_predictions,
+                "total_tweets":      _session_tweets,
+                "tweet_pct":         tweet_pct,
+            })
+
+            # Pitch type distribution table (for pie chart)
+            pitch_dist = wandb.Table(
+                columns=["pitch_family", "count"],
+                data=[[fam, cnt] for fam, cnt in _pitch_type_counts.items()]
+            )
+            # Error distribution table (for pie chart)
+            error_dist = wandb.Table(
+                columns=["pitch_family", "errors"],
+                data=[[fam, cnt] for fam, cnt in _error_counts.items()]
+            )
+            wandb.log({
+                "pitch_type_distribution": pitch_dist,
+                "error_distribution":      error_dist,
+            })
+        except Exception as e:
+            print(f"Warning: W&B session summary failed: {e}")
         wandb.finish()
 
 if __name__ == "__main__":

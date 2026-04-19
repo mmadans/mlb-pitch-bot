@@ -104,6 +104,45 @@ def compute_calibration(valid_day: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def compute_surprisal_histogram(valid_day: pd.DataFrame):
+    """wandb.Histogram of surprisal values for the day."""
+    finite = valid_day[np.isfinite(valid_day["surprisal"].fillna(float("nan")))]
+    if len(finite) == 0:
+        return None
+    return wandb.Histogram(finite["surprisal"].tolist())
+
+
+def compute_pitcher_errors(valid_day: pd.DataFrame) -> pd.DataFrame:
+    """Per-pitcher prediction accuracy, sorted by error rate descending."""
+    if "pitcher_name" not in valid_day.columns or valid_day.empty:
+        return pd.DataFrame()
+    grp = valid_day.groupby("pitcher_name").agg(
+        predictions=("correct", "count"),
+        correct=("correct", "sum"),
+    ).reset_index()
+    grp["errors"]     = grp["predictions"] - grp["correct"]
+    grp["error_rate"] = (grp["errors"] / grp["predictions"]).round(3)
+    return grp.sort_values("error_rate", ascending=False).reset_index(drop=True)
+
+
+def compute_sample_size_dist(valid_day: pd.DataFrame) -> pd.DataFrame:
+    """
+    Distribution of pitcher_sample_n values in buckets.
+    Shows how often the model is operating on sparse vs rich pitcher history.
+    """
+    if "pitcher_sample_n" not in valid_day.columns or valid_day.empty:
+        return pd.DataFrame()
+    buckets = [75, 100, 150, 200, 300, float("inf")]
+    labels  = ["75-100", "100-150", "150-200", "200-300", "300+"]
+    rows = []
+    s = valid_day["pitcher_sample_n"].dropna()
+    for i, label in enumerate(labels):
+        lo, hi = buckets[i], buckets[i + 1]
+        count = ((s >= lo) & (s < hi)).sum()
+        rows.append({"sample_bucket": label, "count": int(count)})
+    return pd.DataFrame(rows)
+
+
 def compute_metrics(lp: pd.DataFrame, log_date: str) -> tuple[dict, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     day = lp[lp["date"] == log_date].copy()
     valid_day = day[day["probs_valid"]]
@@ -135,10 +174,13 @@ def compute_metrics(lp: pd.DataFrame, log_date: str) -> tuple[dict, pd.DataFrame
         metrics[f"mean_pred_prob_{cls}"]  = mean_pred
         metrics[f"calibration_gap_{cls}"] = mean_pred - actual_freq
 
-    error_df = compute_error_breakdown(valid_day) if len(valid_day) else pd.DataFrame()
-    cal_df   = compute_calibration(valid_day)     if len(valid_day) else pd.DataFrame()
+    error_df      = compute_error_breakdown(valid_day)  if len(valid_day) else pd.DataFrame()
+    cal_df        = compute_calibration(valid_day)       if len(valid_day) else pd.DataFrame()
+    pitcher_df    = compute_pitcher_errors(valid_day)    if len(valid_day) else pd.DataFrame()
+    sample_df     = compute_sample_size_dist(valid_day)  if len(valid_day) else pd.DataFrame()
+    surprisal_hist = compute_surprisal_histogram(valid_day) if len(valid_day) else None
 
-    return metrics, day, error_df, cal_df
+    return metrics, day, error_df, cal_df, pitcher_df, sample_df, surprisal_hist
 
 
 def main():
@@ -160,7 +202,7 @@ def main():
     print(f"W&B project   : {os.getenv('WANDB_PROJECT')}")
     print(f"Dry run       : {dry_run}")
 
-    metrics, day, error_df, cal_df = compute_metrics(lp, log_date)
+    metrics, day, error_df, cal_df, pitcher_df, sample_df, surprisal_hist = compute_metrics(lp, log_date)
 
     print("\nMetrics:")
     for k, v in metrics.items():
@@ -173,6 +215,14 @@ def main():
     if not cal_df.empty:
         print("\nCalibration (predicted prob vs actual frequency):")
         print(cal_df.to_string(index=False))
+
+    if not pitcher_df.empty:
+        print("\nPer-pitcher error rate (top 10):")
+        print(pitcher_df.head(10).to_string(index=False))
+
+    if not sample_df.empty:
+        print("\nPitcher sample size distribution:")
+        print(sample_df.to_string(index=False))
 
     if len(day) == 0:
         print(f"\nNo predictions found for {log_date}. Nothing to log.")
@@ -191,11 +241,25 @@ def main():
                       "predicted_family", "prob_fastball", "prob_breaking", "prob_offspeed",
                       "surprisal", "correct", "pitcher_sample_n", "count_sample_n"]
         available = [c for c in table_cols if c in day.columns]
-        run.log({
-            "predictions":    wandb.Table(dataframe=day[available].reset_index(drop=True)),
-            "error_breakdown": wandb.Table(dataframe=error_df),
-            "calibration":    wandb.Table(dataframe=cal_df),
-        })
+        valid_day = day[day["probs_valid"] & day["predicted_family"].notna()]
+        confusion_matrix = wandb.plot.confusion_matrix(
+            y_true=valid_day["actual_pitch_family"].tolist(),
+            preds=valid_day["predicted_family"].tolist(),
+            class_names=FAMILIES,
+        )
+        to_log = {
+            "predictions":      wandb.Table(dataframe=day[available].reset_index(drop=True)),
+            "error_breakdown":  wandb.Table(dataframe=error_df),
+            "calibration":      wandb.Table(dataframe=cal_df),
+            "confusion_matrix": confusion_matrix,
+        }
+        if not pitcher_df.empty:
+            to_log["pitcher_errors"] = wandb.Table(dataframe=pitcher_df)
+        if not sample_df.empty:
+            to_log["sample_size_distribution"] = wandb.Table(dataframe=sample_df)
+        if surprisal_hist is not None:
+            to_log["surprisal_distribution"] = surprisal_hist
+        run.log(to_log)
         run.finish()
         print(f"\nLogged to W&B: {run_name}")
     else:
