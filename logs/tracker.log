@@ -3217,4 +3217,647 @@ Waiting for live games... (Interval: 30s)
 Waiting for live games... (Interval: 30s)
 Waiting for live games... (Interval: 30s)
 Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: offscriptpitch (offscriptpitch-) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run rqqcyuod
+wandb: Tracking run with wandb version 0.26.0
+wandb: Run data is saved locally in /Users/michael/Documents/Data Projects/mlb-pitch-bot/wandb/run-20260418_124158-rqqcyuod
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run live-2026-04-18
+wandb: ⭐️ View project at https://wandb.ai/offscriptpitch-/PitchBot
+wandb: 🚀 View run at https://wandb.ai/offscriptpitch-/PitchBot/runs/rqqcyuod
+Starting MLB Live Game Tracker (Simulation Mode)...
+Model and Baseline loaded.
+Initializing: Skipping already completed pitches in live games...
+Initialization complete. Monitoring 0 games.
 Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Analyzing interesting outcome: strikeout in game 823558
+  Pitch: FF, Prob: 0.45, Surprisal: 1.14, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823558
+  Pitch: FF, Prob: 0.54, Surprisal: 0.88, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Waiting for live games... (Interval: 30s)
+Waiting for live games... (Interval: 30s)
+Analyzing interesting outcome: strikeout in game 823558
+  Pitch: FF, Prob: 0.61, Surprisal: 0.72, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823558
+  Pitch: SI, Prob: 0.42, Surprisal: 1.24, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823558
+  Pitch: CU, Prob: 0.28, Surprisal: 1.83, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823558
+  Pitch: SI, Prob: 0.61, Surprisal: 0.71, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823721
+  Pitch: CH, Prob: 0.36, Surprisal: 1.49, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824694
+  Pitch: FF, Prob: 0.38, Surprisal: 1.39, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823721
+  Pitch: FF, Prob: 0.47, Surprisal: 1.09, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823558
+  Pitch: FF, Prob: 0.49, Surprisal: 1.03, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823558
+  Pitch: CH, Prob: 0.34, Surprisal: 1.58, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823721
+  Pitch: ST, Prob: 0.58, Surprisal: 0.79, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823558
+  Pitch: FF, Prob: 0.70, Surprisal: 0.51, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823558
+  Pitch: SI, Prob: 0.40, Surprisal: 1.32, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823558
+  Pitch: SI, Prob: 0.74, Surprisal: 0.43, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823721
+  Pitch: CU, Prob: 0.23, Surprisal: 2.11, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824694
+  Pitch: FF, Prob: 0.21, Surprisal: 2.22, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823558
+  Pitch: CU, Prob: 0.73, Surprisal: 0.46, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823558
+  Pitch: CH, Prob: 0.23, Surprisal: 2.12, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824694
+  Pitch: FC, Prob: 0.52, Surprisal: 0.93, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824694
+  Pitch: FF, Prob: 0.48, Surprisal: 1.06, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823558
+  Pitch: FC, Prob: 0.20, Surprisal: 2.30, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824694
+  Pitch: CS, Prob: 0.60, Surprisal: 0.75, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824694
+  Pitch: ST, Prob: 0.38, Surprisal: 1.38, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823558
+  Pitch: CH, Prob: 0.25, Surprisal: 2.00, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823721
+  Pitch: FC, Prob: 0.50, Surprisal: 1.00, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824694
+  Pitch: CH, Prob: 0.25, Surprisal: 1.99, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823721
+  Pitch: ST, Prob: 0.85, Surprisal: 0.23, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823721
+  Pitch: FF, Prob: 0.43, Surprisal: 1.22, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823558
+  Pitch: CU, Prob: 0.74, Surprisal: 0.43, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823721
+  Pitch: FF, Prob: 0.37, Surprisal: 1.45, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823721
+  Pitch: CU, Prob: 0.22, Surprisal: 2.21, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823721
+  Pitch: CU, Prob: 0.83, Surprisal: 0.27, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823721
+  Pitch: FF, Prob: 0.13, Surprisal: 2.92, Desc: foul tip
+  Generating infographic: output/live_tweet_823721_54.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🔀 Fooled him! Pierce Johnson (R) whiffs Josh Bell (L) with a Four-Seam Fastball.
+Prob: 13.2% of Fastball.
+
+#ATOBTTR #MNTwins
+==================================================
+
+Successfully uploaded image output/live_tweet_823721_54.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 822751
+  Pitch: SI, Prob: 0.31, Surprisal: 1.70, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823558
+  Pitch: FC, Prob: 0.52, Surprisal: 0.94, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823394
+  Pitch: FF, Prob: 0.88, Surprisal: 0.19, Desc: foul tip
+  Generating infographic: output/live_tweet_823394_17.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+😤 Pure Dominance. Drew Rasmussen (R) whiffs Konnor Griffin (R) with a Four-Seam Fastball.
+Prob: 87.9% of Fastball.
+
+#RaysUp #LetsGoBucs
+==================================================
+
+Successfully uploaded image output/live_tweet_823394_17.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 825020
+  Pitch: ST, Prob: 0.68, Surprisal: 0.56, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823721
+  Pitch: CH, Prob: 0.51, Surprisal: 0.96, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824775
+  Pitch: FC, Prob: 0.63, Surprisal: 0.66, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823394
+  Pitch: SI, Prob: 0.45, Surprisal: 1.15, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822751
+  Pitch: FC, Prob: 0.30, Surprisal: 1.74, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823394
+  Pitch: FF, Prob: 0.49, Surprisal: 1.02, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825020
+  Pitch: ST, Prob: 0.39, Surprisal: 1.37, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824775
+  Pitch: FC, Prob: 0.39, Surprisal: 1.35, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823882
+  Pitch: CH, Prob: 0.31, Surprisal: 1.69, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825020
+  Pitch: ST, Prob: 0.25, Surprisal: 1.97, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823394
+  Pitch: SI, Prob: 0.30, Surprisal: 1.75, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823394
+  Pitch: FF, Prob: 0.34, Surprisal: 1.55, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822751
+  Pitch: FF, Prob: 0.29, Surprisal: 1.80, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824694
+  Pitch: KC, Prob: 0.71, Surprisal: 0.49, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825020
+  Pitch: ST, Prob: 0.45, Surprisal: 1.15, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824775
+  Pitch: FF, Prob: 0.38, Surprisal: 1.39, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823394
+  Pitch: SI, Prob: 0.87, Surprisal: 0.20, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823721
+  Pitch: SL, Prob: 0.26, Surprisal: 1.93, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822751
+  Pitch: CH, Prob: 0.29, Surprisal: 1.80, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823394
+  Pitch: FF, Prob: 0.78, Surprisal: 0.36, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824775
+  Pitch: FF, Prob: 0.29, Surprisal: 1.77, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823721
+  Skipping pitcher 679358: insufficient sample (65 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824775
+  Pitch: FF, Prob: 0.62, Surprisal: 0.69, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824775
+  Pitch: CH, Prob: 0.56, Surprisal: 0.82, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824694
+  Pitch: CU, Prob: 0.74, Surprisal: 0.44, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824694
+  Pitch: FF, Prob: 0.48, Surprisal: 1.05, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823721
+  Pitch: FF, Prob: 0.17, Surprisal: 2.52, Desc: swinging strike
+  Generating infographic: output/live_tweet_823721_71.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🤯 Unbelievable K! Kyle Nicolas (R) whiffs Byron Buxton (R) with a Four-Seam Fastball.
+Prob: 17.4% of Fastball.
+
+#ATOBTTR #MNTwins
+==================================================
+
+Successfully uploaded image output/live_tweet_823721_71.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 823721
+  Pitch: CU, Prob: 0.59, Surprisal: 0.75, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823721
+  Pitch: FF, Prob: 0.16, Surprisal: 2.67, Desc: called strike
+  Generating infographic: output/live_tweet_823721_73.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🤯 Unbelievable K! Kyle Nicolas (R) freezes Kody Clemens (L) with a Four-Seam Fastball.
+Prob: 15.8% of Fastball.
+
+#ATOBTTR #MNTwins
+==================================================
+
+Successfully uploaded image output/live_tweet_823721_73.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 823882
+  Pitch: CH, Prob: 0.48, Surprisal: 1.05, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824775
+  Pitch: SI, Prob: 0.32, Surprisal: 1.63, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824775
+  Pitch: FC, Prob: 0.51, Surprisal: 0.98, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825020
+  Pitch: FF, Prob: 0.44, Surprisal: 1.19, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823721
+  Pitch: FF, Prob: 0.65, Surprisal: 0.63, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825020
+  Pitch: ST, Prob: 0.43, Surprisal: 1.22, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824775
+  Pitch: FC, Prob: 0.63, Surprisal: 0.66, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824775
+  Pitch: SI, Prob: 0.40, Surprisal: 1.32, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824775
+  Pitch: CH, Prob: 0.49, Surprisal: 1.02, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822751
+  Pitch: KC, Prob: 0.55, Surprisal: 0.86, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823882
+  Pitch: FF, Prob: 0.43, Surprisal: 1.23, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824775
+  Pitch: CH, Prob: 0.71, Surprisal: 0.49, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822751
+  Pitch: SI, Prob: 0.40, Surprisal: 1.31, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824775
+  Pitch: FC, Prob: 0.40, Surprisal: 1.33, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823882
+  Pitch: ST, Prob: 0.94, Surprisal: 0.09, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823882
+  Pitch: ST, Prob: 0.88, Surprisal: 0.18, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822751
+  Pitch: FF, Prob: 0.15, Surprisal: 2.74, Desc: swinging strike
+  Generating infographic: output/live_tweet_822751_49.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🔀 Fooled him! Mitchell Parker (L) whiffs Drew Gilbert (L) with a Four-Seam Fastball.
+Prob: 15.0% of Fastball.
+
+#SFGiants #Natitude
+==================================================
+
+Successfully uploaded image output/live_tweet_822751_49.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 824775
+  Pitch: CH, Prob: 0.65, Surprisal: 0.62, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822751
+  Pitch: SL, Prob: 0.19, Surprisal: 2.37, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823882
+  Pitch: CH, Prob: 0.41, Surprisal: 1.29, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824775
+  Pitch: FF, Prob: 0.30, Surprisal: 1.74, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822751
+  Pitch: SL, Prob: 0.53, Surprisal: 0.90, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824775
+  Pitch: FC, Prob: 0.38, Surprisal: 1.39, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823882
+  Pitch: FF, Prob: 0.17, Surprisal: 2.52, Desc: swinging strike
+  Generating infographic: output/live_tweet_823882_55.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🤯 Unbelievable K! Lake Bachar (R) whiffs Garrett Mitchell (L) with a Four-Seam Fastball.
+Prob: 17.5% of Fastball.
+
+#ThisIsMyCrew #FightinFish
+==================================================
+
+Successfully uploaded image output/live_tweet_823882_55.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 824451
+  Pitch: ST, Prob: 0.79, Surprisal: 0.34, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824451
+  Pitch: CU, Prob: 0.65, Surprisal: 0.62, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824451
+  Pitch: FF, Prob: 0.27, Surprisal: 1.89, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822751
+  Skipping pitcher 669062: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 822751
+  Skipping pitcher 669062: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823882
+  Pitch: FF, Prob: 0.64, Surprisal: 0.64, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824775
+  Pitch: SI, Prob: 0.68, Surprisal: 0.55, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824451
+  Pitch: FS, Prob: 0.67, Surprisal: 0.59, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825020
+  Pitch: FF, Prob: 0.56, Surprisal: 0.84, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822751
+  Skipping pitcher 681402: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824451
+  Pitch: CU, Prob: 0.65, Surprisal: 0.63, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822751
+  Skipping pitcher 681402: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 825020
+  Pitch: FF, Prob: 0.48, Surprisal: 1.05, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825020
+  Pitch: FS, Prob: 0.76, Surprisal: 0.40, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824451
+  Pitch: FS, Prob: 0.52, Surprisal: 0.93, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824451
+  Pitch: FF, Prob: 0.49, Surprisal: 1.03, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823882
+  Pitch: SI, Prob: 0.27, Surprisal: 1.90, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824451
+  Pitch: CU, Prob: 0.67, Surprisal: 0.59, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825020
+  Pitch: FF, Prob: 0.35, Surprisal: 1.52, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824451
+  Pitch: ST, Prob: 0.72, Surprisal: 0.46, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822751
+  Skipping pitcher 663992: insufficient sample (47 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 822751
+  Skipping pitcher 663992: insufficient sample (47 pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824451
+  Pitch: FF, Prob: 0.31, Surprisal: 1.69, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824451
+  Pitch: FF, Prob: 0.32, Surprisal: 1.66, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822751
+  Pitch: SI, Prob: 0.10, Surprisal: 3.33, Desc: swinging strike
+  Generating infographic: output/live_tweet_822751_85.png
+
+==================================================
+🚀 [POSTING LIVE TWEET]
+🔀 Fooled him! Ryan Walker (R) whiffs Daylen Lile (L) with a Sinker.
+Prob: 10.0% of Fastball.
+
+#SFGiants #Natitude
+==================================================
+
+Successfully uploaded image output/live_tweet_822751_85.png
+Tweet posted successfully!
+Analyzing interesting outcome: strikeout in game 822751
+  Pitch: SI, Prob: 0.62, Surprisal: 0.69, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823394
+  Pitch: SL, Prob: 0.33, Surprisal: 1.59, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823394
+  Pitch: CH, Prob: 0.21, Surprisal: 2.25, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824206
+  Pitch: ST, Prob: 0.67, Surprisal: 0.57, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823151
+  Pitch: FF, Prob: 0.40, Surprisal: 1.33, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824451
+  Pitch: ST, Prob: 0.77, Surprisal: 0.37, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823151
+  Pitch: SL, Prob: 0.41, Surprisal: 1.30, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822751
+  Skipping pitcher 668873: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 823474
+  Pitch: SL, Prob: 0.74, Surprisal: 0.43, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825020
+  Pitch: FF, Prob: 0.19, Surprisal: 2.36, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824206
+  Pitch: KC, Prob: 0.36, Surprisal: 1.48, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824451
+  Pitch: FS, Prob: 0.73, Surprisal: 0.46, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 825020
+  Pitch: FF, Prob: 0.25, Surprisal: 1.97, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823151
+  Pitch: FC, Prob: 0.20, Surprisal: 2.30, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824451
+  Pitch: FS, Prob: 0.51, Surprisal: 0.96, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823394
+  Pitch: CH, Prob: 0.57, Surprisal: 0.82, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 822751
+  Skipping pitcher 668873: insufficient sample (None pitches, need 75).
+Analyzing interesting outcome: strikeout in game 824451
+  Pitch: ST, Prob: 0.76, Surprisal: 0.40, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824206
+  Pitch: SI, Prob: 0.22, Surprisal: 2.19, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823474
+  Pitch: CH, Prob: 0.68, Surprisal: 0.56, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824451
+  Pitch: CU, Prob: 0.80, Surprisal: 0.32, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823394
+  Pitch: SI, Prob: 0.28, Surprisal: 1.84, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823474
+  Pitch: CH, Prob: 0.37, Surprisal: 1.44, Desc: foul tip
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823394
+  Pitch: CU, Prob: 0.57, Surprisal: 0.80, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824451
+  Pitch: FS, Prob: 0.56, Surprisal: 0.83, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823151
+  Pitch: SI, Prob: 0.79, Surprisal: 0.35, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823474
+  Pitch: SL, Prob: 0.59, Surprisal: 0.75, Desc: swinging strike (blocked)
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823474
+  Pitch: SL, Prob: 0.75, Surprisal: 0.41, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823394
+  Pitch: CH, Prob: 0.48, Surprisal: 1.06, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 824451
+  Pitch: ST, Prob: 0.80, Surprisal: 0.32, Desc: called strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823394
+  Pitch: FF, Prob: 0.30, Surprisal: 1.76, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823151
+  Pitch: FF, Prob: 0.25, Surprisal: 2.00, Desc: swinging strike
+  Skipping: Not a significant surprise/outcome combo.
+Analyzing interesting outcome: strikeout in game 823474
+  Pitch: SL, Prob: 0.08, Surprisal: 3.69, Desc: swinging strike
+  Generating infographic: output/live_tweet_823474_17.png
+
+==================================================

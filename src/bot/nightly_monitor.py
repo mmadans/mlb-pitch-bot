@@ -119,7 +119,6 @@ def compute_metrics(lp: pd.DataFrame, log_date: str) -> tuple[dict, pd.DataFrame
 
     metrics = {
         "total_predictions":    len(day),
-        "valid_prob_rate":       day["probs_valid"].mean(),
         "finite_surprisal_rate": day["surprisal_finite"].mean() if len(day) else float("nan"),
         "overall_accuracy":      valid_day["correct"].mean() if len(valid_day) else float("nan"),
         "brier_score":           brier,

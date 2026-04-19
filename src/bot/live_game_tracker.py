@@ -344,6 +344,7 @@ def main():
     wandb.init(
         project=os.getenv("WANDB_PROJECT", "mlb-pitch-bot"),
         name=f"live-{datetime.now().strftime('%Y-%m-%d')}",
+        job_type="live-tracking",
         config={
             "surprisal_threshold": SURPRISAL_THRESHOLD,
             "min_pitcher_sample":  MIN_PITCHER_SAMPLE,
