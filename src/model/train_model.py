@@ -7,12 +7,14 @@ import pandas as pd
 from pathlib import Path
 from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 import argparse
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report, balanced_accuracy_score, confusion_matrix
 from xgboost import XGBClassifier
 from dotenv import load_dotenv
 from src.constants import (
-    DATABASE_PATH, MODEL_PATH, TARGET_ENCODER_PATH, CATEGORICAL_ENCODER_PATH, FEATURE_COLS_PATH
+    DATABASE_PATH, MODEL_PATH, TARGET_ENCODER_PATH, CATEGORICAL_ENCODER_PATH,
+    FEATURE_COLS_PATH, BATTER_FEATURES_PATH
 )
 from src.data.database import query_all_pitches
 from src.data.dataset_generator import add_features
@@ -156,6 +158,7 @@ def main(tune: bool = False) -> None:
                 "class_balancing": "inverse_frequency",
                 "leverage_weight": 2.0,
                 "train_test_split": "chronological_80_20",
+                "calibration": "isotonic_prefit_holdout",
             },
         )
     except Exception as e:
@@ -247,7 +250,6 @@ def main(tune: bool = False) -> None:
         objective="multi:softprob",
         eval_metric="mlogloss",
         random_state=42,
-        use_label_encoder=False,
         n_jobs=-1
     )
 
@@ -261,12 +263,10 @@ def main(tune: bool = False) -> None:
         grid_search.fit(X_train, y_train, sample_weight=w_train)
         print(f"Best parameters found: {grid_search.best_params_}")
         best_estimator = grid_search.best_estimator_
+        model = best_estimator
     else:
-        best_estimator = base_model
-
-    print("Fitting model...")
-    model = best_estimator
-    if not tune:
+        print("Fitting model...")
+        model = base_model
         model.fit(X_train, y_train, sample_weight=w_train)
 
     y_pred = model.predict(X_test)
@@ -287,8 +287,10 @@ def main(tune: bool = False) -> None:
     print(f"Brier Score (MSE): {brier:.4f}\n")
 
     print("Detailed Classification Report (Checking if we over-predict Fastballs):")
-    report_dict = classification_report(y_test, y_pred, target_names=le.classes_, output_dict=True)
-    print(classification_report(y_test, y_pred, target_names=le.classes_))
+    y_pred_names = le.inverse_transform(y_pred)
+    y_test_names = le.inverse_transform(y_test)
+    report_dict = classification_report(y_test_names, y_pred_names, target_names=le.classes_, output_dict=True)
+    print(classification_report(y_test_names, y_pred_names, target_names=le.classes_))
 
     print("\nText-based Confusion Matrix (Rows=Actual, Cols=Predicted):")
     cm = confusion_matrix(y_test, y_pred)
@@ -297,6 +299,10 @@ def main(tune: bool = False) -> None:
 
     if wandb_run is not None:
         try:
+            import numpy as np
+            from sklearn.preprocessing import label_binarize
+
+            # ── scalar metrics ────────────────────────────────────────────
             wandb_metrics = {
                 "accuracy":          acc,
                 "balanced_accuracy": bal_acc,
@@ -314,9 +320,81 @@ def main(tune: bool = False) -> None:
             if tune and hasattr(best_estimator, "best_params_"):
                 wandb_run.config.update(grid_search.best_params_)
             wandb_run.log(wandb_metrics)
-            wandb_run.log({"confusion_matrix": wandb.Table(dataframe=cm_df.reset_index().rename(columns={"index": "actual"}))})
+
+            # ── training data date range (config provenance) ──────────────
+            if "game_date" in df.columns:
+                train_dates = df.iloc[:split_idx]["game_date"]
+                test_dates  = df.iloc[split_idx:]["game_date"]
+                wandb_run.config.update({
+                    "train_start": str(train_dates.min().date()),
+                    "train_end":   str(train_dates.max().date()),
+                    "test_start":  str(test_dates.min().date()),
+                    "test_end":    str(test_dates.max().date()),
+                })
+
+            # ── class distribution (train vs test) ────────────────────────
+            train_labels = le.inverse_transform(y_train)
+            test_labels  = le.inverse_transform(y_test)
+            class_dist_rows = []
+            for cls in le.classes_:
+                class_dist_rows.append({
+                    "class":      cls,
+                    "train_n":    int((train_labels == cls).sum()),
+                    "train_pct":  round((train_labels == cls).mean() * 100, 1),
+                    "test_n":     int((test_labels == cls).sum()),
+                    "test_pct":   round((test_labels == cls).mean() * 100, 1),
+                })
+            wandb_run.log({"class_distribution": wandb.Table(
+                dataframe=pd.DataFrame(class_dist_rows)
+            )})
+
+            # ── confusion matrix (heatmap) ────────────────────────────────
+            # wandb 0.26+: when class_names is provided, y_true/preds must be
+            # integer indices (0..N-1), not string labels.
+            wandb_run.log({"confusion_matrix": wandb.plot.confusion_matrix(
+                y_true=y_test.tolist(),
+                preds=y_pred.tolist(),
+                class_names=le.classes_.tolist(),
+            )})
+
+            # ── feature importance (top 30) ───────────────────────────────
+            base_est = model.estimator if hasattr(model, "estimator") else model
+            if hasattr(base_est, "feature_importances_"):
+                importance_df = pd.DataFrame({
+                    "feature":    feature_cols,
+                    "importance": base_est.feature_importances_,
+                }).sort_values("importance", ascending=False).head(30).reset_index(drop=True)
+                wandb_run.log({"feature_importance": wandb.Table(dataframe=importance_df)})
+
+            # ── calibration curve on test set ─────────────────────────────
+            N_CAL_BINS = 5
+            bins = np.linspace(0, 1, N_CAL_BINS + 1)
+            bin_midpoints = (bins[:-1] + bins[1:]) / 2
+            cal_rows = []
+            for i, cls in enumerate(le.classes_):
+                y_true_bin = (y_test == i).astype(float)
+                y_pred_prob = y_prob[:, i]
+                bin_idx = np.digitize(y_pred_prob, bins, right=True).clip(1, N_CAL_BINS) - 1
+                for b, mid in enumerate(bin_midpoints):
+                    mask = bin_idx == b
+                    count = mask.sum()
+                    cal_rows.append({
+                        "family":         cls,
+                        "bin_midpoint":   round(float(mid), 2),
+                        "mean_predicted": round(float(y_pred_prob[mask].mean()), 4) if count else float("nan"),
+                        "actual_freq":    round(float(y_true_bin[mask].mean()), 4) if count else float("nan"),
+                        "count":          int(count),
+                    })
+            wandb_run.log({"calibration_curve": wandb.Table(dataframe=pd.DataFrame(cal_rows))})
+
+            # ── predicted probability distribution ────────────────────────
+            max_probs = y_prob.max(axis=1).tolist()
+            wandb_run.log({"max_predicted_prob": wandb.Histogram(max_probs)})
+
         except Exception as e:
+            import traceback
             print(f"W&B metric logging failed: {e}")
+            print(traceback.format_exc())
 
     joblib.dump(model, MODEL_PATH)
     joblib.dump(le, TARGET_ENCODER_PATH)
@@ -325,7 +403,7 @@ def main(tune: bool = False) -> None:
     
     # Save batter features for inference
     if not batter_df.empty:
-        joblib.dump(batter_df, root / "models" / "batter_features.joblib")
+        joblib.dump(batter_df, BATTER_FEATURES_PATH)
     
     print(f"Saved artifacts to {models_dir}")
 

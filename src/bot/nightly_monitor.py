@@ -242,9 +242,10 @@ def main():
                       "surprisal", "correct", "pitcher_sample_n", "count_sample_n"]
         available = [c for c in table_cols if c in day.columns]
         valid_day = day[day["probs_valid"] & day["predicted_family"].notna()]
+        fam_idx = {f: i for i, f in enumerate(FAMILIES)}
         confusion_matrix = wandb.plot.confusion_matrix(
-            y_true=valid_day["actual_pitch_family"].tolist(),
-            preds=valid_day["predicted_family"].tolist(),
+            y_true=[fam_idx.get(f, 0) for f in valid_day["actual_pitch_family"]],
+            preds=[fam_idx.get(f, 0) for f in valid_day["predicted_family"]],
             class_names=FAMILIES,
         )
         to_log = {

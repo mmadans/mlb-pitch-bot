@@ -212,7 +212,7 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
 
         # W&B — per-pitch online logging
         try:
-            global _session_predictions, _session_games, _pitch_type_counts, _error_counts
+            global _session_predictions, _session_games, _pitch_type_counts, _error_counts, _session_tweets
             predicted_family = max(probabilities, key=probabilities.get)
             is_correct = int(predicted_family == actual_pitch_family)
 
@@ -233,6 +233,7 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
                 "correct":                is_correct,
                 "error":                  1 - is_correct,
                 "cumulative_predictions": _session_predictions,
+                "cumulative_tweets":      _session_tweets,
                 "pitcher_sample_n":       pitcher_sample_n,
                 "count_sample_n":         count_sample_n,
                 "outcome":                outcome_str,
@@ -330,12 +331,7 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             print(tweet_text)
             print("="*50 + "\n")
             post_tweet(tweet_text, image_path=image_path)
-            global _session_tweets
             _session_tweets += 1
-            try:
-                wandb.log({"cumulative_tweets": _session_tweets})
-            except Exception:
-                pass
 
         elif tweet_logic: # Fallback for non-strikeout surprises (hard hits)
             pitcher_name = current_play.get('matchup', {}).get('pitcher', {}).get('fullName')
