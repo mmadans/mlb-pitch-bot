@@ -29,12 +29,19 @@ def create_live_predictions_table():
                 prob_offspeed REAL,
                 surprisal REAL,
                 pitcher_sample_n INTEGER,
-                count_sample_n INTEGER
+                count_sample_n INTEGER,
+                balls INTEGER,
+                strikes INTEGER
             )
         ''')
         conn.commit()
-        # Migrate existing tables that are missing the new columns
-        for col, col_type in [("pitcher_sample_n", "INTEGER"), ("count_sample_n", "INTEGER")]:
+        # Migrate existing tables that are missing columns
+        for col, col_type in [
+            ("pitcher_sample_n", "INTEGER"),
+            ("count_sample_n", "INTEGER"),
+            ("balls", "INTEGER"),
+            ("strikes", "INTEGER"),
+        ]:
             try:
                 cursor.execute(f"ALTER TABLE live_predictions ADD COLUMN {col} {col_type}")
                 conn.commit()
@@ -46,7 +53,8 @@ def create_live_predictions_table():
         conn.close()
 
 def insert_live_prediction(game_pk, play_id, pitcher_id, batter_id, actual_pitch_family,
-                           probs, surprisal, pitcher_sample_n=None, count_sample_n=None):
+                           probs, surprisal, pitcher_sample_n=None, count_sample_n=None,
+                           balls=None, strikes=None):
     """
     Logs a single pitch prediction to the live monitoring table.
     Validates that probabilities are well-formed before inserting to catch inference bugs early.
@@ -71,11 +79,11 @@ def insert_live_prediction(game_pk, play_id, pitcher_id, batter_id, actual_pitch
             INSERT INTO live_predictions
             (game_pk, play_id, pitcher_id, batter_id, actual_pitch_family,
              prob_fastball, prob_breaking, prob_offspeed, surprisal,
-             pitcher_sample_n, count_sample_n)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             pitcher_sample_n, count_sample_n, balls, strikes)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (game_pk, play_id, pitcher_id, batter_id, actual_pitch_family,
               float(prob_fb), float(prob_br), float(prob_os), float(surprisal),
-              pitcher_sample_n, count_sample_n))
+              pitcher_sample_n, count_sample_n, balls, strikes))
         conn.commit()
     except Exception as e:
         print(f"Warning: Could not log live prediction: {e}")

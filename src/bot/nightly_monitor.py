@@ -125,6 +125,38 @@ def compute_pitcher_errors(valid_day: pd.DataFrame) -> pd.DataFrame:
     return grp.sort_values("error_rate", ascending=False).reset_index(drop=True)
 
 
+def compute_count_accuracy(valid_day: pd.DataFrame) -> pd.DataFrame:
+    """
+    Accuracy broken down by count situation.
+    Requires balls/strikes columns; returns empty DataFrame if not present.
+    """
+    if "balls" not in valid_day.columns or "strikes" not in valid_day.columns:
+        return pd.DataFrame()
+    df = valid_day.dropna(subset=["balls", "strikes"]).copy()
+    if df.empty:
+        return pd.DataFrame()
+
+    df["count_str"] = df["balls"].astype(int).astype(str) + "-" + df["strikes"].astype(int).astype(str)
+    rows = []
+    # All individual counts
+    for count, grp in df.groupby("count_str"):
+        rows.append({"situation": count, "n": len(grp), "accuracy": round(grp["correct"].mean(), 3)})
+    # Aggregate situations
+    situations = {
+        "2-strike":  df["strikes"].astype(int) == 2,
+        "3-ball":    df["balls"].astype(int) == 3,
+        "hitter_ahead": df["balls"].astype(int) > df["strikes"].astype(int),
+        "pitcher_ahead": df["strikes"].astype(int) > df["balls"].astype(int),
+        "even":      df["balls"].astype(int) == df["strikes"].astype(int),
+        "first_pitch": (df["balls"].astype(int) == 0) & (df["strikes"].astype(int) == 0),
+    }
+    for label, mask in situations.items():
+        grp = df[mask]
+        if len(grp):
+            rows.append({"situation": label, "n": len(grp), "accuracy": round(grp["correct"].mean(), 3)})
+    return pd.DataFrame(rows).sort_values("situation").reset_index(drop=True)
+
+
 def compute_sample_size_dist(valid_day: pd.DataFrame) -> pd.DataFrame:
     """
     Distribution of pitcher_sample_n values in buckets.
@@ -174,13 +206,14 @@ def compute_metrics(lp: pd.DataFrame, log_date: str) -> tuple[dict, pd.DataFrame
         metrics[f"mean_pred_prob_{cls}"]  = mean_pred
         metrics[f"calibration_gap_{cls}"] = mean_pred - actual_freq
 
-    error_df      = compute_error_breakdown(valid_day)  if len(valid_day) else pd.DataFrame()
-    cal_df        = compute_calibration(valid_day)       if len(valid_day) else pd.DataFrame()
-    pitcher_df    = compute_pitcher_errors(valid_day)    if len(valid_day) else pd.DataFrame()
-    sample_df     = compute_sample_size_dist(valid_day)  if len(valid_day) else pd.DataFrame()
+    error_df       = compute_error_breakdown(valid_day)  if len(valid_day) else pd.DataFrame()
+    cal_df         = compute_calibration(valid_day)       if len(valid_day) else pd.DataFrame()
+    pitcher_df     = compute_pitcher_errors(valid_day)    if len(valid_day) else pd.DataFrame()
+    sample_df      = compute_sample_size_dist(valid_day)  if len(valid_day) else pd.DataFrame()
+    count_acc_df   = compute_count_accuracy(valid_day)    if len(valid_day) else pd.DataFrame()
     surprisal_hist = compute_surprisal_histogram(valid_day) if len(valid_day) else None
 
-    return metrics, day, error_df, cal_df, pitcher_df, sample_df, surprisal_hist
+    return metrics, day, error_df, cal_df, pitcher_df, sample_df, count_acc_df, surprisal_hist
 
 
 def main():
@@ -202,7 +235,7 @@ def main():
     print(f"W&B project   : {os.getenv('WANDB_PROJECT')}")
     print(f"Dry run       : {dry_run}")
 
-    metrics, day, error_df, cal_df, pitcher_df, sample_df, surprisal_hist = compute_metrics(lp, log_date)
+    metrics, day, error_df, cal_df, pitcher_df, sample_df, count_acc_df, surprisal_hist = compute_metrics(lp, log_date)
 
     print("\nMetrics:")
     for k, v in metrics.items():
@@ -224,6 +257,10 @@ def main():
         print("\nPitcher sample size distribution:")
         print(sample_df.to_string(index=False))
 
+    if not count_acc_df.empty:
+        print("\nAccuracy by count situation:")
+        print(count_acc_df.to_string(index=False))
+
     if len(day) == 0:
         print(f"\nNo predictions found for {log_date}. Nothing to log.")
         sys.exit(0)
@@ -239,7 +276,8 @@ def main():
 
         table_cols = ["timestamp", "pitcher_id", "pitcher_name", "actual_pitch_family",
                       "predicted_family", "prob_fastball", "prob_breaking", "prob_offspeed",
-                      "surprisal", "correct", "pitcher_sample_n", "count_sample_n"]
+                      "surprisal", "correct", "balls", "strikes",
+                      "pitcher_sample_n", "count_sample_n"]
         available = [c for c in table_cols if c in day.columns]
         valid_day = day[day["probs_valid"] & day["predicted_family"].notna()]
         fam_idx = {f: i for i, f in enumerate(FAMILIES)}
@@ -258,6 +296,8 @@ def main():
             to_log["pitcher_errors"] = wandb.Table(dataframe=pitcher_df)
         if not sample_df.empty:
             to_log["sample_size_distribution"] = wandb.Table(dataframe=sample_df)
+        if not count_acc_df.empty:
+            to_log["count_accuracy"] = wandb.Table(dataframe=count_acc_df)
         if surprisal_hist is not None:
             to_log["surprisal_distribution"] = surprisal_hist
         run.log(to_log)

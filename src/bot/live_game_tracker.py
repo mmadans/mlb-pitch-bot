@@ -175,7 +175,9 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             surprisal = predictor.calculate_surprisal(actual_pitch_family, probabilities)
 
         pitcher_id = int(row['pitcher_id'].values[0])
-        batter_id = int(row['batter_id'].values[0])
+        batter_id  = int(row['batter_id'].values[0])
+        balls_val   = int(row['balls'].values[0])   if 'balls'   in row.columns and pd.notna(row['balls'].values[0])   else None
+        strikes_val = int(row['strikes'].values[0]) if 'strikes' in row.columns and pd.notna(row['strikes'].values[0]) else None
 
         # --- Sample-size gate ---
         # If the pitcher doesn't have enough historical pitches in the baseline,
@@ -205,7 +207,8 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
                 pitcher_id=pitcher_id, batter_id=batter_id,
                 actual_pitch_family=actual_pitch_family,
                 probs=probabilities, surprisal=surprisal,
-                pitcher_sample_n=pitcher_sample_n, count_sample_n=count_sample_n
+                pitcher_sample_n=pitcher_sample_n, count_sample_n=count_sample_n,
+                balls=balls_val, strikes=strikes_val,
             )
         except Exception as e:
             print(f"  Warning: Failed to log live prediction DB entry: {e}")

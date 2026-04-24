@@ -27,6 +27,7 @@ load_dotenv()
 from src.data.api_extractors import _classify_pitch_family
 from src.features.baseline_manager import apply_baseline_to_df
 from src.features.build_baseline_tendencies import build_baseline
+from src.model.calibration import IsotonicCalibratedClassifier
 
 
 def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = True):
@@ -122,14 +123,15 @@ def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = T
     leveraged_mask = (df["strikes"] == 2) | (df["balls"] == 3)
     df.loc[leveraged_mask, "sample_weight"] = 2.0
 
-    # Class-balance weights: multiply by inverse class frequency so that
-    # minority classes (Offspeed ~14%, Breaking ~31%) get proportionally
-    # more weight relative to the Fastball majority (~55%).
-    # Formula: total / (n_classes * class_count) — same as sklearn "balanced".
+    # Class-balance weights: sqrt of the inverse frequency ratio.
+    # Full "balanced" formula (ratio) overcorrects — Offspeed gets 2.4x weight,
+    # driving Fastball recall to 42% and overall accuracy to 48%.
+    # sqrt dampens the effect: Offspeed ~1.55x, Breaking ~1.04x, Fastball ~0.78x.
+    import numpy as _np
     n_classes = df["pitch_family"].nunique()
     class_counts = df["pitch_family"].value_counts()
     for family, count in class_counts.items():
-        balance_w = len(df) / (n_classes * count)
+        balance_w = _np.sqrt(len(df) / (n_classes * count))
         df.loc[df["pitch_family"] == family, "sample_weight"] *= balance_w
 
     weights = df["sample_weight"]
@@ -155,10 +157,10 @@ def main(tune: bool = False) -> None:
                 "learning_rate": 0.1,
                 "objective": "multi:softprob",
                 "tune": tune,
-                "class_balancing": "inverse_frequency",
+                "class_balancing": "sqrt_inverse_frequency",
                 "leverage_weight": 2.0,
                 "train_test_split": "chronological_80_20",
-                "calibration": "isotonic_prefit_holdout",
+                "calibration": "none",
             },
         )
     except Exception as e:
@@ -241,6 +243,8 @@ def main(tune: bool = False) -> None:
     print(f"Features: {len(feature_cols)} columns.")
     print(f"Classes: {le.classes_.tolist()}.")
 
+    print(f"Train set: {len(X_train)}, test set: {len(X_test)}")
+
     # Initialize and train XGBoost
     print("Training XGBoost Classifier model...")
     base_model = XGBClassifier(
@@ -262,8 +266,7 @@ def main(tune: bool = False) -> None:
         grid_search = GridSearchCV(estimator=base_model, param_grid=param_grid, cv=3, scoring='neg_log_loss', n_jobs=-1)
         grid_search.fit(X_train, y_train, sample_weight=w_train)
         print(f"Best parameters found: {grid_search.best_params_}")
-        best_estimator = grid_search.best_estimator_
-        model = best_estimator
+        model = grid_search.best_estimator_
     else:
         print("Fitting model...")
         model = base_model
