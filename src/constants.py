@@ -17,11 +17,11 @@ PITCH_COLORS = {
 }
 
 TEAM_HASHTAGS = {
-    "AZ": "#DBacks", "ATL": "#ForTheA", "BAL": "#Birdland", "BOS": "#DirtyWater",
+    "AZ": "#DBacks", "ATH": "#Athletics", "ATL": "#BravesCountry", "BAL": "#Birdland", "BOS": "#DirtyWater",
     "CHC": "#Cubs", "CWS": "#WhiteSox", "CIN": "#ATOBTTR", "CLE": "#GuardsBall",
     "COL": "#Rockies", "DET": "#RepDetroit", "HOU": "#ChaseTheFight", "KC": "#FountainsUp",
     "LAA": "#RepTheHalo", "LAD": "#Dodgers", "MIA": "#FightinFish", "MIL": "#ThisIsMyCrew",
-    "MIN": "#MNTwins", "NYM": "#LGM", "NYY": "#RepBX", "OAK": "#RootedInOakland",
+    "MIN": "#MNTwins", "NYM": "#LGM", "NYY": "#RepBX",
     "PHI": "#RingTheBell", "PIT": "#LetsGoBucs", "SD": "#ForTheFaithful", "SF": "#SFGiants",
     "SEA": "#TridentsUp", "STL": "#ForTheLou", "TB": "#RaysUp", "TEX": "#AllForTX",
     "TOR": "#BlueJays50", "WSH": "#Natitude"
