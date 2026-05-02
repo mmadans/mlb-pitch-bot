@@ -140,6 +140,8 @@ def _build_signals(pitch_data, predicted_fam, balls, strikes):
     candidates = []  # (score, label, impact_str | None)
 
     L = SIGNAL_LABELS
+    pitcher = pitch_data.get("pitcher", "").split()[-1]
+    batter = pitch_data.get("batter", "").split()[-1]
 
     streak = int(pitch_data.get(f"{predicted_fam.lower()}_streak", 0) or 0)
     if streak >= 3:
@@ -158,23 +160,23 @@ def _build_signals(pitch_data, predicted_fam, balls, strikes):
 
     primary = str(pitch_data.get("primary_out_pitch", "") or "")
     if primary == predicted_fam:
-        candidates.append((7, L["primary_out_pitch"], None))
+        candidates.append((7, L["primary_out_pitch"].format(pitcher=pitcher), None))
 
     gt = _frac(pitch_data.get(f"tendency_global_{predicted_fam}_pct"))
     ct = _frac(pitch_data.get(f"tendency_count_{predicted_fam}_pct"))
     bt = _frac(pitch_data.get(f"tendency_batter_count_{predicted_fam}_pct"))
 
     if ct is not None and gt is not None and ct >= gt + 0.08:
-        label = L["count_tendency_elevated"].format(pct=f"{ct*100:.0f}", balls=balls, strikes=strikes)
+        label = L["count_tendency_elevated"].format(pct=f"{ct*100:.0f}", balls=balls, strikes=strikes, pitcher=pitcher)
         candidates.append((8, label, _delta_str(ct - gt)))
     elif gt is not None:
-        label = L["count_tendency_baseline"].format(family=predicted_fam, pct=f"{gt*100:.0f}")
+        label = L["count_tendency_baseline"].format(family=predicted_fam, pct=f"{gt*100:.0f}", pitcher=pitcher)
         candidates.append((4, label, None))
 
     if bt is not None and gt is not None and abs(bt - gt) >= 0.05:
-        candidates.append((5, L["batter_tendency"].format(pct=f"{bt*100:.0f}", family=predicted_fam), _delta_str(bt - gt)))
+        candidates.append((5, L["batter_tendency"].format(pct=f"{bt*100:.0f}", family=predicted_fam, batter=batter), _delta_str(bt - gt)))
     elif bt is not None:
-        candidates.append((3, L["batter_tendency"].format(pct=f"{bt*100:.0f}", family=predicted_fam), None))
+        candidates.append((3, L["batter_tendency"].format(pct=f"{bt*100:.0f}", family=predicted_fam, batter=batter), None))
 
     if pitch_data.get("is_platoon_advantage") == 1:
         candidates.append((2, L["platoon_advantage"], None))

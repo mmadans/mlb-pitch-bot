@@ -334,6 +334,8 @@ def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredicto
             print(tweet_text)
             print("="*50 + "\n")
             post_tweet(tweet_text, image_path=image_path)
+            if os.path.exists(image_path):
+                os.remove(image_path)
             _session_tweets += 1
 
         elif tweet_logic: # Fallback for non-strikeout surprises (hard hits)
