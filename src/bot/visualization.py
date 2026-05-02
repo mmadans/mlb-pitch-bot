@@ -167,7 +167,7 @@ def _build_signals(pitch_data, predicted_fam, balls, strikes):
     bt = _frac(pitch_data.get(f"tendency_batter_count_{predicted_fam}_pct"))
 
     if ct is not None and gt is not None and ct >= gt + 0.08:
-        label = L["count_tendency_elevated"].format(pct=f"{ct*100:.0f}", balls=balls, strikes=strikes, pitcher=pitcher)
+        label = L["count_tendency_elevated"].format(pct=f"{ct*100:.0f}", balls=balls, strikes=strikes, pitcher=pitcher, family=predicted_fam)
         candidates.append((8, label, _delta_str(ct - gt)))
     elif gt is not None:
         label = L["count_tendency_baseline"].format(family=predicted_fam, pct=f"{gt*100:.0f}", pitcher=pitcher)

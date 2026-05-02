@@ -22,7 +22,7 @@ SIGNAL_LABELS = {
     "count_first_pitch":        "First pitch of at-bat",
     "count_hitters":            "Hitter's count ({balls}-{strikes})",
     "primary_out_pitch":        "{pitcher}'s primary out pitch",
-    "count_tendency_elevated":  "{pitcher} throws {family} {pct} at {balls}-{strikes}",
+    "count_tendency_elevated":  "{pitcher} {pct}% {family} rate at {balls}-{strikes}",
     "count_tendency_baseline":  "{pitcher} throws {family} {pct}% overall",
     "batter_tendency":          "{batter} sees {family} {pct}% of the time",
     "platoon_advantage":        "Platoon advantage",
