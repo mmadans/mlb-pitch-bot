@@ -103,27 +103,30 @@ def _draw_zone_only(ax, pitch_data, sequence):
     actual_fam = pitch_data.get("pitch_family") or _classify_pitch_family(pitch_data.get("pitch_type", "UN"))
     pitch_color = PITCH_COLORS.get(actual_fam, '#FFFFFF')
 
-    sz_width = 17 / 12
-    zone = patches.Rectangle((-sz_width / 2, 1.5), sz_width, 2.0,
+    sz_width = 17 / 12  # 1.417 ft — width of home plate
+    sz_bot, sz_top = 1.5, 3.5  # standard MLB zone bounds in feet
+    zone = patches.Rectangle((-sz_width / 2, sz_bot), sz_width, sz_top - sz_bot,
                               linewidth=2, edgecolor='#555555', facecolor='none', linestyle='dashed')
     ax.add_patch(zone)
-    ax.set_xlim(-1.8, 1.8)
-    ax.set_ylim(0.3, 4.2)
+    ax.set_xlim(-2.0, 2.0)
+    ax.set_ylim(0.5, 4.5)
     ax.set_aspect('equal')
     ax.axis('off')
 
     for i, p in enumerate(sequence):
         if isinstance(p, dict) and p.get("pX") is not None and p.get("pZ") is not None:
             color = PITCH_COLORS.get(p.get("pitch_family"), "#888888")
-            ax.scatter(p["pX"], p["pZ"], s=200, color=color, edgecolor='none', alpha=0.25, zorder=3)
+            ax.scatter(p["pX"], p["pZ"], s=200, color=color, edgecolor='none', alpha=0.25,
+                       zorder=3, clip_on=True)
             ax.text(p["pX"], p["pZ"], str(i + 1), color='white', ha='center', va='center',
-                    fontsize=8, fontweight='bold', alpha=0.4, zorder=4)
+                    fontsize=8, fontweight='bold', alpha=0.4, zorder=4, clip_on=True)
 
     pX, pZ = pitch_data.get("pX"), pitch_data.get("pZ")
     if pX is not None and pZ is not None:
-        ax.scatter(pX, pZ, s=500, color=pitch_color, edgecolor='white', linewidth=2, zorder=5)
+        ax.scatter(pX, pZ, s=500, color=pitch_color, edgecolor='white', linewidth=2,
+                   zorder=5, clip_on=True)
         ax.text(pX, pZ, str(len(sequence) + 1), color='white', ha='center', va='center',
-                fontsize=12, fontweight='bold', zorder=6)
+                fontsize=12, fontweight='bold', zorder=6, clip_on=True)
 
 
 def _build_signals(pitch_data, predicted_fam, balls, strikes):
