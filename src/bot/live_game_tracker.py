@@ -6,6 +6,7 @@ Analyzes only:
 """
 
 from datetime import datetime
+import json
 import time
 import logging
 import statsapi
@@ -23,6 +24,7 @@ from src.bot.bot import post_tweet, format_surprise_strikeout_tweet
 from src.data.database import create_live_predictions_table, insert_live_prediction
 from src.bot.visualization import generate_pitch_infographic
 from src.constants import (
+    ROOT,
     POLLING_INTERVAL_SECONDS,
     SURPRISAL_THRESHOLD,
     BARREL_EV_THRESHOLD,
@@ -31,6 +33,8 @@ from src.constants import (
     CATEGORICAL_ENCODER_PATH,
     BASELINE_PATH,
 )
+
+_PROCESSED_CACHE_PATH = str(ROOT / "data/processed_pitches_cache.json")
 
 load_dotenv()
 
@@ -54,6 +58,34 @@ _session_tweets = 0
 _session_games: set = set()
 _pitch_type_counts: dict = {"Fastball": 0, "Breaking": 0, "Offspeed": 0}
 _error_counts: dict = {"Fastball": 0, "Breaking": 0, "Offspeed": 0}
+
+
+def _load_processed_cache() -> set:
+    """Return today's processed pitch IDs persisted from a previous run."""
+    try:
+        with open(_PROCESSED_CACHE_PATH) as f:
+            data = json.load(f)
+        if data.get("date") != datetime.now().date().isoformat():
+            return set()  # stale — new day, start fresh
+        return {tuple(p) for p in data.get("pitches", [])}
+    except (FileNotFoundError, json.JSONDecodeError, KeyError):
+        return set()
+
+
+def _save_processed_cache():
+    """Persist today's processed pitch IDs so restarts don't re-tweet old pitches."""
+    try:
+        os.makedirs(os.path.dirname(_PROCESSED_CACHE_PATH), exist_ok=True)
+        with open(_PROCESSED_CACHE_PATH, "w") as f:
+            json.dump(
+                {
+                    "date": datetime.now().date().isoformat(),
+                    "pitches": [list(p) for p in processed_pitches],
+                },
+                f,
+            )
+    except Exception as e:
+        log.warning("Failed to save processed pitches cache: %s", e)
 
 
 def get_live_game_pks():
@@ -486,6 +518,8 @@ def main():
         _error_counts
     print("Starting MLB Live Game Tracker (Simulation Mode)...")
     processed_pitches.clear()
+    processed_pitches.update(_load_processed_cache())
+    print(f"Restored {len(processed_pitches)} processed pitches from cache.")
     _session_predictions = 0
     _session_tweets = 0
     _session_games = set()
@@ -528,6 +562,9 @@ def main():
     for game_pk in live_game_pks:
         try:
             game_data = statsapi.get("game", {"gamePk": game_pk})
+            if not game_data:
+                log.warning("Startup skip: empty response for game %s", game_pk)
+                continue
             all_plays = (
                 game_data.get("liveData", {}).get("plays", {}).get("allPlays", [])
             )
@@ -570,6 +607,7 @@ def main():
                     except Exception as e:
                         log.error("Error polling game %s: %s", game_pk, e)
 
+            _save_processed_cache()
             time.sleep(POLLING_INTERVAL_SECONDS)
     except KeyboardInterrupt:
         print("\nTracker stopped.")
