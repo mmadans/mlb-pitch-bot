@@ -1,142 +1,180 @@
 """
 Train XGBoost pitch-type classifier using data from SQLite database.
 """
+
 import os
 import joblib
+import numpy as np
 import pandas as pd
 from pathlib import Path
 from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 import argparse
-from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.metrics import classification_report, balanced_accuracy_score, confusion_matrix
+from sklearn.metrics import (
+    classification_report,
+    balanced_accuracy_score,
+    confusion_matrix,
+)
 from xgboost import XGBClassifier
 from dotenv import load_dotenv
 from src.constants import (
-    DATABASE_PATH, MODEL_PATH, TARGET_ENCODER_PATH, CATEGORICAL_ENCODER_PATH,
-    FEATURE_COLS_PATH, BATTER_FEATURES_PATH
+    DATABASE_PATH,
+    MODEL_PATH,
+    TARGET_ENCODER_PATH,
+    CATEGORICAL_ENCODER_PATH,
+    FEATURE_COLS_PATH,
+    BATTER_FEATURES_PATH,
+    N_CAL_BINS,
 )
 from src.data.database import query_all_pitches
-from src.data.dataset_generator import add_features
 from src.features.batter_tendency_processing import get_batter_features
 
 load_dotenv()
 
 
-
 from src.data.api_extractors import _classify_pitch_family
 from src.features.baseline_manager import apply_baseline_to_df
 from src.features.build_baseline_tendencies import build_baseline
-from src.model.calibration import IsotonicCalibratedClassifier
+
+_CAT_COLS = [
+    "pitcher_hand",
+    "batter_side",
+    "men_on_base",
+    "primary_out_pitch",
+    "park_id",
+    "prev_pitch_family",
+    "prev_pitch_call",
+]
+
+# Exclude count one-hots, raw balls/strikes, league count tendencies, and delta features —
+# they swamp pitcher-specific signals. tendency_count_*_pct already encodes both the current
+# count and the pitcher's identity, so raw count columns are redundant.
+_NUMERIC_FEATURE_COLS = [
+    "outs",
+    "is_leverage",
+    "is_platoon_advantage",
+    "run_differential",
+    "breaking_streak",
+    "fastball_streak",
+    "offspeed_streak",
+    "fastball_streak_x_count_adv",
+    "breaking_streak_x_count_adv",
+    "offspeed_streak_x_count_adv",
+    "pitch_count_in_game",
+    "times_faced_today",
+    "prev_pX",
+    "prev_pZ",
+    "is_double_play_scenario",
+    "prev_pitch_was_whiff",
+    "prev_pitch_was_foul",
+]
+_BATTER_EXCLUDE_STATS = ["chase_rate", "whiff_rate", "k_pct"]
 
 
-def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = True):
-    """
-    Cleans and encodes raw pitch data for training.
-    Predicts pitch families (Fastball, Breaking, Offspeed) instead of individual codes.
-    """
-
-
-    # Drop rows without a pitch type
+def _prepare_target(df: pd.DataFrame):
     df = df.dropna(subset=["pitch_type"]).copy()
-    
-    # Map pitch types to families
     print("    Mapping pitch types to families...")
     df["pitch_family"] = df["pitch_type"].apply(_classify_pitch_family)
-    
-    # Filter out rare 'Other' pitches to prevent stratification errors
     df = df[df["pitch_family"] != "Other"].copy()
-    
-    # We want to predict families
-    y = df["pitch_family"]
     label_encoder = LabelEncoder()
-    y_encoded = label_encoder.fit_transform(y)
+    y_encoded = label_encoder.fit_transform(df["pitch_family"])
+    return df, y_encoded, label_encoder
 
-    # Exclude all redundant count-encoding features:
-    # - Count one-hots: were 71% of importance, drowning pitcher-specific signals
-    # - Raw balls/strikes: create tree splits that override pitcher tendency features
-    # - League count tendencies: redundant with pitcher count tendency; their presence
-    #   causes the model to learn "at 2 strikes, league throws little offspeed" and
-    #   ignore that individual pitchers deviate (e.g. Matz at 22% OS vs league 12%)
-    # - Delta features: also become redundant when league features are removed
-    #
-    # The pitcher's count tendency (tendency_count_*_pct) already encodes BOTH the
-    # current count AND the pitcher's identity. The model should use it as the primary
-    # signal and only adjust based on situational context (leverage, matchup, streaks).
-    numeric = [
-        "outs", "is_leverage", "is_platoon_advantage", "run_differential",
-        "breaking_streak", "fastball_streak", "offspeed_streak",
-        "fastball_streak_x_count_adv", "breaking_streak_x_count_adv", "offspeed_streak_x_count_adv",
-        "pitch_count_in_game", "times_faced_today", "prev_pX", "prev_pZ",
-        "is_double_play_scenario", "prev_pitch_was_whiff", "prev_pitch_was_foul"
+
+def _build_tendency_feature_cols(df: pd.DataFrame) -> list[str]:
+    return [
+        c
+        for c in df.columns
+        if (
+            c.startswith("tendency_global_")
+            or c.startswith("tendency_count_")
+            or c.startswith("tendency_batter_count_")
+        )
+        and (
+            c.endswith("_pct")
+            or c.endswith("_Fastball")
+            or c.endswith("_Breaking")
+            or c.endswith("_Offspeed")
+            or c == "tendency_total_pitches"
+        )
     ]
-    tendency_cols = [
-        c for c in df.columns
-        if (c.startswith("tendency_global_") or c.startswith("tendency_count_") or c.startswith("tendency_batter_count_")) and
-           (c.endswith("_pct") or c.endswith("_Fastball") or c.endswith("_Breaking") or c.endswith("_Offspeed") or c == "tendency_total_pitches")
-    ]
-    feature_cols = [c for c in numeric if c in df.columns] + tendency_cols
 
 
+def _encode_categoricals(
+    df: pd.DataFrame,
+) -> tuple[pd.DataFrame, OrdinalEncoder, list[str]]:
     print("    Encoding categorical features...")
-    cat_cols = ["pitcher_hand", "batter_side", "men_on_base", "primary_out_pitch", "park_id", "prev_pitch_family", "prev_pitch_call"]
-    
     df["park_id"] = df["park_id"].fillna(0).astype(str)
     df["prev_pitch_family"] = df["prev_pitch_type_in_ab"].apply(_classify_pitch_family)
-    
-    for col in cat_cols:
+    for col in _CAT_COLS:
         if col not in df.columns:
             df[col] = "Unknown"
         df[col] = df[col].fillna("Unknown").astype(str)
-        
-    categorical_encoder = OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1)
-    encoded_vals = categorical_encoder.fit_transform(df[cat_cols])
-    
-    new_cats = []
-    for i, col in enumerate(cat_cols):
+    categorical_encoder = OrdinalEncoder(
+        handle_unknown="use_encoded_value", unknown_value=-1
+    )
+    encoded_vals = categorical_encoder.fit_transform(df[_CAT_COLS])
+    enc_cols = []
+    for i, col in enumerate(_CAT_COLS):
         enc_col = f"{col}_enc"
         df[enc_col] = encoded_vals[:, i]
-        new_cats.append(enc_col)
-        
-    feature_cols = new_cats + [c for c in feature_cols if c in df.columns]
+        enc_cols.append(enc_col)
+    return df, categorical_encoder, enc_cols
 
-    # Batter Tendencies Integration
+
+def _merge_batter_features(
+    df: pd.DataFrame, feature_cols: list[str], include_batter_stats: bool
+):
     batter_df = pd.DataFrame()
-    if include_batter_stats and "batter_id" in df.columns:
-        print("    Calculating and merging batter tendencies...")
-        batter_df = get_batter_features(df, use_api=True)
-        df = df.merge(batter_df, on="batter_id", how="left")
-        
-        # Add batter columns to feature list (Filtering out low-importance stats)
-        exclude_stats = ["chase_rate", "whiff_rate", "k_pct"]
-        batter_cols = [c for c in batter_df.columns if c != "batter_id" and c not in exclude_stats]
-        feature_cols += batter_cols
+    if not include_batter_stats or "batter_id" not in df.columns:
+        return df, batter_df, feature_cols
+    print("    Calculating and merging batter tendencies...")
+    batter_df = get_batter_features(df, use_api=True)
+    df = df.merge(batter_df, on="batter_id", how="left")
+    batter_cols = [
+        c
+        for c in batter_df.columns
+        if c != "batter_id" and c not in _BATTER_EXCLUDE_STATS
+    ]
+    return df, batter_df, feature_cols + batter_cols
+
+
+def _compute_sample_weights(df: pd.DataFrame) -> pd.Series:
+    # 2x weight for high-leverage counts (2 strikes or 3 balls)
+    df = df.copy()
+    df["sample_weight"] = 1.0
+    df.loc[(df["strikes"] == 2) | (df["balls"] == 3), "sample_weight"] = 2.0
+    # sqrt-inverse-frequency class balancing — full ratio overcorrects (see train_model comments)
+    n_classes = df["pitch_family"].nunique()
+    for family, count in df["pitch_family"].value_counts().items():
+        balance_w = np.sqrt(len(df) / (n_classes * count))
+        df.loc[df["pitch_family"] == family, "sample_weight"] *= balance_w
+    return df["sample_weight"]
+
+
+def prepare_target_and_features(df: pd.DataFrame, include_batter_stats: bool = True):
+    df, y_encoded, label_encoder = _prepare_target(df)
+    tendency_cols = _build_tendency_feature_cols(df)
+    numeric_cols = [c for c in _NUMERIC_FEATURE_COLS if c in df.columns]
+    df, categorical_encoder, enc_cols = _encode_categoricals(df)
+    feature_cols = enc_cols + numeric_cols + tendency_cols
+    df, batter_df, feature_cols = _merge_batter_features(
+        df, feature_cols, include_batter_stats
+    )
 
     X = df[feature_cols].fillna(0)
-    
-    # RE-ENCODE y here to ensure it perfectly matches the final df/X length
-    # (The merge might have changed row count or alignment if not 1:1)
+    # Re-encode y after merge in case row count shifted
     y_final = label_encoder.transform(df["pitch_family"])
-    
-    # Leverage weights: 2x for high-stakes counts (2 strikes or 3 balls)
-    df["sample_weight"] = 1.0
-    leveraged_mask = (df["strikes"] == 2) | (df["balls"] == 3)
-    df.loc[leveraged_mask, "sample_weight"] = 2.0
-
-    # Class-balance weights: sqrt of the inverse frequency ratio.
-    # Full "balanced" formula (ratio) overcorrects — Offspeed gets 2.4x weight,
-    # driving Fastball recall to 42% and overall accuracy to 48%.
-    # sqrt dampens the effect: Offspeed ~1.55x, Breaking ~1.04x, Fastball ~0.78x.
-    import numpy as _np
-    n_classes = df["pitch_family"].nunique()
-    class_counts = df["pitch_family"].value_counts()
-    for family, count in class_counts.items():
-        balance_w = _np.sqrt(len(df) / (n_classes * count))
-        df.loc[df["pitch_family"] == family, "sample_weight"] *= balance_w
-
-    weights = df["sample_weight"]
-
-    return X, y_final, label_encoder, categorical_encoder, feature_cols, batter_df, weights
+    weights = _compute_sample_weights(df)
+    return (
+        X,
+        y_final,
+        label_encoder,
+        categorical_encoder,
+        feature_cols,
+        batter_df,
+        weights,
+    )
 
 
 def main(tune: bool = False) -> None:
@@ -172,12 +210,11 @@ def main(tune: bool = False) -> None:
 
     print(f"Loading data from database: {DATABASE_PATH}")
     df = query_all_pitches()
-    
+
     if df.empty:
         print("Database is empty. Run dataset_generator first.")
         return
     print(f"Database contains {len(df)} total pitches.")
-    
 
     if "game_date" in df.columns:
         df["game_date"] = pd.to_datetime(df["game_date"])
@@ -187,51 +224,65 @@ def main(tune: bool = False) -> None:
 
         if db_span_days > 60:
             # Use all data in the DB — caller is responsible for loading the desired window
-            print(f"Using full database range: {min_date.date()} to {max_date.date()} ({db_span_days} days)")
+            print(
+                f"Using full database range: {min_date.date()} to {max_date.date()} ({db_span_days} days)"
+            )
         else:
             # DB is a narrow window (e.g. live season top-up); apply 60-day cap
             start_date = max_date - pd.Timedelta(days=60)
-            print(f"Filtering dataset to 60-day temporal window: {start_date.date()} to {max_date.date()}")
-            df = df[(df["game_date"] > start_date) & (df["game_date"] <= max_date)].copy()
-    
+            print(
+                f"Filtering dataset to 60-day temporal window: {start_date.date()} to {max_date.date()}"
+            )
+            df = df[
+                (df["game_date"] > start_date) & (df["game_date"] <= max_date)
+            ].copy()
+
     # Filter for Regular and Postseason ONLY (Ignore Spring Training 'S' and All-Star 'A')
     if "game_type" in df.columns:
         valid_types = ["R", "P", "W"]
         before_count = len(df)
         df = df[df["game_type"].isin(valid_types)].copy()
         if len(df) < before_count:
-            print(f"    Filtered out {before_count - len(df)} spring training/exhibition pitches.")
-    
-    print(f"Dataset contains {len(df)} pitches. Splitting chronologically to prevent data leakage...")
-    df = df.sort_values(by=["game_date", "at_bat_index", "pitch_index"]).reset_index(drop=True)
-    
+            print(
+                f"    Filtered out {before_count - len(df)} spring training/exhibition pitches."
+            )
+
+    print(
+        f"Dataset contains {len(df)} pitches. Splitting chronologically to prevent data leakage..."
+    )
+    df = df.sort_values(by=["game_date", "at_bat_index", "pitch_index"]).reset_index(
+        drop=True
+    )
+
     # 80/20 Chronological Split
     split_idx = int(len(df) * 0.8)
     train_df = df.iloc[:split_idx].copy()
     test_df = df.iloc[split_idx:].copy()
-    
+
     print(f"Train on {len(train_df)} pitches, Test on {len(test_df)}")
-    
+
     baseline_path = str(root / "models/baseline_tendencies.pkl")
     print("Building baseline tendencies from Training Set only...")
     build_baseline(train_df, output_path=baseline_path)
     baseline = joblib.load(baseline_path)
-    
+
     print("Applying baseline tendencies securely to train and test sets...")
-    
+
     # We must ensure pitch_family is available for LOO encoding
     if "pitch_family" not in train_df.columns:
         train_df["pitch_family"] = train_df["pitch_type"].apply(_classify_pitch_family)
-        
+
     train_df = apply_baseline_to_df(train_df, baseline, is_train=True)
     test_df = apply_baseline_to_df(test_df, baseline, is_train=False)
-    
+
     # Combine just for categorical label encoding consistency
     # We will manually split them back using their lengths
     df_combined = pd.concat([train_df, test_df], ignore_index=True)
-    
-    X, y, le, cat_enc, feature_cols, batter_df, weights = prepare_target_and_features(df_combined)
-    
+
+    X, y, le, cat_enc, feature_cols, batter_df, weights = prepare_target_and_features(
+        df_combined
+    )
+
     # Since we dropped rows in prepare_target_and_features (e.g. 'Other' pitch family),
     # we can't just use split_idx. We need a mask or array slicing based on actual train_df rows.
     # Fortunately, train_test_split natively supports shuffle=False for sequential splitting!
@@ -254,16 +305,19 @@ def main(tune: bool = False) -> None:
         objective="multi:softprob",
         eval_metric="mlogloss",
         random_state=42,
-        n_jobs=-1
+        n_jobs=-1,
     )
 
     if tune:
         print("Running GridSearchCV for hyperparameter tuning...")
-        param_grid = {
-            'max_depth': [3, 5],
-            'learning_rate': [0.05, 0.1]
-        }
-        grid_search = GridSearchCV(estimator=base_model, param_grid=param_grid, cv=3, scoring='neg_log_loss', n_jobs=-1)
+        param_grid = {"max_depth": [3, 5], "learning_rate": [0.05, 0.1]}
+        grid_search = GridSearchCV(
+            estimator=base_model,
+            param_grid=param_grid,
+            cv=3,
+            scoring="neg_log_loss",
+            n_jobs=-1,
+        )
         grid_search.fit(X_train, y_train, sample_weight=w_train)
         print(f"Best parameters found: {grid_search.best_params_}")
         model = grid_search.best_estimator_
@@ -276,10 +330,10 @@ def main(tune: bool = False) -> None:
     y_prob = model.predict_proba(X_test)
     acc = (y_pred == y_test).mean()
     bal_acc = balanced_accuracy_score(y_test, y_pred)
-    
+
     from sklearn.metrics import mean_squared_error
     from sklearn.preprocessing import label_binarize
-    import numpy as np
+
     y_test_bin = label_binarize(y_test, classes=model.classes_)
     rmse = np.sqrt(mean_squared_error(y_test_bin, y_prob))
     brier = mean_squared_error(y_test_bin, y_prob)
@@ -292,7 +346,9 @@ def main(tune: bool = False) -> None:
     print("Detailed Classification Report (Checking if we over-predict Fastballs):")
     y_pred_names = le.inverse_transform(y_pred)
     y_test_names = le.inverse_transform(y_test)
-    report_dict = classification_report(y_test_names, y_pred_names, target_names=le.classes_, output_dict=True)
+    report_dict = classification_report(
+        y_test_names, y_pred_names, target_names=le.classes_, output_dict=True
+    )
     print(classification_report(y_test_names, y_pred_names, target_names=le.classes_))
 
     print("\nText-based Confusion Matrix (Rows=Actual, Cols=Predicted):")
@@ -302,93 +358,122 @@ def main(tune: bool = False) -> None:
 
     if wandb_run is not None:
         try:
-            import numpy as np
             from sklearn.preprocessing import label_binarize
 
             # ── scalar metrics ────────────────────────────────────────────
             wandb_metrics = {
-                "accuracy":          acc,
+                "accuracy": acc,
                 "balanced_accuracy": bal_acc,
-                "brier_score":       brier,
-                "prob_rmse":         rmse,
-                "train_pitches":     len(X_train),
-                "test_pitches":      len(X_test),
-                "n_features":        len(feature_cols),
+                "brier_score": brier,
+                "prob_rmse": rmse,
+                "train_pitches": len(X_train),
+                "test_pitches": len(X_test),
+                "n_features": len(feature_cols),
             }
             for cls in le.classes_:
                 cls_key = cls.lower()
                 wandb_metrics[f"precision_{cls_key}"] = report_dict[cls]["precision"]
-                wandb_metrics[f"recall_{cls_key}"]    = report_dict[cls]["recall"]
-                wandb_metrics[f"f1_{cls_key}"]        = report_dict[cls]["f1-score"]
-            if tune and hasattr(best_estimator, "best_params_"):
+                wandb_metrics[f"recall_{cls_key}"] = report_dict[cls]["recall"]
+                wandb_metrics[f"f1_{cls_key}"] = report_dict[cls]["f1-score"]
+            if tune:
                 wandb_run.config.update(grid_search.best_params_)
             wandb_run.log(wandb_metrics)
 
             # ── training data date range (config provenance) ──────────────
             if "game_date" in df.columns:
                 train_dates = df.iloc[:split_idx]["game_date"]
-                test_dates  = df.iloc[split_idx:]["game_date"]
-                wandb_run.config.update({
-                    "train_start": str(train_dates.min().date()),
-                    "train_end":   str(train_dates.max().date()),
-                    "test_start":  str(test_dates.min().date()),
-                    "test_end":    str(test_dates.max().date()),
-                })
+                test_dates = df.iloc[split_idx:]["game_date"]
+                wandb_run.config.update(
+                    {
+                        "train_start": str(train_dates.min().date()),
+                        "train_end": str(train_dates.max().date()),
+                        "test_start": str(test_dates.min().date()),
+                        "test_end": str(test_dates.max().date()),
+                    }
+                )
 
             # ── class distribution (train vs test) ────────────────────────
             train_labels = le.inverse_transform(y_train)
-            test_labels  = le.inverse_transform(y_test)
+            test_labels = le.inverse_transform(y_test)
             class_dist_rows = []
             for cls in le.classes_:
-                class_dist_rows.append({
-                    "class":      cls,
-                    "train_n":    int((train_labels == cls).sum()),
-                    "train_pct":  round((train_labels == cls).mean() * 100, 1),
-                    "test_n":     int((test_labels == cls).sum()),
-                    "test_pct":   round((test_labels == cls).mean() * 100, 1),
-                })
-            wandb_run.log({"class_distribution": wandb.Table(
-                dataframe=pd.DataFrame(class_dist_rows)
-            )})
+                class_dist_rows.append(
+                    {
+                        "class": cls,
+                        "train_n": int((train_labels == cls).sum()),
+                        "train_pct": round((train_labels == cls).mean() * 100, 1),
+                        "test_n": int((test_labels == cls).sum()),
+                        "test_pct": round((test_labels == cls).mean() * 100, 1),
+                    }
+                )
+            wandb_run.log(
+                {
+                    "class_distribution": wandb.Table(
+                        dataframe=pd.DataFrame(class_dist_rows)
+                    )
+                }
+            )
 
             # ── confusion matrix (heatmap) ────────────────────────────────
             # wandb 0.26+: when class_names is provided, y_true/preds must be
             # integer indices (0..N-1), not string labels.
-            wandb_run.log({"confusion_matrix": wandb.plot.confusion_matrix(
-                y_true=y_test.tolist(),
-                preds=y_pred.tolist(),
-                class_names=le.classes_.tolist(),
-            )})
+            wandb_run.log(
+                {
+                    "confusion_matrix": wandb.plot.confusion_matrix(
+                        y_true=y_test.tolist(),
+                        preds=y_pred.tolist(),
+                        class_names=le.classes_.tolist(),
+                    )
+                }
+            )
 
             # ── feature importance (top 30) ───────────────────────────────
             base_est = model.estimator if hasattr(model, "estimator") else model
             if hasattr(base_est, "feature_importances_"):
-                importance_df = pd.DataFrame({
-                    "feature":    feature_cols,
-                    "importance": base_est.feature_importances_,
-                }).sort_values("importance", ascending=False).head(30).reset_index(drop=True)
-                wandb_run.log({"feature_importance": wandb.Table(dataframe=importance_df)})
+                importance_df = (
+                    pd.DataFrame(
+                        {
+                            "feature": feature_cols,
+                            "importance": base_est.feature_importances_,
+                        }
+                    )
+                    .sort_values("importance", ascending=False)
+                    .head(30)
+                    .reset_index(drop=True)
+                )
+                wandb_run.log(
+                    {"feature_importance": wandb.Table(dataframe=importance_df)}
+                )
 
             # ── calibration curve on test set ─────────────────────────────
-            N_CAL_BINS = 5
             bins = np.linspace(0, 1, N_CAL_BINS + 1)
             bin_midpoints = (bins[:-1] + bins[1:]) / 2
             cal_rows = []
             for i, cls in enumerate(le.classes_):
                 y_true_bin = (y_test == i).astype(float)
                 y_pred_prob = y_prob[:, i]
-                bin_idx = np.digitize(y_pred_prob, bins, right=True).clip(1, N_CAL_BINS) - 1
+                bin_idx = (
+                    np.digitize(y_pred_prob, bins, right=True).clip(1, N_CAL_BINS) - 1
+                )
                 for b, mid in enumerate(bin_midpoints):
                     mask = bin_idx == b
                     count = mask.sum()
-                    cal_rows.append({
-                        "family":         cls,
-                        "bin_midpoint":   round(float(mid), 2),
-                        "mean_predicted": round(float(y_pred_prob[mask].mean()), 4) if count else float("nan"),
-                        "actual_freq":    round(float(y_true_bin[mask].mean()), 4) if count else float("nan"),
-                        "count":          int(count),
-                    })
-            wandb_run.log({"calibration_curve": wandb.Table(dataframe=pd.DataFrame(cal_rows))})
+                    cal_rows.append(
+                        {
+                            "family": cls,
+                            "bin_midpoint": round(float(mid), 2),
+                            "mean_predicted": round(float(y_pred_prob[mask].mean()), 4)
+                            if count
+                            else float("nan"),
+                            "actual_freq": round(float(y_true_bin[mask].mean()), 4)
+                            if count
+                            else float("nan"),
+                            "count": int(count),
+                        }
+                    )
+            wandb_run.log(
+                {"calibration_curve": wandb.Table(dataframe=pd.DataFrame(cal_rows))}
+            )
 
             # ── predicted probability distribution ────────────────────────
             max_probs = y_prob.max(axis=1).tolist()
@@ -396,6 +481,7 @@ def main(tune: bool = False) -> None:
 
         except Exception as e:
             import traceback
+
             print(f"W&B metric logging failed: {e}")
             print(traceback.format_exc())
 
@@ -403,11 +489,11 @@ def main(tune: bool = False) -> None:
     joblib.dump(le, TARGET_ENCODER_PATH)
     joblib.dump(cat_enc, CATEGORICAL_ENCODER_PATH)
     joblib.dump(feature_cols, FEATURE_COLS_PATH)
-    
+
     # Save batter features for inference
     if not batter_df.empty:
         joblib.dump(batter_df, BATTER_FEATURES_PATH)
-    
+
     print(f"Saved artifacts to {models_dir}")
 
     # Specific analysis for high-leverage situations
@@ -416,16 +502,24 @@ def main(tune: bool = False) -> None:
     if not X_test_lev.empty:
         y_pred_lev = model.predict(X_test_lev)
         print("\n--- PERFORMANCE ON HIGH-LEVERAGE COUNTS (2 Strikes or 3 Balls) ---")
-        lev_report_dict = classification_report(y_test_lev, y_pred_lev, target_names=le.classes_, output_dict=True)
+        lev_report_dict = classification_report(
+            y_test_lev, y_pred_lev, target_names=le.classes_, output_dict=True
+        )
         print(classification_report(y_test_lev, y_pred_lev, target_names=le.classes_))
         if wandb_run is not None:
             try:
                 for cls in le.classes_:
                     cls_key = cls.lower()
-                    wandb_run.log({
-                        f"leverage_recall_{cls_key}":    lev_report_dict[cls]["recall"],
-                        f"leverage_precision_{cls_key}": lev_report_dict[cls]["precision"],
-                    })
+                    wandb_run.log(
+                        {
+                            f"leverage_recall_{cls_key}": lev_report_dict[cls][
+                                "recall"
+                            ],
+                            f"leverage_precision_{cls_key}": lev_report_dict[cls][
+                                "precision"
+                            ],
+                        }
+                    )
             except Exception as e:
                 print(f"W&B leverage logging failed: {e}")
 
@@ -435,6 +529,8 @@ def main(tune: bool = False) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--tune", action="store_true", help="Run hyperparameter tuning grid search")
+    parser.add_argument(
+        "--tune", action="store_true", help="Run hyperparameter tuning grid search"
+    )
     args = parser.parse_args()
     main(tune=args.tune)

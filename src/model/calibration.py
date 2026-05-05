@@ -5,6 +5,7 @@ Fits one IsotonicRegression per class on held-out calibration data,
 WITHOUT sample weights — so it learns true class frequencies rather than
 the reweighted distribution used to train the base model.
 """
+
 import numpy as np
 from sklearn.isotonic import IsotonicRegression
 
@@ -24,7 +25,9 @@ class IsotonicCalibratedClassifier:
 
     def predict_proba(self, X):
         raw = self.base_estimator.predict_proba(X)
-        cal = np.column_stack([c.predict(raw[:, i]) for i, c in enumerate(self.calibrators)])
+        cal = np.column_stack(
+            [c.predict(raw[:, i]) for i, c in enumerate(self.calibrators)]
+        )
         cal = np.clip(cal, 0, 1)
         sums = cal.sum(axis=1, keepdims=True)
         sums[sums == 0] = 1

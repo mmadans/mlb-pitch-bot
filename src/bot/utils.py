@@ -15,8 +15,9 @@ PITCH_ABBR = {
     "Eephus": "EP",
     "Screwball": "SC",
     "Other": "OT",
-    "Unknown": "UN"
+    "Unknown": "UN",
 }
+
 
 def get_pitch_abbr(full_name: str) -> str:
     """Returns a short abbreviation for a pitch type."""

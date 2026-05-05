@@ -1,7 +1,7 @@
 [project]
 name = "mlb-pitch-bot"
 version = "0.1.0"
-description = "Add your description here"
+description = "Live MLB pitch prediction bot — XGBoost model, surprisal-based tweet triggers, real-time infographic generation"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -16,4 +16,14 @@ dependencies = [
     "tweepy>=4.16.0",
     "wandb>=0.26.0",
     "xgboost>=3.1.3",
+]
+
+[tool.ruff.lint]
+select = ["F", "E", "W"]
+ignore = [
+    "E501",  # line too long — not enforced in this codebase
+    "E402",  # module-level import not at top — intentional in a few places (wandb, dotenv ordering)
+    "E701",  # multiple statements on one line — used intentionally for early-return guards
+    "W291",  # trailing whitespace — spurious hits inside docstrings
+    "W293",  # blank line with whitespace — spurious hits inside docstrings
 ]

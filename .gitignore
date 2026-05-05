@@ -15,6 +15,7 @@ models/
 /.cursor
 output/
 logs/
+assets/wandb/
 wandb/
 *.log
 mlb_pitches.db

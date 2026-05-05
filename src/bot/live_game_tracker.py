@@ -4,18 +4,22 @@ Analyzes only:
 1. Strikeouts
 2. Barreled (Hard Hit) balls that do not result in an out.
 """
-from datetime import datetime, timedelta
+
+from datetime import datetime
 import time
+import logging
 import statsapi
 import pandas as pd
 import os
 import joblib
 from dotenv import load_dotenv
 
+log = logging.getLogger(__name__)
+
 from src.data.api_extractors import extract_pitches_with_context, _classify_pitch_family
 from src.features.features import add_contextual_features
 from src.model.inference import PitchPredictor
-from src.bot.bot import post_tweet, format_tweet, format_surprise_strikeout_tweet
+from src.bot.bot import post_tweet, format_surprise_strikeout_tweet
 from src.data.database import create_live_predictions_table, insert_live_prediction
 from src.bot.visualization import generate_pitch_infographic
 from src.constants import (
@@ -25,7 +29,7 @@ from src.constants import (
     MODEL_PATH,
     TARGET_ENCODER_PATH,
     CATEGORICAL_ENCODER_PATH,
-    BASELINE_PATH
+    BASELINE_PATH,
 )
 
 load_dotenv()
@@ -40,21 +44,22 @@ MIN_PITCHER_SAMPLE = 75
 
 # --- State ---
 processed_pitches = set()
-matchup_tracker = {} # (game_pk, pitcher_id, batter_id) -> count
-pending_tweets = [] # list of dicts: {'post_at': timestamp, 'text': string, 'game_pk': int, 'play_id': str}
-baseline = None # Global baseline to be loaded in main()
+matchup_tracker = {}  # (game_pk, pitcher_id, batter_id) -> count
+pending_tweets = []  # list of dicts: {'post_at': timestamp, 'text': string, 'game_pk': int, 'play_id': str}
+baseline = None  # Global baseline to be loaded in main()
 
 # --- Session counters (reset each run in main()) ---
 _session_predictions = 0
 _session_tweets = 0
 _session_games: set = set()
 _pitch_type_counts: dict = {"Fastball": 0, "Breaking": 0, "Offspeed": 0}
-_error_counts: dict     = {"Fastball": 0, "Breaking": 0, "Offspeed": 0}
+_error_counts: dict = {"Fastball": 0, "Breaking": 0, "Offspeed": 0}
+
 
 def get_live_game_pks():
     """Fetches gamePks for games that are currently live."""
     try:
-        schedule = statsapi.schedule() # Use today's date by default
+        schedule = statsapi.schedule()  # Use today's date by default
         live_games = [
             game["game_id"]
             for game in schedule
@@ -62,15 +67,23 @@ def get_live_game_pks():
         ]
         return live_games
     except Exception as e:
-        print(f"Error fetching schedule: {e}")
+        log.error("Error fetching schedule: %s", e)
         return []
 
-def evaluate_pitch_narrative(event_type: str, is_surprise: bool, is_looking: bool, is_swinging: bool, 
-                             expected_prob: float, actual_family: str, surprisal: float) -> tuple[bool, str]:
+
+def evaluate_pitch_narrative(
+    event_type: str,
+    is_surprise: bool,
+    is_looking: bool,
+    is_swinging: bool,
+    expected_prob: float,
+    actual_family: str,
+    surprisal: float,
+) -> tuple[bool, str]:
     """Determines if a pitch warrants a tweet and selects the appropriate narrative prefix."""
     tweet_logic = False
     narrative = ""
-    
+
     if event_type == "strikeout":
         if is_surprise:
             narrative = "🥶 Frozen!" if is_looking else "🔀 Fooled him!"
@@ -81,7 +94,7 @@ def evaluate_pitch_narrative(event_type: str, is_surprise: bool, is_looking: boo
         elif surprisal > SURPRISAL_THRESHOLD:
             narrative = "🤯 Unbelievable K!"
             tweet_logic = True
-            
+
     elif event_type.startswith("hard_hit"):
         if expected_prob > 0.4:
             narrative = "🎯 Sitting on it!"
@@ -89,286 +102,395 @@ def evaluate_pitch_narrative(event_type: str, is_surprise: bool, is_looking: boo
         elif surprisal > SURPRISAL_THRESHOLD:
             narrative = "💥 Punished!"
             tweet_logic = True
-            
+
     return tweet_logic, narrative
+
 
 def build_pitch_sequence(play_events: list) -> list:
     """Builds the sequence visualization dictionary from raw MLB API play events."""
     sequence = []
     for e in play_events:
-        if e.get('isPitch'):
-            p_code = e.get('details', {}).get('type', {}).get('code', 'UN')
-            p_desc = e.get('details', {}).get('type', {}).get('description', 'Unknown')
-            e_pitch_data = e.get('pitchData', {})
-            sequence.append({
-                "pitch_type_code": p_code,
-                "pitch_type_desc": p_desc,
-                "pitch_family": _classify_pitch_family(p_code),
-                "call": e.get('details', {}).get('description', ''),
-                "pX": (e_pitch_data.get('coordinates') or {}).get('pX'),
-                "pZ": (e_pitch_data.get('coordinates') or {}).get('pZ'),
-                "pitch_number": e.get('index')
-            })
+        if e.get("isPitch"):
+            p_code = e.get("details", {}).get("type", {}).get("code", "UN")
+            p_desc = e.get("details", {}).get("type", {}).get("description", "Unknown")
+            e_pitch_data = e.get("pitchData", {})
+            sequence.append(
+                {
+                    "pitch_type_code": p_code,
+                    "pitch_type_desc": p_desc,
+                    "pitch_family": _classify_pitch_family(p_code),
+                    "call": e.get("details", {}).get("description", ""),
+                    "pX": (e_pitch_data.get("coordinates") or {}).get("pX"),
+                    "pZ": (e_pitch_data.get("coordinates") or {}).get("pZ"),
+                    "pitch_number": e.get("index"),
+                }
+            )
     return sequence
 
-def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredictor):
-    """Processes a pitch if it matches outcome criteria."""
-    game_pk, at_bat_index, pitch_index = pitch_id
-    
-    # 1. Identify the play and event
+
+def _identify_outcome(game_data: dict, at_bat_index: int, pitch_index: int):
+    """Returns (current_play, last_pitch_event, play_events, event_type, outcome_str) or None."""
     all_plays = game_data.get("liveData", {}).get("plays", {}).get("allPlays", [])
-    current_play = next((p for p in all_plays if p.get('about', {}).get('atBatIndex') == at_bat_index), None)
-    if not current_play: return
-
-    # Check if this pitch ended the play
-    play_events = current_play.get('playEvents', [])
-    if not play_events: return
-    last_pitch_event = next((e for e in reversed(play_events) if e.get('isPitch')), None)
-    
-    if not last_pitch_event or last_pitch_event.get('index') != pitch_index:
-        return
-
-    # Check outcomes
+    current_play = next(
+        (p for p in all_plays if p.get("about", {}).get("atBatIndex") == at_bat_index),
+        None,
+    )
+    if not current_play:
+        return None
+    play_events = current_play.get("playEvents", [])
+    last_pitch_event = next(
+        (e for e in reversed(play_events) if e.get("isPitch")), None
+    )
+    if not last_pitch_event or last_pitch_event.get("index") != pitch_index:
+        return None
     result = current_play.get("result", {})
     event_type = result.get("eventType", "").lower()
     hit_data = current_play.get("hitData", {})
     launch_speed = hit_data.get("launchSpeed", 0)
-    is_out = result.get("isOut", False)
-
     outcome_str = None
     if event_type == "strikeout":
         outcome_str = "strikeout"
-    elif launch_speed >= BARREL_EV_THRESHOLD and not is_out:
+    elif launch_speed >= BARREL_EV_THRESHOLD and not result.get("isOut", False):
         outcome_str = f"hard_hit_{int(launch_speed)}mph"
-
     if not outcome_str:
-        return
+        return None
+    return current_play, last_pitch_event, play_events, event_type, outcome_str
 
+
+def _run_inference(row, game_data: dict, predictor: PitchPredictor):
+    """Hydrates the pitch row and runs model inference. Returns (probs, surprisal, family, hydrated_row)."""
+    actual_pitch_code = row["pitch_type"].values[0]
+    if baseline:
+        return predictor.hydrate_and_predict(row, baseline)
+    log.warning("Baseline tendencies not loaded — predictions will be low-quality.")
+    row = add_contextual_features(row)
+    actual_pitch_family = _classify_pitch_family(actual_pitch_code)
+    probabilities = predictor.predict_probabilities(row)
+    surprisal = predictor.calculate_surprisal(actual_pitch_family, probabilities)
+    return probabilities, surprisal, actual_pitch_family, row
+
+
+def _get_sample_sizes(hydrated_row) -> tuple:
+    """Returns (pitcher_sample_n, count_sample_n) integers or None if missing."""
+
+    def _safe_int(col):
+        if col not in hydrated_row.columns:
+            return None
+        val = hydrated_row[col].iloc[0]
+        return int(val) if pd.notna(val) else None
+
+    return _safe_int("tendency_total_pitches"), _safe_int(
+        "tendency_count_total_pitches"
+    )
+
+
+def _log_prediction_to_db(
+    game_pk,
+    current_play,
+    last_pitch_event,
+    pitcher_id,
+    batter_id,
+    actual_pitch_family,
+    probabilities,
+    surprisal,
+    pitcher_sample_n,
+    count_sample_n,
+    balls_val,
+    strikes_val,
+):
+    try:
+        play_id_val = last_pitch_event.get("playId") or current_play.get("playId", "")
+        insert_live_prediction(
+            game_pk=game_pk,
+            play_id=play_id_val,
+            pitcher_id=pitcher_id,
+            batter_id=batter_id,
+            actual_pitch_family=actual_pitch_family,
+            probs=probabilities,
+            surprisal=surprisal,
+            pitcher_sample_n=pitcher_sample_n,
+            count_sample_n=count_sample_n,
+            balls=balls_val,
+            strikes=strikes_val,
+        )
+    except Exception as e:
+        log.warning("Failed to log live prediction to DB: %s", e)
+
+
+def _log_prediction_to_wandb(
+    game_pk,
+    actual_pitch_family,
+    probabilities,
+    surprisal,
+    pitcher_sample_n,
+    count_sample_n,
+    outcome_str,
+):
+    global \
+        _session_predictions, \
+        _session_games, \
+        _pitch_type_counts, \
+        _error_counts, \
+        _session_tweets
+    try:
+        predicted_family = max(probabilities, key=probabilities.get)
+        is_correct = int(predicted_family == actual_pitch_family)
+        _session_predictions += 1
+        _session_games.add(game_pk)
+        if actual_pitch_family in _pitch_type_counts:
+            _pitch_type_counts[actual_pitch_family] += 1
+        if not is_correct and actual_pitch_family in _error_counts:
+            _error_counts[actual_pitch_family] += 1
+        wandb.log(
+            {
+                "surprisal": surprisal if surprisal != float("inf") else None,
+                "prob_fastball": probabilities.get("Fastball", 0),
+                "prob_breaking": probabilities.get("Breaking", 0),
+                "prob_offspeed": probabilities.get("Offspeed", 0),
+                "actual_family": actual_pitch_family,
+                "predicted_family": predicted_family,
+                "correct": is_correct,
+                "error": 1 - is_correct,
+                "cumulative_predictions": _session_predictions,
+                "cumulative_tweets": _session_tweets,
+                "pitcher_sample_n": pitcher_sample_n,
+                "count_sample_n": count_sample_n,
+                "outcome": outcome_str,
+                "game_pk": game_pk,
+            }
+        )
+    except Exception as e:
+        log.warning("W&B log failed: %s", e)
+
+
+def _post_strikeout_tweet(
+    game_pk,
+    at_bat_index,
+    pitcher_id,
+    batter_id,
+    current_play,
+    last_pitch_event,
+    play_events,
+    row,
+    hydrated_row,
+    game_data,
+    probabilities,
+    surprisal,
+    actual_pitch_family,
+    actual_pitch_code,
+    expected_prob,
+    is_swinging,
+    narrative,
+):
+    global _session_tweets
+    pitcher_name = current_play.get("matchup", {}).get("pitcher", {}).get("fullName")
+    batter_name = current_play.get("matchup", {}).get("batter", {}).get("fullName")
+    actual_pitch_desc = (
+        last_pitch_event.get("details", {})
+        .get("type", {})
+        .get("description", actual_pitch_code)
+    )
+    a_team = (
+        game_data.get("gameData", {})
+        .get("teams", {})
+        .get("away", {})
+        .get("abbreviation", "AWY")
+    )
+    h_team = (
+        game_data.get("gameData", {})
+        .get("teams", {})
+        .get("home", {})
+        .get("abbreviation", "HOM")
+    )
+
+    m_key = (game_pk, pitcher_id, batter_id)
+    matchup_tracker[m_key] = matchup_tracker.get(m_key, 0) + 1
+
+    p_hand = row["pitcher_hand"].values[0] if "pitcher_hand" in row.columns else ""
+    b_side = row["batter_side"].values[0] if "batter_side" in row.columns else ""
+    tweet_text = format_surprise_strikeout_tweet(
+        pitcher_name,
+        batter_name,
+        actual_pitch_desc,
+        actual_pitch_family,
+        expected_prob,
+        is_swinging,
+        narrative=narrative,
+        away_team=a_team,
+        home_team=h_team,
+        pitcher_hand=p_hand,
+        batter_side=b_side,
+    )
+
+    os.makedirs("output", exist_ok=True)
+    image_path = f"output/live_tweet_{game_pk}_{at_bat_index}.png"
+    print(f"  Generating infographic: {image_path}")
+    pitch_data_dict = hydrated_row.to_dict("records")[0]
+    pitch_data_dict["away_team"] = a_team
+    pitch_data_dict["home_team"] = h_team
+    generate_pitch_infographic(
+        pitch_data=pitch_data_dict,
+        probs=probabilities,
+        surprisal=surprisal,
+        sequence=build_pitch_sequence(play_events),
+        output_path=image_path,
+    )
+
+    print("\n" + "=" * 50)
+    print("🚀 [POSTING LIVE TWEET]")
+    print(tweet_text)
+    print("=" * 50 + "\n")
+    post_tweet(tweet_text, image_path=image_path)
+    if os.path.exists(image_path):
+        os.remove(image_path)
+    _session_tweets += 1
+
+
+def process_new_pitch(pitch_id: tuple, game_data: dict, predictor: PitchPredictor):
+    """Processes a pitch if it matches outcome criteria."""
+    game_pk, at_bat_index, pitch_index = pitch_id
+
+    outcome = _identify_outcome(game_data, at_bat_index, pitch_index)
+    if outcome is None:
+        return
+    current_play, last_pitch_event, play_events, event_type, outcome_str = outcome
     print(f"Analyzing interesting outcome: {outcome_str} in game {game_pk}")
 
-    # 2. Extract features and run inference
     try:
         pitch_rows = extract_pitches_with_context(game_data)
-        df = pd.DataFrame(pitch_rows)
-        
-        # Identify the exact pitch
-        row = df[(df['at_bat_index'] == at_bat_index) & (df['pitch_index'] == pitch_index)].copy()
-        if row.empty: return
-        
-        # Add context required before feature hydration
-        venue_id = game_data.get('gameData', {}).get('venue', {}).get('id', 0)
-        row['park_id'] = venue_id
-        
-        # actual_pitch_code is always available from the raw row
-        actual_pitch_code = row['pitch_type'].values[0]
+        row = pd.DataFrame(pitch_rows)
+        row = row[
+            (row["at_bat_index"] == at_bat_index) & (row["pitch_index"] == pitch_index)
+        ].copy()
+        if row.empty:
+            return
+        row["park_id"] = game_data.get("gameData", {}).get("venue", {}).get("id", 0)
+        actual_pitch_code = row["pitch_type"].values[0]
 
-        # Hydrate tendencies and run inference in one shot
-        hydrated_row = row  # fallback; overwritten when baseline is present
-        if baseline:
-            probabilities, surprisal, actual_pitch_family, hydrated_row = predictor.hydrate_and_predict(row, baseline)
-        else:
-            print("  Warning: Baseline tendencies not loaded. Expect surprises in predictions.")
-            from src.features.features import add_contextual_features
-            row = add_contextual_features(row)
-            actual_pitch_family = _classify_pitch_family(actual_pitch_code)
-            probabilities = predictor.predict_probabilities(row)
-            surprisal = predictor.calculate_surprisal(actual_pitch_family, probabilities)
+        probabilities, surprisal, actual_pitch_family, hydrated_row = _run_inference(
+            row, game_data, predictor
+        )
 
-        pitcher_id = int(row['pitcher_id'].values[0])
-        batter_id  = int(row['batter_id'].values[0])
-        balls_val   = int(row['balls'].values[0])   if 'balls'   in row.columns and pd.notna(row['balls'].values[0])   else None
-        strikes_val = int(row['strikes'].values[0]) if 'strikes' in row.columns and pd.notna(row['strikes'].values[0]) else None
+        pitcher_id = int(row["pitcher_id"].values[0])
+        batter_id = int(row["batter_id"].values[0])
+        balls_val = (
+            int(row["balls"].values[0])
+            if "balls" in row.columns and pd.notna(row["balls"].values[0])
+            else None
+        )
+        strikes_val = (
+            int(row["strikes"].values[0])
+            if "strikes" in row.columns and pd.notna(row["strikes"].values[0])
+            else None
+        )
 
-        # --- Sample-size gate ---
-        # If the pitcher doesn't have enough historical pitches in the baseline,
-        # their tendency features are unreliable and the model effectively falls back
-        # to league averages. Skip rather than post a misleading prediction.
-        pitcher_sample_n = None
-        count_sample_n = None
-        if 'tendency_total_pitches' in hydrated_row.columns:
-            raw_n = hydrated_row['tendency_total_pitches'].iloc[0]
-            pitcher_sample_n = int(raw_n) if pd.notna(raw_n) else None
-        if 'tendency_count_total_pitches' in hydrated_row.columns:
-            raw_cn = hydrated_row['tendency_count_total_pitches'].iloc[0]
-            count_sample_n = int(raw_cn) if pd.notna(raw_cn) else None
-
+        pitcher_sample_n, count_sample_n = _get_sample_sizes(hydrated_row)
         if pitcher_sample_n is None or pitcher_sample_n < MIN_PITCHER_SAMPLE:
             print(
-                f"  Skipping pitcher {pitcher_id}: insufficient sample "
-                f"({pitcher_sample_n} pitches, need {MIN_PITCHER_SAMPLE})."
+                f"  Skipping pitcher {pitcher_id}: insufficient sample ({pitcher_sample_n}, need {MIN_PITCHER_SAMPLE})."
             )
             return
 
-        # Log every prediction that clears the sample gate to monitor calibration
-        try:
-            play_id_val = last_pitch_event.get('playId') or current_play.get('playId', '')
-            insert_live_prediction(
-                game_pk=game_pk, play_id=play_id_val,
-                pitcher_id=pitcher_id, batter_id=batter_id,
-                actual_pitch_family=actual_pitch_family,
-                probs=probabilities, surprisal=surprisal,
-                pitcher_sample_n=pitcher_sample_n, count_sample_n=count_sample_n,
-                balls=balls_val, strikes=strikes_val,
-            )
-        except Exception as e:
-            print(f"  Warning: Failed to log live prediction DB entry: {e}")
+        _log_prediction_to_db(
+            game_pk,
+            current_play,
+            last_pitch_event,
+            pitcher_id,
+            batter_id,
+            actual_pitch_family,
+            probabilities,
+            surprisal,
+            pitcher_sample_n,
+            count_sample_n,
+            balls_val,
+            strikes_val,
+        )
+        _log_prediction_to_wandb(
+            game_pk,
+            actual_pitch_family,
+            probabilities,
+            surprisal,
+            pitcher_sample_n,
+            count_sample_n,
+            outcome_str,
+        )
 
-        # W&B — per-pitch online logging
-        try:
-            global _session_predictions, _session_games, _pitch_type_counts, _error_counts, _session_tweets
-            predicted_family = max(probabilities, key=probabilities.get)
-            is_correct = int(predicted_family == actual_pitch_family)
-
-            _session_predictions += 1
-            _session_games.add(game_pk)
-            if actual_pitch_family in _pitch_type_counts:
-                _pitch_type_counts[actual_pitch_family] += 1
-            if not is_correct and actual_pitch_family in _error_counts:
-                _error_counts[actual_pitch_family] += 1
-
-            wandb.log({
-                "surprisal":              surprisal if surprisal != float("inf") else None,
-                "prob_fastball":          probabilities.get("Fastball", 0),
-                "prob_breaking":          probabilities.get("Breaking", 0),
-                "prob_offspeed":          probabilities.get("Offspeed", 0),
-                "actual_family":          actual_pitch_family,
-                "predicted_family":       predicted_family,
-                "correct":                is_correct,
-                "error":                  1 - is_correct,
-                "cumulative_predictions": _session_predictions,
-                "cumulative_tweets":      _session_tweets,
-                "pitcher_sample_n":       pitcher_sample_n,
-                "count_sample_n":         count_sample_n,
-                "outcome":                outcome_str,
-                "game_pk":                game_pk,
-            })
-        except Exception as e:
-            print(f"  Warning: W&B log failed: {e}")
-
-        # Determine Narrative based on situational context and tendencies
-        expected_prob = probabilities.get(actual_pitch_family, 0)
-        
-        # Squelch tweets for 'Other' pitch families (not handled by model)
         if actual_pitch_family == "Other":
-            print(f"  Skipping: Pitch classified as 'Other' ({actual_pitch_code}). Model cannot provide reliable probability.")
+            print(
+                f"  Skipping: 'Other' pitch ({actual_pitch_code}) — model has no reliable probability."
+            )
             return
 
-        is_surprise_pitch = expected_prob < 0.15
-        
-        # Check pitch description to distinguish swinging from looking
-        pitch_description = last_pitch_event.get('details', {}).get('description', '').lower()
+        expected_prob = probabilities.get(actual_pitch_family, 0)
+        pitch_description = (
+            last_pitch_event.get("details", {}).get("description", "").lower()
+        )
         is_looking = "called strike" in pitch_description
-        is_swinging = "swinging strike" in pitch_description or "foul tip" in pitch_description
-        
-        print(f"  Pitch: {actual_pitch_code}, Prob: {expected_prob:.2f}, Surprisal: {surprisal:.2f}, Desc: {pitch_description}")
-        
-        # --- Narrative Selection Logic ---
+        is_swinging = (
+            "swinging strike" in pitch_description or "foul tip" in pitch_description
+        )
+        print(
+            f"  Pitch: {actual_pitch_code}, Prob: {expected_prob:.2f}, Surprisal: {surprisal:.2f}"
+        )
+
         tweet_logic, narrative = evaluate_pitch_narrative(
-            event_type=outcome_str if outcome_str.startswith("hard_hit") else event_type, 
-            is_surprise=is_surprise_pitch, 
-            is_looking=is_looking, 
-            is_swinging=is_swinging, 
-            expected_prob=expected_prob, 
-            actual_family=actual_pitch_family, 
-            surprisal=surprisal
+            event_type=outcome_str
+            if outcome_str.startswith("hard_hit")
+            else event_type,
+            is_surprise=expected_prob < 0.15,
+            is_looking=is_looking,
+            is_swinging=is_swinging,
+            expected_prob=expected_prob,
+            actual_family=actual_pitch_family,
+            surprisal=surprisal,
         )
 
         if tweet_logic and event_type == "strikeout":
-            # 3. Handle Context for the new Surprise Strikeout format
-            pitcher_name = current_play.get('matchup', {}).get('pitcher', {}).get('fullName')
-            batter_name = current_play.get('matchup', {}).get('batter', {}).get('fullName')
-            actual_pitch_desc = last_pitch_event.get('details', {}).get('type', {}).get('description', actual_pitch_code)
-            
-            inning = row['inning'].values[0]
-            half = row['half_inning'].values[0]
-            inning_info = f"{'Top' if half == 'top' else 'Bottom'} {inning}"
-            
-            h_score = row['score_home'].values[0]
-            a_score = row['score_away'].values[0]
-            a_team = game_data.get('gameData', {}).get('teams', {}).get('away', {}).get('abbreviation', 'AWY')
-            h_team = game_data.get('gameData', {}).get('teams', {}).get('home', {}).get('abbreviation', 'HOM')
-            score_info = f"{a_team} {a_score}, {h_team} {h_score}"
-            
-            mob = row['men_on_base'].values[0] or "Empty"
-            runners_info = mob.replace('_', ' ')
-            
-            outs = row['outs'].values[0]
-            
-            # Matchup tracking
-            m_key = (game_pk, pitcher_id, batter_id)
-            matchup_num = matchup_tracker.get(m_key, 0) + 1
-            matchup_tracker[m_key] = matchup_num
-            
-            sequence = build_pitch_sequence(play_events)
-            
-            # We no longer handle truncation logic, the infographic handles context entirely!
-            p_hand = row['pitcher_hand'].values[0] if 'pitcher_hand' in row.columns else ""
-            b_side = row['batter_side'].values[0] if 'batter_side' in row.columns else ""
-
-            # Prepare tweet text
-            tweet_text = format_surprise_strikeout_tweet(
-                pitcher_name, batter_name, actual_pitch_desc, actual_pitch_family, expected_prob, is_swinging,
-                narrative=narrative, away_team=a_team, home_team=h_team,
-                pitcher_hand=p_hand, batter_side=b_side
+            _post_strikeout_tweet(
+                game_pk,
+                at_bat_index,
+                pitcher_id,
+                batter_id,
+                current_play,
+                last_pitch_event,
+                play_events,
+                row,
+                hydrated_row,
+                game_data,
+                probabilities,
+                surprisal,
+                actual_pitch_family,
+                actual_pitch_code,
+                expected_prob,
+                is_swinging,
+                narrative,
             )
-            
-            # Generate the infographic image
-            os.makedirs("output", exist_ok=True)
-            image_path = f"output/live_tweet_{game_pk}_{at_bat_index}.png"
-            print(f"  Generating infographic: {image_path}")
-            
-            # Use hydrated_row so tendency columns are present for the donut charts
-            pitch_data_dict = hydrated_row.to_dict('records')[0]
-            pitch_data_dict['away_team'] = a_team
-            pitch_data_dict['home_team'] = h_team
-            generate_pitch_infographic(
-                pitch_data=pitch_data_dict,
-                probs=probabilities,
-                surprisal=surprisal,
-                sequence=sequence,
-                output_path=image_path
+        elif tweet_logic:
+            print(
+                f"  Hard-hit narrative generated but posting not yet implemented: {narrative}"
             )
-            
-            print("\n" + "="*50)
-            print("🚀 [POSTING LIVE TWEET]")
-            print(tweet_text)
-            print("="*50 + "\n")
-            post_tweet(tweet_text, image_path=image_path)
-            if os.path.exists(image_path):
-                os.remove(image_path)
-            _session_tweets += 1
-
-        elif tweet_logic: # Fallback for non-strikeout surprises (hard hits)
-            pitcher_name = current_play.get('matchup', {}).get('pitcher', {}).get('fullName')
-            batter_name = current_play.get('matchup', {}).get('batter', {}).get('fullName')
-            actual_pitch_desc = last_pitch_event.get('details', {}).get('type', {}).get('description', actual_pitch_code)
-            a_team = game_data.get('gameData', {}).get('teams', {}).get('away', {}).get('abbreviation', 'AWY')
-            h_team = game_data.get('gameData', {}).get('teams', {}).get('home', {}).get('abbreviation', 'HOM')
-            
-            tweet_text = format_tweet(pitcher_name, batter_name, actual_pitch_desc, surprisal, outcome_str, away_team=a_team, home_team=h_team)
-            tweet_text = f"{narrative}\n\n{tweet_text}"
-            print(f"🚀 [QUEUED HARD HIT]: {narrative}")
-            # Log it but maybe don't queue for video if we don't have video logic for hard hits yet
         else:
-            print(f"  Skipping: Not a significant surprise/outcome combo.")
+            print("  Skipping: Not a significant surprise/outcome combo.")
 
-    except Exception as e:
-        print(f"Error in model inference: {e}")
-        import traceback
-        traceback.print_exc()
-
-
+    except Exception:
+        log.exception("Error in model inference for pitch %s", pitch_id)
 
 
 def main():
-    global baseline, _session_predictions, _session_tweets, _session_games, _pitch_type_counts, _error_counts
+    global \
+        baseline, \
+        _session_predictions, \
+        _session_tweets, \
+        _session_games, \
+        _pitch_type_counts, \
+        _error_counts
     print("Starting MLB Live Game Tracker (Simulation Mode)...")
     processed_pitches.clear()
     _session_predictions = 0
     _session_tweets = 0
     _session_games = set()
     _pitch_type_counts = {"Fastball": 0, "Breaking": 0, "Offspeed": 0}
-    _error_counts      = {"Fastball": 0, "Breaking": 0, "Offspeed": 0}
+    _error_counts = {"Fastball": 0, "Breaking": 0, "Offspeed": 0}
     create_live_predictions_table()
 
     # Initialise W&B run for today's game session
@@ -378,93 +500,113 @@ def main():
         job_type="live-tracking",
         config={
             "surprisal_threshold": SURPRISAL_THRESHOLD,
-            "min_pitcher_sample":  MIN_PITCHER_SAMPLE,
-            "polling_interval_s":  POLLING_INTERVAL_SECONDS,
+            "min_pitcher_sample": MIN_PITCHER_SAMPLE,
+            "polling_interval_s": POLLING_INTERVAL_SECONDS,
         },
-        resume="allow",   # safe to restart mid-game without creating duplicate runs
+        resume="allow",  # safe to restart mid-game without creating duplicate runs
     )
 
     try:
         baseline = joblib.load(BASELINE_PATH)
         # Ensure model paths are correct
-        predictor = PitchPredictor(model_path=MODEL_PATH, target_encoder_path=TARGET_ENCODER_PATH, categorical_encoder_path=CATEGORICAL_ENCODER_PATH)
+        predictor = PitchPredictor(
+            model_path=MODEL_PATH,
+            target_encoder_path=TARGET_ENCODER_PATH,
+            categorical_encoder_path=CATEGORICAL_ENCODER_PATH,
+        )
         print("Model and Baseline loaded.")
     except Exception as e:
-        print(f"Error loading model: {e}. (Have you run src/train_model.py?)")
+        log.error("Error loading model: %s. (Have you run src/train_model.py?)", e)
         wandb.finish(exit_code=1)
         return
 
     # --- Startup Skip Logic ---
-    # To prevent spamming tweets for plays that already happened, 
+    # To prevent spamming tweets for plays that already happened,
     # we mark all existing pitches in live games as 'processed' upon launch.
     print("Initializing: Skipping already completed pitches in live games...")
     live_game_pks = get_live_game_pks()
     for game_pk in live_game_pks:
         try:
             game_data = statsapi.get("game", {"gamePk": game_pk})
-            all_plays = game_data.get("liveData", {}).get("plays", {}).get("allPlays", [])
+            all_plays = (
+                game_data.get("liveData", {}).get("plays", {}).get("allPlays", [])
+            )
             for play in all_plays:
                 at_bat_idx = play.get("about", {}).get("atBatIndex")
                 for event in play.get("playEvents", []):
                     if event.get("isPitch"):
                         processed_pitches.add((game_pk, at_bat_idx, event.get("index")))
         except Exception as e:
-            print(f"Error during initialization for game {game_pk}: {e}")
-    
+            log.error("Error during initialization for game %s: %s", game_pk, e)
+
     print(f"Initialization complete. Monitoring {len(live_game_pks)} games.")
 
     try:
         while True:
             live_game_pks = get_live_game_pks()
             if not live_game_pks:
-                print(f"Waiting for live games... (Interval: {POLLING_INTERVAL_SECONDS}s)")
+                print(
+                    f"Waiting for live games... (Interval: {POLLING_INTERVAL_SECONDS}s)"
+                )
             else:
                 for game_pk in live_game_pks:
                     try:
                         game_data = statsapi.get("game", {"gamePk": game_pk})
-                        all_plays = game_data.get("liveData", {}).get("plays", {}).get("allPlays", [])
+                        all_plays = (
+                            game_data.get("liveData", {})
+                            .get("plays", {})
+                            .get("allPlays", [])
+                        )
                         for play in all_plays:
                             at_bat_idx = play.get("about", {}).get("atBatIndex")
                             for event in play.get("playEvents", []):
-                                if not event.get("isPitch"): continue
+                                if not event.get("isPitch"):
+                                    continue
                                 pitch_idx = event.get("index")
                                 pitch_id = (game_pk, at_bat_idx, pitch_idx)
                                 if pitch_id not in processed_pitches:
                                     processed_pitches.add(pitch_id)
                                     process_new_pitch(pitch_id, game_data, predictor)
                     except Exception as e:
-                        print(f"Error in game {game_pk}: {e}")
+                        log.error("Error polling game %s: %s", game_pk, e)
 
             time.sleep(POLLING_INTERVAL_SECONDS)
     except KeyboardInterrupt:
         print("\nTracker stopped.")
     finally:
         try:
-            tweet_pct = _session_tweets / _session_predictions if _session_predictions else 0.0
-            wandb.summary.update({
-                "total_games":       len(_session_games),
-                "total_predictions": _session_predictions,
-                "total_tweets":      _session_tweets,
-                "tweet_pct":         tweet_pct,
-            })
+            tweet_pct = (
+                _session_tweets / _session_predictions if _session_predictions else 0.0
+            )
+            wandb.summary.update(
+                {
+                    "total_games": len(_session_games),
+                    "total_predictions": _session_predictions,
+                    "total_tweets": _session_tweets,
+                    "tweet_pct": tweet_pct,
+                }
+            )
 
             # Pitch type distribution table (for pie chart)
             pitch_dist = wandb.Table(
                 columns=["pitch_family", "count"],
-                data=[[fam, cnt] for fam, cnt in _pitch_type_counts.items()]
+                data=[[fam, cnt] for fam, cnt in _pitch_type_counts.items()],
             )
             # Error distribution table (for pie chart)
             error_dist = wandb.Table(
                 columns=["pitch_family", "errors"],
-                data=[[fam, cnt] for fam, cnt in _error_counts.items()]
+                data=[[fam, cnt] for fam, cnt in _error_counts.items()],
             )
-            wandb.log({
-                "pitch_type_distribution": pitch_dist,
-                "error_distribution":      error_dist,
-            })
+            wandb.log(
+                {
+                    "pitch_type_distribution": pitch_dist,
+                    "error_distribution": error_dist,
+                }
+            )
         except Exception as e:
-            print(f"Warning: W&B session summary failed: {e}")
+            log.warning("W&B session summary failed: %s", e)
         wandb.finish()
+
 
 if __name__ == "__main__":
     main()
