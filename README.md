@@ -27,8 +27,6 @@ The bot polls the MLB Stats API every 30 seconds. For each pitch thrown, it:
 | 🔀 Fooled | Swinging strikeout on unexpected pitch | `Fooled him!` |
 | 😤 Dominance | Strikeout on an 80%+ probability fastball | `Pure Dominance.` |
 | 🤯 Unbelievable | High surprisal strikeout, any pitch | `Unbelievable K!` |
-| 🎯 Sitting on it | Hard contact on a high-probability pitch | `Sitting on it!` |
-| 💥 Punished | Hard contact on a surprising pitch | `Punished!` |
 
 ### Example infographics
 
