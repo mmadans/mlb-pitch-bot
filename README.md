@@ -28,12 +28,6 @@ The bot polls the MLB Stats API every 30 seconds. For each pitch thrown, it:
 | 😤 Dominance | Strikeout on an 80%+ probability fastball | `Pure Dominance.` |
 | 🤯 Unbelievable | High surprisal strikeout, any pitch | `Unbelievable K!` |
 
-### Example infographics
-
-| Cole vs Devers | Burnes vs Freeman | Wheeler vs Alvarez |
-|---|---|---|
-| ![sample 1](assets/sample_1.png) | ![sample 2](assets/sample_2.png) | ![sample 3](assets/sample_3.png) |
-
 ---
 
 ## Model
