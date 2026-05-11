@@ -15,7 +15,7 @@ Most baseball bots report *what* happened. This one asks *how surprising was it?
 The bot polls the MLB Stats API every 30 seconds. For each pitch thrown, it:
 
 1. **Predicts** the probability of each pitch family (Fastball / Breaking / Offspeed) given the pitcher's tendencies, the count, the matchup, and game context
-2. **Measures surprisal** — the information-theoretic shock value of the actual pitch: `−log₂(P(actual_pitch))` in bits
+2. **Measures surprisal**, the information-theoretic shock value of the actual pitch: `−log₂(P(actual_pitch))` in bits
 3. **Generates a real-time infographic** with the pitch location, at-bat sequence, prediction breakdown, and the signals that drove the prediction
 4. **Tweets** when a high-surprisal pitch (≥ 2.5 bits) results in a strikeout or a hard-hit ball
 
@@ -51,7 +51,7 @@ The dominant signal is **pitcher-specific count tendency**: how often a given pi
 
 ### Key engineering decisions
 
-**Leave-one-out encoding for training.** Tendency features are computed over the full dataset, which would cause target leakage if used naively during training (the current row's label is baked into its own tendency percentage). During training, the function `_apply_loo_encoding` inverts the Laplace smoothing formula to subtract each row's contribution before computing the feature — so training sees the same distribution that inference sees at prediction time.
+**Leave-one-out encoding for training.** Tendency features are computed over the full dataset, which would cause target leakage if used naively during training (the current row's label is baked into its own tendency percentage). During training, the function `_apply_loo_encoding` inverts the Laplace smoothing formula to subtract each row's contribution before computing the feature, so training sees the same distribution that inference sees at prediction time.
 
 **Sample-size-weighted tendency blending.** At inference time the model's raw probability is blended with the pitcher's stated count tendency using a weight of `count_n / (count_n + 30)`. A pitcher with 60 pitches at a specific count gets 67% weight on their tendency; a pitcher with 5 gets 14%. This prevents the model from over-trusting sparse samples while still personalizing predictions for pitchers with deep history.
 
@@ -60,7 +60,7 @@ The dominant signal is **pitcher-specific count tendency**: how often a given pi
 ### Training pipeline
 
 - **Data**: MLB Stats API pitch-level data, Regular Season + Postseason only
-- **Split**: Chronological 80/20 — no future data leaks into training
+- **Split**: Chronological 80/20 so no future data leaks into training
 - **Sample weights**: `sqrt(inverse class frequency)` × 2× leverage weight at 2-strike/3-ball counts
 - **Baseline tendencies**: Built from training set only, Laplace-smoothed for sparse counts
 
@@ -74,7 +74,7 @@ The dominant signal is **pitcher-specific count tendency**: how often a given pi
 | **Overall accuracy** | | | **~57%** |
 | **Balanced accuracy** | | | **~67%** |
 
-Chance for a 3-class problem is 33%. The harder baseline — always predicting Fastball — achieves ~52% accuracy but ~33% balanced accuracy, since it entirely misses Breaking and Offspeed.
+Chance for a 3-class problem is 33%. The harder baseline of always predicting Fastball achieves ~52% accuracy but ~33% balanced accuracy, since it entirely misses Breaking and Offspeed.
 
 ---
 
@@ -97,14 +97,14 @@ Chance for a 3-class problem is 33%. The harder baseline — always predicting F
 ```
 src/
 ├── bot/
-│   ├── live_game_tracker.py      # Main polling loop — inference, gating, tweet dispatch
+│   ├── live_game_tracker.py      # Main polling loop: inference, gating, tweet dispatch
 │   ├── visualization.py          # Pitch infographic generation (Matplotlib)
 │   ├── nightly_monitor.py        # Daily W&B health logging
 │   ├── bot.py                    # Tweet formatting and Twitter API client
 │   └── signal_labels.py          # Human-readable prediction reason strings
 ├── model/
 │   ├── train_model.py            # Full training pipeline with W&B logging
-│   ├── inference.py              # PitchPredictor — hydration, blending, probability floor
+│   ├── inference.py              # PitchPredictor: hydration, blending, probability floor
 │   └── calibration.py            # Isotonic calibration wrapper (optional post-training step)
 ├── features/
 │   ├── baseline_manager.py       # Tendency hydration, LOO encoding, delta features
@@ -148,7 +148,7 @@ WANDB_API_KEY=
 WANDB_PROJECT=mlb-pitch-bot
 ```
 
-Twitter credentials require a Developer account with OAuth 1.0a Read+Write access. W&B is optional — the tracker and trainer run fine without it, they just won't log metrics.
+Twitter credentials require a Developer account with OAuth 1.0a Read+Write access. W&B is optional. The tracker and trainer run fine without it, they just won't log metrics.
 
 ### Build the dataset and train
 
@@ -175,7 +175,7 @@ Or run the full pipeline at once:
 # Foreground (Ctrl-C to stop)
 uv run python -m src.bot.live_game_tracker
 
-# Persistent via launchd (macOS — auto-restarts on crash)
+# Persistent via launchd
 launchctl load ~/Library/LaunchAgents/com.mlb-pitch-bot.tracker.plist
 launchctl unload ~/Library/LaunchAgents/com.mlb-pitch-bot.tracker.plist
 ```
